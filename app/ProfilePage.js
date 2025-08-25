@@ -1,14 +1,37 @@
-import { StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import CTAButton from "../components/CTAButton";
+import AvatarCard from "../components/profile/AvatarCard";
+import MonthlySnapshot from "../components/profile/MonthlySnapshot";
+import ProfileHeader from "../components/profile/ProfileHeader";
+import ScoreCard from "../components/profile/ScoreCard";
+import MainLayout from "../layouts/MainLayout";
+import colors from "../theme/colors";
 
-export default function ProfilePage() {
+const ProfilePage = () => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Hello from Profile Page 👋</Text>
-    </View>
+    <MainLayout>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+        <ScrollView contentContainerStyle={styles.container}>
+          <ProfileHeader />
+          <ScoreCard variant="baseline" />
+          <ScoreCard variant="carbon" />
+          <AvatarCard />
+          <MonthlySnapshot />
+          <CTAButton
+            label="View My Rewards"
+            onPress={() => console.log("Navigate to Rewards")}
+          />
+        </ScrollView>
+      </SafeAreaView>
+    </MainLayout>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center" },
-  text: { fontSize: 20, fontWeight: "bold" },
+  container: {
+    padding: 16,
+  },
 });
+
+export default ProfilePage;
