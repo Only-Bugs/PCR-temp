@@ -5,12 +5,11 @@ import AvatarCard from "../components/profile/AvatarCard";
 import MonthlySnapshot from "../components/profile/MonthlySnapshot";
 import ProfileHeader from "../components/profile/ProfileHeader";
 import ScoreCard from "../components/profile/ScoreCard";
-import MainLayout from "../layouts/MainLayout";
 import colors from "../theme/colors";
 
 const ProfilePage = () => {
   return (
-    <MainLayout>
+    <>
       <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
         <ScrollView contentContainerStyle={styles.container}>
           <ProfileHeader />
@@ -24,7 +23,7 @@ const ProfilePage = () => {
           />
         </ScrollView>
       </SafeAreaView>
-    </MainLayout>
+    </>
   );
 };
 

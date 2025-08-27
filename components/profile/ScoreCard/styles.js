@@ -3,51 +3,71 @@ import colors from "../../../theme/colors";
 
 export default StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
+    borderRadius: 16,
     padding: 16,
-    borderRadius: 12,
     marginBottom: 16,
     shadowColor: "#000",
     shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowRadius: 6,
     elevation: 2,
   },
+  baselineCard: {
+    backgroundColor: "#E6F7EE",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
   title: {
-    fontSize: 16,
+    marginLeft: 8,
+    fontSize: 15,
     fontWeight: "600",
-    color: colors.textPrimary,
-    marginBottom: 4,
+    color: colors.textPrimary, // not green
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  left: {
+    flex: 1,
+  },
+  right: {
+    alignItems: "flex-end",
+    flex: 1,
   },
   value: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: "700",
-    color: colors.primary,
-    marginBottom: 4,
+    color: colors.success, // ✅ green
+  },
+  unit: {
+    fontSize: 13,
+    color: colors.textSecondary, // ✅ muted gray
   },
   subText: {
     fontSize: 13,
     color: colors.textSecondary,
-    marginBottom: 8,
   },
-  progress: {
-    height: 8,
-    borderRadius: 4,
-  },
-  circleContainer: {
+  changeRow: {
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: 12,
+    marginTop: 4,
   },
-  circle: {
-    width: 80,
-    height: 80,
-    borderWidth: 6,
-    borderRadius: 40,
+  change: {
+    fontSize: 13,
+    color: colors.success,
+    marginLeft: 4,
+  },
+  levelRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
   },
-  circleText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.textPrimary,
+  levelText: {
+    marginLeft: 6,
+    fontSize: 13,
+    fontWeight: "500",
+    color: colors.purple,
   },
 });

@@ -1,11 +1,10 @@
-import React from "react";
-import { TouchableOpacity, Text } from "react-native";
+import { Text, TouchableOpacity } from "react-native";
 import styles from "./styles";
 
-const CTAButton = () => {
+const CTAButton = ({ label }) => {
   return (
     <TouchableOpacity style={styles.button}>
-      <Text style={styles.text}>[CTAButton Placeholder]</Text>
+      <Text style={styles.text}>{label}</Text>
     </TouchableOpacity>
   );
 };

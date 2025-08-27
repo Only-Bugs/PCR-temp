@@ -1,15 +1,13 @@
 import { StyleSheet } from "react-native";
-import colors from "../../theme/colors";
 
 export default StyleSheet.create({
-  container: {
-    flexDirection: "row",
+  track: {
     width: "100%",
-    backgroundColor: colors.surfaceLight,
     borderRadius: 8,
     overflow: "hidden",
   },
   fill: {
+    height: "100%",
     borderRadius: 8,
   },
 });
