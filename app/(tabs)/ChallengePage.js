@@ -1,16 +1,15 @@
-import { ScrollView, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import CTAButton from "../components/CTAButton";
-import ChallengeCard from "../components/challenges/ChallengeCard";
-import ChallengeHeader from "../components/challenges/ChallengeHeader";
-import CreateChallengeCard from "../components/challenges/CreateChallengeCard";
-import EncouragementBanner from "../components/challenges/EncouragementBanner";
-import FeaturedChallengeCard from "../components/challenges/FeaturedChallengeCard";
-import colors from "../theme/colors";
+import { ScrollView, StyleSheet, View } from "react-native";
+import CTAButton from "../../components/CTAButton";
+import ChallengeCard from "../../components/challenges/ChallengeCard";
+import ChallengeHeader from "../../components/challenges/ChallengeHeader";
+import CreateChallengeCard from "../../components/challenges/CreateChallengeCard";
+import EncouragementBanner from "../../components/challenges/EncouragementBanner";
+import FeaturedChallengeCard from "../../components/challenges/FeaturedChallengeCard";
+import colors from "../../theme/colors";
 
 const ChallengePage = () => {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={styles.container}>
         {/* Header */}
         <ChallengeHeader />
@@ -35,13 +34,17 @@ const ChallengePage = () => {
           onPress={() => console.log("Navigate to Rewards")}
         />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+  },
+  scroll: {
+    padding: 16,
+    paddingBottom: 100,
   },
 });
 

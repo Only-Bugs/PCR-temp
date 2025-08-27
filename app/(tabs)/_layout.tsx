@@ -1,100 +1,48 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import React from "react";
-import { Platform } from "react-native";
-
-import { useColorScheme } from "@/hooks/useColorScheme";
 import colors from "../../theme/colors";
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-  const activeColor = colors.eco.green[600];
-  const inactiveColor = colors.neutral.gray600;
-
+export default function TabsLayout() {
   return (
     <Tabs
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: activeColor,
-        tabBarInactiveTintColor: inactiveColor,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: "absolute",
-            borderTopWidth: 1,
-            borderTopColor: colors.neutral.gray200,
-            backgroundColor: colors.neutral.white,
-          },
-          default: {
-            borderTopWidth: 1,
-            borderTopColor: colors.neutral.gray200,
-            backgroundColor: colors.neutral.white,
-          },
-        }),
-      }}
+        tabBarShowLabel: false, // 🚫 hide labels
+        tabBarActiveTintColor: colors.eco.green[600],
+        tabBarInactiveTintColor: colors.neutral.gray600,
+        sceneStyle: { backgroundColor: colors.background },
+        tabBarStyle: {
+          backgroundColor: colors.neutral.white,
+          borderTopColor: colors.neutral.gray200,
+          borderTopWidth: 1,
+          paddingBottom: 4,
+          paddingTop: 4,
+          height: 60,
+        },
+        tabBarIcon: ({ color, focused }) => {
+          let iconName;
+
+          if (route.name === "ProfilePage") {
+            iconName = focused ? "person" : "person-outline"; // ✅ filled when active
+          } else if (route.name === "TrackingPage") {
+            iconName = focused ? "stats-chart" : "stats-chart-outline";
+          } else if (route.name === "ChallengePage") {
+            iconName = focused ? "trophy" : "trophy-outline";
+          } else if (route.name === "CommunityPage") {
+            iconName = focused ? "people" : "people-outline";
+          } else if (route.name === "LearningPage") {
+            iconName = focused ? "book" : "book-outline";
+          }
+
+          return <Ionicons name={iconName} size={26} color={color} />;
+        },
+      })}
     >
-      <Tabs.Screen
-        name="ProfilePage"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="person-outline" size={22} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="ResultsPage"
-        options={{
-          title: "Results",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="bar-chart-outline" size={22} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="ChallengesPage"
-        options={{
-          title: "Challenges",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="trophy-outline" size={22} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="RewardsPage"
-        options={{
-          title: "Rewards",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="gift-outline" size={22} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="TrackingPage"
-        options={{
-          title: "Tracking",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="stats-chart-outline" size={22} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="CommunityPage"
-        options={{
-          title: "Community",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="people-outline" size={22} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="LearningPage"
-        options={{
-          title: "Learning",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="book-outline" size={22} color={color} />
-          ),
-        }}
-      />
+      <Tabs.Screen name="ProfilePage" />
+      <Tabs.Screen name="TrackingPage" />
+      <Tabs.Screen name="ChallengePage" />
+      <Tabs.Screen name="CommunityPage" />
+      <Tabs.Screen name="LearningPage" />
     </Tabs>
   );
 }
