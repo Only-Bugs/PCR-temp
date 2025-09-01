@@ -27,7 +27,7 @@ const WeeklySummary = ({ total, baseline }) => {
         <View style={{ flex: 1 }}>
           <Text style={styles.progressTitle}>Great Progress!</Text>
           <Text style={styles.progressText}>
-            You saved {saved}kg CO₂ this week compared to last week 🎉
+            You saved {saved}kg CO₂ this week compared to last week
           </Text>
         </View>
       </View>

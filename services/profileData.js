@@ -44,7 +44,7 @@ export const avatar = {
   badge: { icon: "star", color: "#FFC107" },
   title: "Your Green Guardian",
   message:
-    "Great job! Your avatar is growing greener every day. Keep up the sustainable choices! 🌱",
+    "Great job! Your avatar is growing greener every day. Keep up the sustainable choices!",
 };
 
 export const monthlySnapshot = {
@@ -76,7 +76,7 @@ export const monthlySnapshot = {
     icon: "emoji-events",
     color: "purple",
     text: "You’re greener than 65% of users in Melbourne",
-    highlight: "65%",
+    // highlight: "65%",
   },
 };
 

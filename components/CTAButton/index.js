@@ -1,64 +1,75 @@
-import { MaterialIcons } from "@expo/vector-icons";
+/**
+ * @fileoverview CTAButton component for primary actions.
+ * Supports gradient (enabled) and outline (disabled) states.
+ */
+
 import { LinearGradient } from "expo-linear-gradient";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity } from "react-native";
+import colors from "../../theme/colors";
 import styles from "./styles";
 
+/**
+ * @component CTAButton
+ * @param {Object} props - Component props
+ * @param {string} props.label - Text displayed inside the button
+ * @param {Function} props.onPress - Callback when button is pressed
+ * @param {boolean} [props.disabled=false] - If true, button is non-interactive
+ * @param {string} [props.variant="gradient"] - Button style variant
+ * @returns {JSX.Element}
+ */
 const CTAButton = ({
   label,
   onPress,
-  variant = "primary",
-  iconLeft,
-  iconRight,
+  disabled = false,
+  variant = "gradient",
 }) => {
-  const renderContent = (textStyle) => (
-    <View style={styles.content}>
-      {iconLeft && (
-        <MaterialIcons
-          name={iconLeft}
-          size={20}
-          color={textStyle.color}
-          style={styles.iconLeft}
-        />
-      )}
-      <Text style={[styles.text, textStyle]}>{label}</Text>
-      {iconRight && (
-        <MaterialIcons
-          name={iconRight}
-          size={20}
-          color={textStyle.color}
-          style={styles.iconRight}
-        />
-      )}
-    </View>
-  );
+  if (disabled) {
+    const outlineStyles =
+      variant === "gradient"
+        ? {
+            borderColor: colors.eco.purple,
+            textColor: colors.eco.purple,
+          }
+        : {
+            borderColor: colors.eco.green[500],
+            textColor: colors.eco.green[500],
+          };
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.outlineButton,
+          { borderColor: outlineStyles.borderColor },
+        ]}
+        disabled
+      >
+        <Text
+          style={[styles.outlineButtonText, { color: outlineStyles.textColor }]}
+        >
+          {label}
+        </Text>
+      </TouchableOpacity>
+    );
+  }
 
   if (variant === "gradient") {
     return (
-      <TouchableOpacity
-        onPress={onPress}
-        activeOpacity={0.8}
-        style={styles.fullWidth}
-      >
+      <TouchableOpacity onPress={onPress} style={styles.buttonWrapper}>
         <LinearGradient
-          colors={["#8B5CF6", "#EC4899"]} // purple → pink
+          colors={[colors.eco.purple, colors.eco.blue]}
           start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[styles.button, styles.gradient]}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientButton}
         >
-          {renderContent({ color: "white" })}
+          <Text style={styles.gradientButtonText}>{label}</Text>
         </LinearGradient>
       </TouchableOpacity>
     );
   }
 
-  // primary / outline
   return (
-    <TouchableOpacity
-      style={[styles.button, styles[variant]]}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      {renderContent(styles[`${variant}Text`])}
+    <TouchableOpacity onPress={onPress} style={styles.defaultButton}>
+      <Text style={styles.defaultButtonText}>{label}</Text>
     </TouchableOpacity>
   );
 };

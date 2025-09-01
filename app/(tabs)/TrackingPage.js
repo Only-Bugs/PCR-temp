@@ -4,7 +4,6 @@ import colors from "../../theme/colors";
 import CTAButton from "../../components/CTAButton";
 import PageHeader from "../../components/PageHeader";
 import ActivityCard from "../../components/tracking/ActivityCard";
-import ImpactChart from "../../components/tracking/ImpactChart";
 
 import WeeklySummary from "../../components/tracking/WeeklySummary";
 
@@ -16,7 +15,7 @@ const TrackingPage = () => {
       <ScrollView contentContainerStyle={styles.container}>
         <PageHeader title="Tracking" />
 
-        <ImpactChart />
+        {/* <ImpactChart /> */}
 
         {/* Today’s activities */}
         <Text style={styles.sectionTitle}>Log Today’s Activities</Text>

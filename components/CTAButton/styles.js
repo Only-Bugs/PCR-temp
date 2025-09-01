@@ -1,49 +1,55 @@
+/**
+ * @fileoverview Styles for CTAButton component.
+ */
+
 import { StyleSheet } from "react-native";
 import colors from "../../theme/colors";
 
+/**
+ * @constant {object} styles
+ * @description Style definitions for CTAButton states.
+ */
 export default StyleSheet.create({
-  button: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  content: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  text: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  // Variants
-  primary: {
-    backgroundColor: colors.eco.green[600],
-  },
-  primaryText: {
-    color: colors.neutral.white,
-  },
-  outline: {
-    borderWidth: 1,
-    borderColor: colors.eco.green[600],
-    backgroundColor: "transparent",
-  },
-  outlineText: {
-    color: colors.eco.green[600],
-  },
-  gradient: {
-    borderRadius: 12,
-  },
-  // Full-width wrapper for gradient
-  fullWidth: {
+  buttonWrapper: {
     width: "100%",
   },
-  iconLeft: {
-    marginRight: 8,
+
+  gradientButton: {
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
   },
-  iconRight: {
-    marginLeft: 8,
+
+  gradientButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.neutral.white,
+  },
+
+  defaultButton: {
+    backgroundColor: colors.eco.green[500],
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+
+  defaultButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.neutral.white,
+  },
+
+  outlineButton: {
+    width: "100%",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    borderWidth: 2,
+    backgroundColor: colors.neutral.white,
+  },
+
+  outlineButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
   },
 });

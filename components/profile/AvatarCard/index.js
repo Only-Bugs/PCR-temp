@@ -10,7 +10,7 @@ const AvatarCard = ({ avatar = {} }) => {
     image,
     status = "Growing!",
     title = "Your Green Guardian",
-    message = "Great job! Your avatar is growing greener every day. Keep up the sustainable choices! 🌱",
+    message = "Great job! Your avatar is growing greener every day. Keep up the sustainable choices!",
   } = avatar;
   return (
     <LinearGradient

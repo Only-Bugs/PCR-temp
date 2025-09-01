@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Tab layout configuration.
+ * Customizes tab bar icons, colors, and labels for main pages.
+ */
+
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import colors from "../../theme/colors";
@@ -7,7 +12,6 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarShowLabel: false, // 🚫 hide labels
         tabBarActiveTintColor: colors.eco.green[600],
         tabBarInactiveTintColor: colors.neutral.gray600,
         sceneStyle: { backgroundColor: colors.background },
@@ -22,27 +26,47 @@ export default function TabsLayout() {
         tabBarIcon: ({ color, focused }) => {
           let iconName;
 
-          if (route.name === "ProfilePage") {
-            iconName = focused ? "person" : "person-outline"; // ✅ filled when active
-          } else if (route.name === "TrackingPage") {
-            iconName = focused ? "stats-chart" : "stats-chart-outline";
-          } else if (route.name === "ChallengePage") {
-            iconName = focused ? "trophy" : "trophy-outline";
-          } else if (route.name === "CommunityPage") {
-            iconName = focused ? "people" : "people-outline";
-          } else if (route.name === "LearningPage") {
-            iconName = focused ? "book" : "book-outline";
+          switch (route.name) {
+            case "ProfilePage":
+              iconName = focused ? "person" : "person-outline";
+              break;
+            case "TrackingPage":
+              iconName = focused ? "stats-chart" : "stats-chart-outline";
+              break;
+            case "ChallengePage":
+              iconName = focused ? "trophy" : "trophy-outline";
+              break;
+            case "CommunityPage":
+              iconName = focused ? "people" : "people-outline";
+              break;
+            case "LearningPage":
+              iconName = focused ? "book" : "book-outline";
+              break;
+            default:
+              iconName = "ellipse-outline";
           }
 
-          return <Ionicons name={iconName} size={26} color={color} />;
+          return (
+            <Ionicons
+              name={iconName as keyof typeof Ionicons.glyphMap}
+              size={26}
+              color={color}
+            />
+          );
         },
       })}
     >
-      <Tabs.Screen name="ProfilePage" />
-      <Tabs.Screen name="TrackingPage" />
-      <Tabs.Screen name="ChallengePage" />
-      <Tabs.Screen name="CommunityPage" />
-      <Tabs.Screen name="LearningPage" />
+      <Tabs.Screen name="ProfilePage" options={{ tabBarLabel: "Profile" }} />
+      <Tabs.Screen name="TrackingPage" options={{ tabBarLabel: "Tracking" }} />
+      <Tabs.Screen
+        name="ChallengePage"
+        options={{ tabBarLabel: "Challenges" }}
+      />
+      <Tabs.Screen
+        name="CommunityPage"
+        options={{ tabBarLabel: "Community" }}
+      />
+      <Tabs.Screen name="LearningPage" options={{ tabBarLabel: "Learning" }} />
     </Tabs>
   );
 }

@@ -56,7 +56,7 @@ const MonthlySnapshot = ({ title, performance, sources, tip, badge }) => {
         <MaterialIcons name={badge.icon} size={20} color={badge.color} />
         <Text style={styles.badgeText}>
           {badge.text.replace(badge.highlight, "")}
-          <Text style={styles.highlight}>{badge.highlight}</Text>
+          {/* <Text style={styles.highlight}>{badge.highlight}</Text> */}
         </Text>
       </View>
     </View>

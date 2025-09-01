@@ -7,15 +7,15 @@ export const achievement = {
 };
 
 export const badges = [
-  {
-    id: 1,
-    title: "Eco Warrior",
-    level: "Level 3",
-    icon: "leaf",
-    color: "#22C55E",
-    locked: false,
-    progress: 1,
-  },
+  // {
+  //   id: 1,
+  //   title: "Eco Warrior",
+  //   level: "Level 3",
+  //   icon: "leaf",
+  //   color: "#22C55E",
+  //   locked: false,
+  //   progress: 1,
+  // },
   {
     id: 2,
     title: "Recycler Pro",
@@ -45,15 +45,6 @@ export const badges = [
   },
   {
     id: 5,
-    title: "Water Saver",
-    level: "Complete water challenge",
-    icon: "water",
-    color: "#0EA5E9",
-    locked: false,
-    progress: 0.3,
-  },
-  {
-    id: 6,
     title: "Water Saver",
     level: "Complete water challenge",
     icon: "water",

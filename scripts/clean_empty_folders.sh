@@ -1,6 +1,6 @@
 #!/bin/zsh
 
-# Root directory: PCR folder (relative to where you run the script)
+# Root directory: Verde folder (relative to where you run the script)
 ROOT_DIR="."
 
 echo "🔍 Scanning for empty folders under: $ROOT_DIR"
