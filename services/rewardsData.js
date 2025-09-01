@@ -69,17 +69,24 @@ export const vouchers = [
     title: "EcoStore Coupon",
     subtitle: "10% off eco-friendly products",
     expiry: "Valid until 30 Nov 2025",
+    icon: "storefront", // MaterialIcons name
+    color: "#22C55E", // green
   },
   {
     id: 2,
     title: "Local Grocery Voucher",
     subtitle: "$20 off your next purchase",
     expiry: "Valid until 15 Dec 2025",
+    icon: "shopping-cart", // MaterialIcons name
+    color: "#F97316", // orange
   },
 ];
 
 export const nextReward = {
-  title: "Next Reward Awaits!",
-  message: "Complete 2 more challenges to unlock a Grocery Coupon.",
+  title: "Earn Your Next Reward",
+  message:
+    "Complete any 2 challenges this week to unlock your next badge and earn more vouchers!",
   cta: "Go to Challenges",
+  icon: "lightbulb", // MaterialIcons name
+  color: "#F59E0B", // orange
 };

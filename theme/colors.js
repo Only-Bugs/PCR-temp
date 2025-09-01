@@ -7,8 +7,8 @@ const colors = {
       200: "#bbf7d0",
       300: "#86efac",
       400: "#4ade80",
-      500: "#22c55e",
-      600: "#16a34a",
+      500: "#22c55e", // base eco green
+      600: "#16a34a", // strong eco green
       700: "#15803d",
       800: "#166534",
       900: "#14532d",
@@ -26,10 +26,19 @@ const colors = {
     gray900: "#111827",
   },
   gradients: {
-    green: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-    purple: "linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)",
+    green: ["#10b981", "#059669"], // ✅ switched to array for LinearGradient
+    purple: ["#8b5cf6", "#7c3aed"],
   },
-  background: "#fff",
+
+  // ✅ Semantic tokens
+  textPrimary: "#111827", // neutral.gray900
+  textSecondary: "#4b5563", // neutral.gray600
+  error: "#ef4444", // Tailwind red-500
+  info: "#3b82f6", // eco.blue
+  success: "#22c55e", // eco.green[500]
+  warning: "#f59e0b", // eco.yellow
+
+  background: "#ffffff", // neutral.white
 };
 
 export default colors;

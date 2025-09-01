@@ -1,7 +1,8 @@
 import { ScrollView, StyleSheet, View } from "react-native";
-import CTAButton from "../../components/CTAButton";
 import ChallengeCard from "../../components/challenges/ChallengeCard";
-import ChallengeHeader from "../../components/challenges/ChallengeHeader";
+import CTAButton from "../../components/CTAButton";
+import PageHeader from "../../components/PageHeader";
+
 import CreateChallengeCard from "../../components/challenges/CreateChallengeCard";
 import EncouragementBanner from "../../components/challenges/EncouragementBanner";
 import FeaturedChallengeCard from "../../components/challenges/FeaturedChallengeCard";
@@ -12,7 +13,7 @@ const ChallengePage = () => {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={styles.container}>
         {/* Header */}
-        <ChallengeHeader />
+        <PageHeader title="Challenges" />
 
         {/* Featured Challenge */}
         <FeaturedChallengeCard />

@@ -3,46 +3,47 @@ import colors from "../../theme/colors";
 
 export default StyleSheet.create({
   button: {
-    padding: 16,
-    marginVertical: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     borderRadius: 12,
     alignItems: "center",
+    justifyContent: "center",
   },
-
-  // Primary (solid green)
+  content: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  // Variants
   primary: {
     backgroundColor: colors.eco.green[600],
   },
   primaryText: {
     color: colors.neutral.white,
   },
-
-  // Outline (white background, green border)
   outline: {
-    backgroundColor: "transparent",
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: colors.eco.green[600],
-    borderRadius: 20, // pill shape
-    paddingHorizontal: 20,
-    paddingVertical: 6,
+    backgroundColor: "transparent",
   },
   outlineText: {
     color: colors.eco.green[600],
-    fontWeight: "600",
   },
-
-  // OutlineLight (transparent, white border → for dark/colored backgrounds)
-  outlineLight: {
-    backgroundColor: "transparent",
-    borderWidth: 2,
-    borderColor: colors.neutral.white,
+  gradient: {
+    borderRadius: 12,
   },
-  outlineLightText: {
-    color: colors.neutral.white,
+  // Full-width wrapper for gradient
+  fullWidth: {
+    width: "100%",
   },
-
-  text: {
-    fontSize: 15,
-    fontWeight: "600",
+  iconLeft: {
+    marginRight: 8,
+  },
+  iconRight: {
+    marginLeft: 8,
   },
 });

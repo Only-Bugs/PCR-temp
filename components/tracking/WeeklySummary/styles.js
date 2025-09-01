@@ -3,24 +3,60 @@ import colors from "../../../theme/colors";
 
 export default StyleSheet.create({
   card: {
-    backgroundColor: colors.neutral.gray100,
+    backgroundColor: colors.eco.green[50], // ✅ light green tint background
     borderRadius: 16,
     padding: 16,
-    marginVertical: 20,
+    marginTop: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.04, // ✅ subtle shadow
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
   },
-  title: {
-    fontSize: 14,
+  header: {
+    fontSize: 16,
     fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 6,
     color: colors.textPrimary,
   },
-  value: {
+  total: {
     fontSize: 22,
     fontWeight: "700",
     color: colors.eco.green[600],
-    marginVertical: 4,
+    textAlign: "center",
   },
-  subtitle: {
+  baseline: {
     fontSize: 13,
     color: colors.textSecondary,
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  progressBox: {
+    flexDirection: "row",
+    alignItems: "flex-start", // ✅ align icon to text top
+    backgroundColor: colors.neutral.white, // ✅ subtle white card
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
+  icon: {
+    marginRight: 8,
+    marginTop: 2, // ✅ aligns icon with text
+  },
+  progressTitle: {
+    fontSize: 14,
+    fontWeight: "600", // ✅ medium-bold (not too heavy)
+    marginBottom: 2,
+    color: colors.textPrimary,
+  },
+  progressText: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    lineHeight: 18,
   },
 });

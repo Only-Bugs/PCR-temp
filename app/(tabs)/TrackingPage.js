@@ -1,10 +1,11 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import colors from "../../theme/colors";
 
 import CTAButton from "../../components/CTAButton";
+import PageHeader from "../../components/PageHeader";
 import ActivityCard from "../../components/tracking/ActivityCard";
 import ImpactChart from "../../components/tracking/ImpactChart";
-import TrackingHeader from "../../components/tracking/TrackingHeader";
+
 import WeeklySummary from "../../components/tracking/WeeklySummary";
 
 import { activities, weeklyImpact } from "../../services/trackingData";
@@ -13,11 +14,12 @@ const TrackingPage = () => {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={styles.container}>
-        <TrackingHeader />
+        <PageHeader title="Tracking" />
 
         <ImpactChart />
 
         {/* Today’s activities */}
+        <Text style={styles.sectionTitle}>Log Today’s Activities</Text>
         {activities.map((item) => (
           <ActivityCard
             key={item.id}
@@ -47,6 +49,13 @@ const TrackingPage = () => {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.textPrimary,
+    marginBottom: 12,
+    marginTop: 16,
   },
 });
 

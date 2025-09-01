@@ -4,9 +4,9 @@ import colors from "../../../theme/colors";
 export default StyleSheet.create({
   card: {
     backgroundColor: colors.neutral.white,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 14,
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 6,
@@ -16,7 +16,12 @@ export default StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  icon: {
+  iconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
   },
   title: {
@@ -28,9 +33,19 @@ export default StyleSheet.create({
     fontSize: 13,
     color: colors.textSecondary,
   },
+  right: {
+    alignItems: "flex-end",
+    justifyContent: "center",
+  },
   value: {
     fontSize: 14,
     fontWeight: "600",
     color: colors.success,
+  },
+  edit: {
+    fontSize: 13,
+    color: colors.eco.blue,
+    fontWeight: "500",
+    marginTop: 4,
   },
 });

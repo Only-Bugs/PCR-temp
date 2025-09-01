@@ -1,28 +1,31 @@
 import { StyleSheet } from "react-native";
-import colors from "../../../theme/colors";
+import colors from "../../theme/colors";
 
-export default StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 16,
   },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "700",
-    color: colors.textPrimary,
+    color: colors.neutral.gray900,
   },
-  bellWrapper: {
+  notification: {
     position: "relative",
+    padding: 8,
   },
-  redDot: {
+  badge: {
     position: "absolute",
-    top: 2,
-    right: 2,
+    top: 6,
+    right: 6,
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: colors.error || "red",
+    backgroundColor: colors.error,
   },
 });
+
+export default styles;

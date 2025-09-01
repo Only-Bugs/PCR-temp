@@ -1,49 +1,26 @@
-import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Image, Text, View } from "react-native";
+import { Text } from "react-native";
 import colors from "../../../theme/colors";
 import styles from "./styles";
 
-const AvatarCard = () => {
+import AvatarCircle from "../AvatarCircle/index";
+
+const AvatarCard = ({ avatar = {} }) => {
+  const {
+    image,
+    status = "Growing!",
+    title = "Your Green Guardian",
+    message = "Great job! Your avatar is growing greener every day. Keep up the sustainable choices! 🌱",
+  } = avatar;
   return (
     <LinearGradient
-      colors={[colors.successTint, "#D2F1DD"]}
+      colors={[colors.eco.green[50], colors.eco.green[100]]}
       style={styles.card}
     >
-      {/* Avatar wrapper */}
-      <View style={styles.avatarWrapper}>
-        <LinearGradient
-          colors={["#43A047", "#66BB6A"]} // radial-style green
-          style={styles.avatarCircle}
-        >
-          {/* Tree Image (replace with local asset later) */}
-          <Image
-            source={{
-              uri: "https://img.icons8.com/emoji/96/deciduous-tree.png",
-            }}
-            style={styles.treeImage}
-          />
+      <AvatarCircle image={image} status={status} />
 
-          {/* Status pill */}
-          <View style={styles.statusPill}>
-            <Text style={styles.statusText}>Growing!</Text>
-          </View>
-
-          {/* Yellow star badge */}
-          <View style={styles.badge}>
-            <MaterialIcons name="star" size={18} color="#FFC107" />
-          </View>
-        </LinearGradient>
-      </View>
-
-      {/* Title */}
-      <Text style={styles.title}>Your Green Guardian</Text>
-
-      {/* Description */}
-      <Text style={styles.message}>
-        Great job! Your avatar is growing greener every day. Keep up the
-        sustainable choices! 🌱
-      </Text>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.message}>{message}</Text>
     </LinearGradient>
   );
 };
