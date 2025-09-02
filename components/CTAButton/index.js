@@ -1,75 +1,67 @@
-/**
- * @fileoverview CTAButton component for primary actions.
- * Supports gradient (enabled) and outline (disabled) states.
- */
-
-import { LinearGradient } from "expo-linear-gradient";
-import { Text, TouchableOpacity } from "react-native";
-import colors from "../../theme/colors";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { useHapticsUtils } from "../../utils/haptics";
 import styles from "./styles";
 
 /**
- * @component CTAButton
- * @param {Object} props - Component props
- * @param {string} props.label - Text displayed inside the button
- * @param {Function} props.onPress - Callback when button is pressed
- * @param {boolean} [props.disabled=false] - If true, button is non-interactive
- * @param {string} [props.variant="gradient"] - Button style variant
- * @returns {JSX.Element}
+ * CTAButton component for primary actions.
+ *
+ * @param {Object} props
+ * @param {string} props.label - Text inside the button.
+ * @param {Function} props.onPress - Press handler.
+ * @param {boolean} [props.disabled=false] - Disable interaction.
+ * @param {"filled"|"outline"} [props.variant="filled"] - Visual style.
+ * @param {JSX.Element} [props.iconLeft] - Optional left icon.
+ * @param {JSX.Element} [props.iconRight] - Optional right icon.
+ * @param {boolean} [props.loading=false] - Show spinner instead of text.
  */
 const CTAButton = ({
-  label,
+  label = "",
   onPress,
   disabled = false,
-  variant = "gradient",
+  variant = "filled",
+  iconLeft,
+  iconRight,
+  loading = false,
 }) => {
-  if (disabled) {
-    const outlineStyles =
-      variant === "gradient"
-        ? {
-            borderColor: colors.eco.purple,
-            textColor: colors.eco.purple,
-          }
-        : {
-            borderColor: colors.eco.green[500],
-            textColor: colors.eco.green[500],
-          };
+  const { hapticPress } = useHapticsUtils();
 
-    return (
-      <TouchableOpacity
-        style={[
-          styles.outlineButton,
-          { borderColor: outlineStyles.borderColor },
-        ]}
-        disabled
-      >
-        <Text
-          style={[styles.outlineButtonText, { color: outlineStyles.textColor }]}
-        >
-          {label}
-        </Text>
-      </TouchableOpacity>
-    );
-  }
+  const handlePress = async () => {
+    if (loading || disabled) return;
+    await hapticPress();
+    onPress?.();
+  };
 
-  if (variant === "gradient") {
-    return (
-      <TouchableOpacity onPress={onPress} style={styles.buttonWrapper}>
-        <LinearGradient
-          colors={[colors.eco.purple, colors.eco.blue]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradientButton}
-        >
-          <Text style={styles.gradientButtonText}>{label}</Text>
-        </LinearGradient>
-      </TouchableOpacity>
-    );
-  }
+  const isFilled = variant === "filled";
 
   return (
-    <TouchableOpacity onPress={onPress} style={styles.defaultButton}>
-      <Text style={styles.defaultButtonText}>{label}</Text>
+    <TouchableOpacity
+      onPress={handlePress}
+      disabled={disabled || loading}
+      style={[
+        styles.baseButton,
+        isFilled ? styles.filledButton : styles.outlineButton,
+        (disabled || loading) && styles.disabledButton,
+      ]}
+    >
+      {loading ? (
+        <ActivityIndicator
+          size="small"
+          color={isFilled ? "white" : styles.outlineText.color}
+        />
+      ) : (
+        <>
+          {iconLeft && <View style={styles.iconLeft}>{iconLeft}</View>}
+          <Text
+            style={[
+              styles.baseText,
+              isFilled ? styles.filledText : styles.outlineText,
+            ]}
+          >
+            {label}
+          </Text>
+          {iconRight && <View style={styles.iconRight}>{iconRight}</View>}
+        </>
+      )}
     </TouchableOpacity>
   );
 };

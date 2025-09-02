@@ -1,31 +1,31 @@
+/**
+ * @fileoverview Styles for PageHeader component.
+ */
+
 import { StyleSheet } from "react-native";
 import colors from "../../theme/colors";
 
-const styles = StyleSheet.create({
+/**
+ * Styles for PageHeader layout, title, and actions.
+ */
+export default StyleSheet.create({
   container: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: colors.neutral.white,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "700",
-    color: colors.neutral.gray900,
+    color: colors.textPrimary,
   },
-  notification: {
-    position: "relative",
-    padding: 8,
+  actions: {
+    flexDirection: "row",
   },
-  badge: {
-    position: "absolute",
-    top: 6,
-    right: 6,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.error,
+  iconButton: {
+    marginLeft: 16,
   },
 });
-
-export default styles;
