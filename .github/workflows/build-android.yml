@@ -39,14 +39,12 @@ jobs:
           url=$(npx eas build:list --limit=1 --json | jq -r '.[0].artifacts.buildUrl')
           echo "APK_URL=$url" >> $GITHUB_ENV
 
-      - name: Send Email with APK Link
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.SMTP_USER }}
-          password: ${{ secrets.SMTP_PASS }}
-          subject: "✅ New Android Build Ready"
-          to: pshashank0502@gmail.com
-          from: CI/CD Bot <noreply@github.com>
-          body: "Your APK is ready: ${{ env.APK_URL }}"
+      - name: Send Build Link to Discord
+        run: |
+          payload=$(jq -n --arg url "$APK_URL" \
+            '{username: "CI/CD Bot", content: "New Android Build Ready!\nDownload here: \($url)"}')
+          curl -H "Content-Type: application/json" \
+            -d "$payload" \
+            ${{ secrets.DISCORD_WEBHOOK_URL }}
+        env:
+          APK_URL: ${{ env.APK_URL }}
