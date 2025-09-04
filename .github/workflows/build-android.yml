@@ -1,50 +1,65 @@
-name: Build Android App
+name: Expo EAS Build (Android Only)
 
 on:
   push:
-    branches: [dev, main]
+    branches:
+      - main
+      - dev
 
 jobs:
   build-android:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      # 1. Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v3
 
+      # 2. Setup Node with cache
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
+          cache: 'npm'
 
+      # 3. Cache extra dirs (expo, npm, gradle)
+      - name: Cache Expo & Gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.expo
+            ~/.npm/_npx
+            ~/.gradle/caches
+          key: ${{ runner.os }}-expo-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-expo-
+
+      # 4. Install deps
       - name: Install dependencies
-        run: npm install
-        
-      - name: Install EAS CLI
+        run: npm ci
+
+      # 5. Setup EAS CLI
+      - name: Setup EAS
         run: npm install -g eas-cli
 
-      - name: Verify Expo Auth
-        run: npx eas whoami
+      # 6. Run EAS build (Android only)
+      - name: Build Android APK
+        id: eas-build
+        run: |
+          BUILD_URL=$(eas build --platform android --profile preview --non-interactive --json | jq -r '.[0].webUrl')
+          echo "build_url=$BUILD_URL" >> $GITHUB_OUTPUT
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build Android APK with EAS
-        run: npm run build-android
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Get latest build URL
-        id: get-url
-        run: |
-          url=$(npx eas build:list --limit=1 --json | jq -r '.[0].artifacts.buildUrl')
-          echo "APK_URL=$url" >> $GITHUB_ENV
-
-      - name: Send Build Link to Discord
-        run: |
-          payload=$(jq -n --arg url "$APK_URL" \
-            '{username: "CI/CD Bot", content: "New Android Build Ready!\nDownload here: \($url)"}')
-          curl -H "Content-Type: application/json" \
-            -d "$payload" \
-            ${{ secrets.DISCORD_WEBHOOK_URL }}
-        env:
-          APK_URL: ${{ env.APK_URL }}
+      # 7. Send Discord notification
+      - name: Discord Notification
+        if: always()
+        uses: Ilshidur/action-discord@master
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          args: |
+            📦 *Verde Android Build Complete!*
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Status: ${{ job.status }}
+            🔗 [Download here](${{ steps.eas-build.outputs.build_url }})
