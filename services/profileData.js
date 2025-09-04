@@ -39,7 +39,7 @@ export const avatar = {
     card: ["#A7F3D0", "#D2F1DD"], // card gradient
     circle: ["#43A047", "#66BB6A"], // avatar circle gradient
   },
-  image: null, // placeholder
+  image: "../assets/images/leaves.png", // placeholder
   status: "Growing!",
   badge: { icon: "star", color: "#FFC107" },
   title: "Your Green Guardian",

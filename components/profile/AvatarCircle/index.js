@@ -4,7 +4,7 @@ import { Image, Text, View } from "react-native";
 import colors from "../../../theme/colors";
 import styles from "./styles";
 
-import defaultAvatar from "../../../assets/images/react-logo.png";
+import defaultAvatar from "../../../assets/images/tree.png";
 
 const AvatarCircle = ({ image, status }) => {
   return (

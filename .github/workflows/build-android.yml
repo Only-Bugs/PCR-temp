@@ -1,0 +1,45 @@
+name: Build Android App
+
+on:
+  push:
+    branches: [dev, main]
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Authenticate with Expo
+        run: npx expo login --token ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build Android APK with EAS
+        run: npm run build-android
+
+      - name: Get latest build URL
+        id: get-url
+        run: |
+          url=$(npx eas build:list --limit=1 --json | jq -r '.[0].artifacts.buildUrl')
+          echo "APK_URL=$url" >> $GITHUB_ENV
+
+      - name: Send Email with APK Link
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: "✅ New Android Build Ready"
+          to: pshashank0502@gmail.com
+          from: CI/CD Bot <noreply@github.com>
+          body: "Your APK is ready: ${{ env.APK_URL }}"
