@@ -20,11 +20,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Authenticate with Expo
-        run: npx expo login --token ${{ secrets.EXPO_TOKEN }}
+      - name: Verify Expo Auth
+        run: npx eas whoami
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build Android APK with EAS
         run: npm run build-android
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: Get latest build URL
         id: get-url
