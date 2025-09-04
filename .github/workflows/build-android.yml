@@ -56,7 +56,7 @@ jobs:
         if: always()
         uses: Ilshidur/action-discord@master
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
           args: |
             📦 *Verde Android Build Complete!*
             Branch: ${{ github.ref_name }}
