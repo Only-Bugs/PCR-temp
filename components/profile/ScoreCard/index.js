@@ -1,14 +1,20 @@
-import BaseLineCard from "./BaseLineCard";
+/**
+ * @fileoverview ScoreCard component.
+ * Simplified to only render the CarbonCard.
+ */
+
 import CarbonCard from "./CarbonCard";
 
-const ScoreCard = ({ variant, data }) => {
-  if (variant === "baseline") {
-    return <BaseLineCard data={data} />;
-  }
-  if (variant === "carbon") {
-    return <CarbonCard data={data} />;
-  }
-  return null;
+/**
+ * ScoreCard wrapper for carbon points.
+ *
+ * @param {Object} props
+ * @param {{ label: string, value: number|string, unit?: string }} props.data - Data for carbon score.
+ * @returns {JSX.Element}
+ */
+const ScoreCard = ({ data }) => {
+  if (!data) return null;
+  return <CarbonCard data={data} />;
 };
 
 export default ScoreCard;

@@ -1,4 +1,6 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 import CTAButton from "../../components/CTAButton";
@@ -8,39 +10,62 @@ import MonthlySnapshot from "../../components/profile/MonthlySnapshot";
 import ScoreCard from "../../components/profile/ScoreCard";
 import colors from "../../theme/colors";
 
-import {
-  avatar,
-  monthlySnapshot,
-  scoreCards,
-} from "../../services/profileData";
+import { avatar, monthlySnapshot } from "../../services/profileData";
 
 const ProfilePage = () => {
+  const [user, setUser] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem("user");
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          console.log("[ProfilePage] Loaded user from storage:", parsed);
+          setUser(parsed);
+        }
+      } catch (err) {
+        console.log("[ProfilePage] Failed to load user:", err.message);
+      }
+    };
+    fetchUser();
+  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Profile Header */}
         <PageHeader
           title="My Profile"
-          onNotificationPress={() => console.log("Notifications pressed")}
+          onNotificationPress={() => console.log("Notifications Pressed")}
+          onSettingsPress={() => router.push("/SettingsPage")}
+          showSettings={true}
         />
 
-        {/* Score Cards */}
-        <ScoreCard variant="carbon" data={scoreCards.carbon} />
+        {/* Score Card (Carbon Points) */}
+        {user && (
+          <ScoreCard
+            data={{
+              title: "Carbon Points",
+              value: user.carbonPoints,
+              progress: user.carbonPoints / 1000,
+              icon: { name: "eco" },
+              level: {
+                icon: { name: "star" },
+                text:
+                  user.user_carbon_point >= 500
+                    ? "Eco Warrior"
+                    : "Getting Started",
+              },
+            }}
+          />
+        )}
 
-        {/* Avatar */}
         <AvatarCard {...avatar} />
-
-        {/* Monthly Snapshot */}
         <MonthlySnapshot {...monthlySnapshot} />
 
-        {/* CTA */}
         <CTAButton
           label="View My Rewards"
-          variant="gradient"
-          iconLeft="card-giftcard"
-          iconRight="arrow-forward-ios"
           onPress={() => router.push("/RewardsPage")}
         />
       </ScrollView>

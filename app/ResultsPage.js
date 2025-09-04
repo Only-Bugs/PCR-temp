@@ -1,0 +1,111 @@
+/**
+ * @fileoverview ResultsPage.
+ * Displays the user’s sustainability results after onboarding.
+ * Includes daily footprint, comparison to national average,
+ * persona, tip of the day, and a CTA button to continue.
+ */
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+
+import CTAButton from "../components/CTAButton";
+import {
+  ComparedToAverageCard,
+  DailyFootprintCard,
+  PersonaCard,
+  TipOfTheDayCard,
+} from "../components/results";
+import colors from "../theme/colors";
+
+/**
+ * ResultsPage component.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered ResultsPage screen.
+ *
+ * @description
+ * - Fetches `baseline` value from AsyncStorage (saved during onboarding).
+ * - Displays results using modular cards:
+ *   - DailyFootprintCard → shows user’s baseline.
+ *   - ComparedToAverageCard → compares user’s baseline with national average.
+ *   - PersonaCard → placeholder persona info.
+ *   - TipOfTheDayCard → static sustainability tip.
+ * - Provides a CTA button that navigates the user to `/ProfilePage`.
+ */
+export default function ResultsPage() {
+  const [baseline, setBaseline] = useState(null);
+  const nationalAverage = 8.4;
+  const router = useRouter();
+
+  /**
+   * Fetch baseline from AsyncStorage on mount.
+   * Converts stored string value into a number.
+   */
+  useEffect(() => {
+    const fetchBaseline = async () => {
+      const storedBaseline = await AsyncStorage.getItem("baseline");
+      setBaseline(storedBaseline ? parseFloat(storedBaseline) : null);
+    };
+    fetchBaseline();
+  }, []);
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Your Results</Text>
+        <Text style={styles.subtitle}>
+          Here’s your sustainability footprint
+        </Text>
+      </View>
+
+      {/* Cards */}
+      <DailyFootprintCard baseline={baseline} />
+      <ComparedToAverageCard
+        baseline={baseline}
+        nationalAverage={nationalAverage}
+      />
+      <PersonaCard />
+      <TipOfTheDayCard tip="Try using public transport twice a week instead of driving. This simple change can reduce your weekly emissions by up to 2.1 kg CO₂e!" />
+
+      {/* CTA */}
+      <View style={styles.ctaWrapper}>
+        <CTAButton
+          label="Get Started"
+          variant="filled"
+          onPress={() => router.replace("/ProfilePage")}
+        />
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: colors.neutral.white,
+  },
+  header: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: colors.textPrimary,
+    marginBottom: 6,
+    textAlign: "center",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: "center",
+  },
+  ctaWrapper: {
+    marginTop: 20,
+    marginBottom: 40,
+  },
+});
