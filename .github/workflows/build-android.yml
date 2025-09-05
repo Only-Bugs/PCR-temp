@@ -51,12 +51,27 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
+
+      - name: Download APK from Expo
+        run: |
+          BUILD_URL="${{ steps.eas-build.outputs.build_url }}"
+          echo "Downloading from $BUILD_URL"
+          curl -L "$BUILD_URL" -o app-preview.apk
+
+      # 8c. Upload as GitHub artifact
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Verde-Beta-apk
+          path: app-preview.apk
+          
       # 7. Send Discord notification
       - name: Discord Notification
         if: always()
         uses: Ilshidur/action-discord@master
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK_URL }}
           args: |
             📦 *Verde Android Build Complete!*
             Branch: ${{ github.ref_name }}
