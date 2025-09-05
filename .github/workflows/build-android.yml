@@ -46,7 +46,7 @@ jobs:
       - name: Build Android APK
         id: eas-build
         run: |
-          BUILD_URL=$(eas build --platform android --profile preview --non-interactive --json | jq -r '.[0].webUrl')
+          BUILD_URL=$(eas build --platform android --profile preview --non-interactive --json | jq -r '.[0].artifacts.buildUrl')
           echo "build_url=$BUILD_URL" >> $GITHUB_OUTPUT
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
@@ -70,7 +70,7 @@ jobs:
         if: always()
         uses: Ilshidur/action-discord@master
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           args: |
             📦 *Verde Android Build Complete!*
