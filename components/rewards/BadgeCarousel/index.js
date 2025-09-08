@@ -25,11 +25,12 @@ const chunkArray = (arr, size) => {
 
 const BadgeCarousel = ({ badges }) => {
   const [pageIndex, setPageIndex] = useState(0);
-  const pages = chunkArray(badges, 4); // ✅ 4 per page
+  const pages = chunkArray(badges, 4);
 
   return (
     <View>
       <FlatList
+        snapToAlignment="center"
         data={pages}
         keyExtractor={(_, i) => `page-${i}`}
         horizontal

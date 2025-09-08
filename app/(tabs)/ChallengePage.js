@@ -3,6 +3,7 @@ import ChallengeCard from "../../components/challenges/ChallengeCard";
 import CTAButton from "../../components/CTAButton";
 import PageHeader from "../../components/PageHeader";
 
+import { router } from "expo-router";
 import CreateChallengeCard from "../../components/challenges/CreateChallengeCard";
 import EncouragementBanner from "../../components/challenges/EncouragementBanner";
 import FeaturedChallengeCard from "../../components/challenges/FeaturedChallengeCard";
@@ -32,7 +33,7 @@ const ChallengePage = () => {
         {/* Rewards Button */}
         <CTAButton
           label="View My Rewards"
-          onPress={() => console.log("Navigate to Rewards")}
+          onPress={() => router.replace("/RewardsPage")}
         />
       </ScrollView>
     </View>

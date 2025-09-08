@@ -41,6 +41,7 @@ export default StyleSheet.create({
     color: colors.neutral.gray600,
   },
   actions: {
+    width: 75,
     justifyContent: "space-between",
     marginLeft: 12,
   },

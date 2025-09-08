@@ -1,5 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import { Text, View } from "react-native";
 import CTAButton from "../../CTAButton";
 import styles from "./styles";
@@ -27,7 +28,7 @@ const NextRewardCard = ({ title, message, cta, icon, color }) => {
       <CTAButton
         label={cta}
         variant="primary"
-        onPress={() => console.log("Go to Challenges")}
+        onPress={() => router.replace("/ChallengePage")}
       />
     </LinearGradient>
   );

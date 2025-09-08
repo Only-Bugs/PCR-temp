@@ -37,6 +37,8 @@ const WelcomePage = () => {
         onPress={() => router.push("/OnboardingPage")}
       />
 
+      {/* <CTAButton label="App" onPress={() => router.push("/ExportIconPage")} /> */}
+
       <View style={styles.infoBox}>
         <Text style={styles.infoText}>
           After completing your questionnaire, you’ll receive a unique UID to

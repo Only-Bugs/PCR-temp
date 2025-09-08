@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - backlog/*
 
 jobs:
   build-android:
@@ -72,9 +73,21 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           args: |
-            📦 *Iteration 2 
-             Verde Android Build Complete!*
-            Branch: ${{ github.ref_name }}
-            Commit: ${{ github.sha }}
-            Status: ${{ job.status }}
-            🔗 [Download here](${{ steps.eas-build.outputs.build_url }})
+            *Iteration 2 Android Build - Beta*
+            Status: **${{ job.status }}**
+
+            ━━━━━━━━━━━━━━━━━━
+            ⬇️ [Download here](${{ steps.eas-build.outputs.build_url }})
+            ━━━━━━━━━━━━━━━━━━
+
+
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+            📝 Commit: `${{ github.sha }}`
+            ✏️ Message: ${{ github.event.head_commit.message }}
+            👤 Author: ${{ github.actor }}
+            🌱 Branch: `${{ github.ref_name }}`
+            📂 Profile: preview
+            🕒 Started: ${{ github.run_started_at }}
+            🔗 Logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

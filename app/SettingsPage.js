@@ -1,26 +1,25 @@
 import { Ionicons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Alert,
-  Keyboard,
-  Modal,
   StyleSheet,
   Switch,
   Text,
-  TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import CTAButton from "../components/CTAButton";
+import LogoutModal from "../components/settings/LogoutModal";
 import SettingsCard from "../components/settings/SettingsCard";
+import SettingsIcon from "../components/settings/SettingsIcon";
 import UserInfoCard from "../components/settings/UserInfoCard";
 import { useHaptics } from "../context/HapticsContext";
 import colors from "../theme/colors";
-import { truncateEcoId } from "../utils/formatters";
 
 const SettingsPage = () => {
   const [ecoId, setEcoId] = useState(null);
@@ -30,10 +29,6 @@ const SettingsPage = () => {
   const router = useRouter();
   const { enabled, toggleHaptics } = useHaptics();
 
-  /**
-   * Fetches Eco ID from AsyncStorage on mount.
-   * @async
-   */
   useEffect(() => {
     const fetchEcoId = async () => {
       const storedEcoId = await AsyncStorage.getItem("eco_id");
@@ -42,10 +37,6 @@ const SettingsPage = () => {
     fetchEcoId();
   }, []);
 
-  /**
-   * Copies Eco ID to clipboard.
-   * @async
-   */
   const copyEcoId = async () => {
     if (ecoId) {
       await Clipboard.setStringAsync(ecoId);
@@ -53,11 +44,6 @@ const SettingsPage = () => {
     }
   };
 
-  /**
-   * Sends Eco ID to the provided email.
-   * Stub implementation for now.
-   * @async
-   */
   const sendEcoIdByEmail = async () => {
     if (!email.trim()) {
       Alert.alert("Error", "Please enter a valid email address.");
@@ -73,10 +59,6 @@ const SettingsPage = () => {
     }
   };
 
-  /**
-   * Handles logout by clearing AsyncStorage and navigating to WelcomePage.
-   * @async
-   */
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("eco_id");
@@ -89,12 +71,25 @@ const SettingsPage = () => {
     }
   };
 
+  const handleCloseLogoutModal = () => {
+    setLogoutModalVisible(false);
+    setShowEmailInput(false);
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Settings</Text>
-        <Text style={styles.subtitle}>Manage your account and preferences</Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+        </TouchableOpacity>
+
+        <View style={styles.headerText}>
+          <Text style={styles.title}>Settings</Text>
+          <Text style={styles.subtitle}>
+            Manage your account and preferences
+          </Text>
+        </View>
       </View>
 
       {/* User Information Card */}
@@ -104,12 +99,30 @@ const SettingsPage = () => {
       <SettingsCard
         title="Haptic Feedback"
         subtitle="Enable vibration for app interactions"
+        icon={
+          <LinearGradient
+            colors={["#A855F7", "#9333EA"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              width: 45,
+              height: 45,
+              borderRadius: 12,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <MaterialCommunityIcons name="vibrate" size={22} color="white" />
+          </LinearGradient>
+        }
         rightContent={<Switch value={enabled} onValueChange={toggleHaptics} />}
       />
 
+      {/* Privacy & Security */}
       <SettingsCard
         title="Privacy & Security"
         subtitle="Control your data and security settings"
+        icon={<SettingsIcon name="shield-checkmark" bgColor={colors.info} />}
         rightContent={<Text style={styles.arrow}>›</Text>}
       />
 
@@ -123,88 +136,18 @@ const SettingsPage = () => {
       />
 
       {/* Logout Guard Modal */}
-      <Modal
+      <LogoutModal
         visible={logoutModalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setLogoutModalVisible(false)}
-      >
-        <TouchableWithoutFeedback
-          onPress={() => {
-            Keyboard.dismiss();
-            setLogoutModalVisible(false);
-          }}
-        >
-          <View style={styles.modalOverlay}>
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>
-                  Don’t lose access to your account!
-                </Text>
-                <Text style={styles.modalSubtitle}>
-                  {"\n"}Tap your Eco ID to copy it, or hit the email icon and
-                  we’ll send it straight to your inbox.
-                </Text>
-
-                {/* Eco ID box */}
-                {ecoId ? (
-                  <View style={styles.ecoIdBox}>
-                    <TouchableOpacity
-                      style={{ flex: 1 }}
-                      onPress={copyEcoId}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.ecoIdValue}>
-                        {truncateEcoId(ecoId)}
-                      </Text>
-                      <Text style={styles.copyHint}>Click to copy</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.emailIconWrapper}
-                      onPress={() => setShowEmailInput(true)}
-                    >
-                      <Ionicons
-                        name="mail-outline"
-                        size={28}
-                        color={colors.eco.green[600]}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <Text style={styles.noEcoId}>No Eco ID found</Text>
-                )}
-
-                {/* Email input */}
-                {showEmailInput && (
-                  <>
-                    <TextInput
-                      style={styles.emailInput}
-                      placeholder="Enter your email to receive Eco ID"
-                      value={email}
-                      onChangeText={setEmail}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                    />
-                    <CTAButton
-                      label="Send to Email"
-                      onPress={sendEcoIdByEmail}
-                    />
-                  </>
-                )}
-
-                <View style={styles.modalActions}>
-                  <CTAButton
-                    label="Confirm Logout"
-                    variant="filled"
-                    onPress={handleLogout}
-                    style={styles.confirmBtn}
-                  />
-                </View>
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+        onClose={handleCloseLogoutModal}
+        ecoId={ecoId}
+        onCopyEcoId={copyEcoId}
+        onSendEmail={sendEcoIdByEmail}
+        showEmailInput={showEmailInput}
+        setShowEmailInput={setShowEmailInput}
+        email={email}
+        setEmail={setEmail}
+        onLogout={handleLogout}
+      />
     </View>
   );
 };
@@ -216,21 +159,28 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 24,
+  },
+  backBtn: {
+    marginRight: 12,
+    padding: 4,
+  },
+  headerText: {
+    flex: 1,
   },
   title: {
     fontSize: 22,
     fontWeight: "700",
     color: colors.textPrimary,
-    marginBottom: 6,
-    textAlign: "center",
+    marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
     color: colors.textSecondary,
-    textAlign: "center",
   },
+
   arrow: {
     fontSize: 20,
     color: colors.textSecondary,

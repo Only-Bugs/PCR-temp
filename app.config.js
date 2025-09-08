@@ -15,7 +15,7 @@ export default {
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
-        backgroundColor: "#ffffff",
+        backgroundColor: "#16a34a",
       },
       edgeToEdgeEnabled: true,
       package: "com.spra0063.Verde",
