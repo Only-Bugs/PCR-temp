@@ -8,7 +8,9 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
 import colors from "../../../theme/colors";
 import BoolInput from "../QuestionTypes/BoolInput";
+import EnumRangeInput from "../QuestionTypes/EnumRangeInput";
 import NumberInput from "../QuestionTypes/NumberInput";
+import SelectEnumInput from "../QuestionTypes/SelectEnumInput";
 import StepperInput from "../QuestionTypes/StepperInput";
 import styles from "./styles";
 
@@ -20,7 +22,13 @@ const questionIconMap = {
   1: { name: "lightbulb-outline", bg: colors.eco.green[500] },
   2: { name: "people", bg: colors.eco.blue },
   3: { name: "local-fire-department", bg: colors.eco.yellow },
-  default: { name: "help-outline", bg: colors.neutral.gray400 },
+  4: { name: "directions-car", bg: colors.eco.blue },
+  5: { name: "speed", bg: colors.eco.purple },
+  6: { name: "local-gas-station", bg: colors.eco.yellow },
+  9: { name: "train", bg: colors.eco.green[500] },
+  12: { name: "shopping-cart", bg: colors.eco.blue },
+  13: { name: "restaurant-menu", bg: colors.eco.purple },
+  default: { name: "help-outline", bg: colors.neutral.gray600 },
 };
 
 /**
@@ -46,6 +54,22 @@ const QuestionCard = ({ question, value, setValue }) => {
         return <StepperInput value={value} onChange={setValue} min={0} />;
       case "bool":
         return <BoolInput value={value} onChange={setValue} />;
+      case "enum_range":
+        return (
+          <EnumRangeInput
+            value={value}
+            onChange={setValue}
+            options={question.options}
+          />
+        );
+      case "select_enum":
+        return (
+          <SelectEnumInput
+            value={value}
+            onChange={setValue}
+            options={question.options}
+          />
+        );
       default:
         return (
           <Text style={{ color: "red" }}>
@@ -69,7 +93,7 @@ const QuestionCard = ({ question, value, setValue }) => {
 
       {renderInput()}
 
-      {question.hint && (
+      {question.question_hint && (
         <View style={styles.hintRow}>
           <MaterialIcons
             name="info"
@@ -77,7 +101,7 @@ const QuestionCard = ({ question, value, setValue }) => {
             color={colors.eco.blue}
             style={{ marginTop: 2 }}
           />
-          <Text style={styles.hintText}>{question.hint}</Text>
+          <Text style={styles.hintText}>{question.question_hint}</Text>
         </View>
       )}
     </View>

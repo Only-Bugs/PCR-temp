@@ -8,12 +8,21 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import AppIcon from "../../components/AppIcon";
 import CTAButton from "../../components/CTAButton";
 import { AuthCard } from "../../components/forms/auth";
 import { getUser } from "../../services/apis/userAPI";
 import colors from "../../theme/colors";
+import styles from "./styles";
 
 const SignInPage = () => {
   const [ecoId, setEcoId] = useState("");
@@ -35,6 +44,7 @@ const SignInPage = () => {
     try {
       setLoading(true);
       setError(null);
+      Keyboard.dismiss();
 
       const user = await getUser(ecoId.trim());
 
@@ -53,91 +63,52 @@ const SignInPage = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-      </TouchableOpacity>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
 
-      {/* App Icon */}
-      <View style={styles.iconWrapper}>
-        <AppIcon size={32} />
-      </View>
+          <View style={styles.iconWrapper}>
+            <AppIcon size={32} />
+          </View>
 
-      {/* Title & Subtitle */}
-      <Text style={styles.title}>Sign In</Text>
-      <Text style={styles.subtitle}>
-        Enter your Eco ID to access your account
-      </Text>
+          <Text style={styles.title}>Sign In</Text>
+          <Text style={styles.subtitle}>
+            Enter your Eco ID to access your account
+          </Text>
 
-      {/* Eco ID Input */}
-      <AuthCard
-        label="Your Eco ID"
-        value={ecoId}
-        onChangeText={setEcoId}
-        placeholder="Enter Eco ID"
-        helper="Your Eco ID was generated after completing the questionnaire."
-        icon="key-outline"
-      />
+          <AuthCard
+            label="Your Eco ID"
+            value={ecoId}
+            onChangeText={setEcoId}
+            placeholder="Enter Eco ID"
+            helper="Your Eco ID was generated after completing the questionnaire."
+            icon="key-outline"
+          />
 
-      {error && <Text style={styles.error}>{error}</Text>}
+          {error && <Text style={styles.error}>{error}</Text>}
 
-      {/* Sign In Button */}
-      <CTAButton
-        label={loading ? "Signing In..." : "Sign In"}
-        onPress={handleSignIn}
-        disabled={loading}
-      />
+          <CTAButton
+            label={loading ? "Signing In..." : "Sign In"}
+            onPress={handleSignIn}
+            disabled={loading}
+          />
 
-      {/* Secondary Action */}
-      <TouchableOpacity onPress={() => router.push("/OnboardingPage")}>
-        <Text style={styles.link}>New user? Start here →</Text>
-      </TouchableOpacity>
-    </View>
+          <TouchableOpacity onPress={() => router.push("/OnboardingPage")}>
+            <Text style={styles.link}>New user? Start here →</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: colors.background,
-    justifyContent: "center",
-  },
-  backButton: {
-    position: "absolute",
-    top: 40,
-    left: 20,
-    zIndex: 10,
-  },
-  iconWrapper: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: colors.textPrimary,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  error: {
-    color: colors.error,
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  link: {
-    marginTop: 16,
-    textAlign: "center",
-    color: colors.eco.green[600],
-    fontWeight: "600",
-  },
-});
 
 export default SignInPage;

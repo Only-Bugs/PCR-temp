@@ -20,7 +20,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
+          cache: "npm"
 
       # 3. Cache extra dirs (expo, npm, gradle)
       - name: Cache Expo & Gradle
@@ -51,7 +51,6 @@ jobs:
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
-
       - name: Download APK from Expo
         run: |
           BUILD_URL="${{ steps.eas-build.outputs.build_url }}"
@@ -64,7 +63,7 @@ jobs:
         with:
           name: Verde-Beta-apk
           path: app-preview.apk
-          
+
       # 7. Send Discord notification
       - name: Discord Notification
         if: always()
@@ -73,7 +72,8 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           args: |
-            📦 *Verde Android Build Complete!*
+            📦 *Iteration 2 
+             Verde Android Build Complete!*
             Branch: ${{ github.ref_name }}
             Commit: ${{ github.sha }}
             Status: ${{ job.status }}

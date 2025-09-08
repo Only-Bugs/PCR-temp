@@ -1,7 +1,3 @@
-/**
- * @fileoverview Styles for OnboardingHeader component.
- */
-
 import { StyleSheet } from "react-native";
 import colors from "../../../theme/colors";
 
@@ -23,6 +19,19 @@ export default StyleSheet.create({
     left: 16,
     top: 12,
     zIndex: 2,
+  },
+
+  skipButton: {
+    position: "absolute",
+    right: 16,
+    top: 12,
+    zIndex: 2,
+  },
+
+  skipText: {
+    color: colors.eco.blue,
+    fontSize: 14,
+    fontWeight: "500",
   },
 
   progressContainer: {

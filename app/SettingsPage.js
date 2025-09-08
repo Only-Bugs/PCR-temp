@@ -1,27 +1,39 @@
-/**
- * @fileoverview Settings page.
- * Allows user to view/copy Eco ID, toggle haptic feedback,
- * access privacy settings, and log out.
- */
-
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, StyleSheet, Switch, Text, View } from "react-native";
+import {
+  Alert,
+  Keyboard,
+  Modal,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import CTAButton from "../components/CTAButton";
 import SettingsCard from "../components/settings/SettingsCard";
 import UserInfoCard from "../components/settings/UserInfoCard";
-
 import { useHaptics } from "../context/HapticsContext";
 import colors from "../theme/colors";
+import { truncateEcoId } from "../utils/formatters";
 
 const SettingsPage = () => {
   const [ecoId, setEcoId] = useState(null);
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [showEmailInput, setShowEmailInput] = useState(false);
+  const [email, setEmail] = useState("");
   const router = useRouter();
   const { enabled, toggleHaptics } = useHaptics();
 
+  /**
+   * Fetches Eco ID from AsyncStorage on mount.
+   * @async
+   */
   useEffect(() => {
     const fetchEcoId = async () => {
       const storedEcoId = await AsyncStorage.getItem("eco_id");
@@ -30,6 +42,10 @@ const SettingsPage = () => {
     fetchEcoId();
   }, []);
 
+  /**
+   * Copies Eco ID to clipboard.
+   * @async
+   */
   const copyEcoId = async () => {
     if (ecoId) {
       await Clipboard.setStringAsync(ecoId);
@@ -37,6 +53,30 @@ const SettingsPage = () => {
     }
   };
 
+  /**
+   * Sends Eco ID to the provided email.
+   * Stub implementation for now.
+   * @async
+   */
+  const sendEcoIdByEmail = async () => {
+    if (!email.trim()) {
+      Alert.alert("Error", "Please enter a valid email address.");
+      return;
+    }
+    try {
+      console.log(`[SettingsPage] Sending Eco ID ${ecoId} to ${email}`);
+      Alert.alert("Success", `Eco ID sent to ${email}`);
+      setEmail("");
+      setShowEmailInput(false);
+    } catch (err) {
+      Alert.alert("Error", "Failed to send Eco ID. Please try again.");
+    }
+  };
+
+  /**
+   * Handles logout by clearing AsyncStorage and navigating to WelcomePage.
+   * @async
+   */
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("eco_id");
@@ -60,16 +100,14 @@ const SettingsPage = () => {
       {/* User Information Card */}
       <UserInfoCard ecoId={ecoId} onCopy={copyEcoId} />
 
-      {/* Haptics Toggle (to be refactored into SettingsCard next sprint) */}
+      {/* Haptics Toggle */}
       <SettingsCard
-        // icon={<Text style={{ fontSize: 18 }}>📳</Text>} // TODO: replace with Ionicons
         title="Haptic Feedback"
         subtitle="Enable vibration for app interactions"
         rightContent={<Switch value={enabled} onValueChange={toggleHaptics} />}
       />
 
       <SettingsCard
-        // icon={<Text style={{ fontSize: 18 }}>🛡️</Text>} // TODO: replace with Ionicons later
         title="Privacy & Security"
         subtitle="Control your data and security settings"
         rightContent={<Text style={styles.arrow}>›</Text>}
@@ -79,10 +117,94 @@ const SettingsPage = () => {
       <CTAButton
         label="Log Out"
         variant="filled"
-        onPress={handleLogout}
+        onPress={() => setLogoutModalVisible(true)}
         iconLeft={<Ionicons name="log-out-outline" size={20} color="white" />}
         style={styles.logoutBtn}
       />
+
+      {/* Logout Guard Modal */}
+      <Modal
+        visible={logoutModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setLogoutModalVisible(false)}
+      >
+        <TouchableWithoutFeedback
+          onPress={() => {
+            Keyboard.dismiss();
+            setLogoutModalVisible(false);
+          }}
+        >
+          <View style={styles.modalOverlay}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>
+                  Don’t lose access to your account!
+                </Text>
+                <Text style={styles.modalSubtitle}>
+                  {"\n"}Tap your Eco ID to copy it, or hit the email icon and
+                  we’ll send it straight to your inbox.
+                </Text>
+
+                {/* Eco ID box */}
+                {ecoId ? (
+                  <View style={styles.ecoIdBox}>
+                    <TouchableOpacity
+                      style={{ flex: 1 }}
+                      onPress={copyEcoId}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.ecoIdValue}>
+                        {truncateEcoId(ecoId)}
+                      </Text>
+                      <Text style={styles.copyHint}>Click to copy</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.emailIconWrapper}
+                      onPress={() => setShowEmailInput(true)}
+                    >
+                      <Ionicons
+                        name="mail-outline"
+                        size={28}
+                        color={colors.eco.green[600]}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <Text style={styles.noEcoId}>No Eco ID found</Text>
+                )}
+
+                {/* Email input */}
+                {showEmailInput && (
+                  <>
+                    <TextInput
+                      style={styles.emailInput}
+                      placeholder="Enter your email to receive Eco ID"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                    />
+                    <CTAButton
+                      label="Send to Email"
+                      onPress={sendEcoIdByEmail}
+                    />
+                  </>
+                )}
+
+                <View style={styles.modalActions}>
+                  <CTAButton
+                    label="Confirm Logout"
+                    variant="filled"
+                    onPress={handleLogout}
+                    style={styles.confirmBtn}
+                  />
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 };
@@ -109,61 +231,6 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: "center",
   },
-  gradientIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  ecoIdWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F9FAFB",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    justifyContent: "space-between",
-  },
-  ecoIdText: {
-    fontSize: 13,
-    color: colors.textPrimary,
-    flex: 1,
-    marginRight: 8,
-  },
-  copyButton: {
-    backgroundColor: colors.eco.green[600],
-    borderRadius: 6,
-    padding: 6,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  ecoIdBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F3F4F6",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  ecoIdValue: {
-    fontSize: 14,
-    color: colors.textPrimary,
-    marginRight: 8,
-  },
-  copyBtn: {
-    fontSize: 16,
-    color: colors.eco.green[600],
-  },
-  noEcoId: {
-    fontSize: 14,
-    color: colors.error,
-    marginBottom: 32,
-    textAlign: "center",
-  },
   arrow: {
     fontSize: 20,
     color: colors.textSecondary,
@@ -171,6 +238,83 @@ const styles = StyleSheet.create({
   logoutBtn: {
     backgroundColor: "#DC2626",
     marginTop: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: colors.neutral.white,
+    borderRadius: 16,
+    padding: 20,
+    width: "100%",
+    maxWidth: 400,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 6,
+    color: colors.textPrimary,
+    textAlign: "center",
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    marginBottom: 16,
+    color: colors.textSecondary,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  ecoIdBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#F3F4F6",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  ecoIdValue: {
+    fontSize: 14,
+    color: colors.textPrimary,
+    fontWeight: "600",
+  },
+  copyHint: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  emailIconWrapper: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: colors.eco.green[50],
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noEcoId: {
+    fontSize: 14,
+    color: colors.error,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  emailInput: {
+    borderWidth: 1,
+    borderColor: colors.neutral.gray200,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    fontSize: 14,
+    color: colors.textPrimary,
+  },
+  modalActions: {
+    marginTop: 20,
+  },
+  confirmBtn: {
+    backgroundColor: "#DC2626",
   },
 });
 
