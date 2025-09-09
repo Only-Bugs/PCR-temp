@@ -1,10 +1,13 @@
 /**
  * @fileoverview Root layout for the app.
- * Wraps all pages with SafeAreaView and HapticsProvider.
+ * Wraps all pages with GestureHandlerRootView, SafeAreaView, and HapticsProvider.
  */
 
 import { Slot } from "expo-router";
+import Toast from "react-native-toast-message";
+
 import { Platform, SafeAreaView, StyleSheet } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { HapticsProvider } from "../context/HapticsContext";
 import colors from "../theme/colors";
 
@@ -16,17 +19,20 @@ import colors from "../theme/colors";
  */
 export default function RootLayout() {
   return (
-    <HapticsProvider>
-      {Platform.OS === "android" ? (
-        <SafeAreaView style={[styles.container, styles.androidSafeArea]}>
-          <Slot />
-        </SafeAreaView>
-      ) : (
-        <SafeAreaView style={styles.container}>
-          <Slot />
-        </SafeAreaView>
-      )}
-    </HapticsProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <HapticsProvider>
+        {Platform.OS === "android" ? (
+          <SafeAreaView style={[styles.container, styles.androidSafeArea]}>
+            <Slot />
+          </SafeAreaView>
+        ) : (
+          <SafeAreaView style={styles.container}>
+            <Slot />
+          </SafeAreaView>
+        )}
+      </HapticsProvider>
+      <Toast />
+    </GestureHandlerRootView>
   );
 }
 

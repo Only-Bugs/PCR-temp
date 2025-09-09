@@ -37,6 +37,8 @@ const WelcomePage = () => {
         onPress={() => router.push("/OnboardingPage")}
       />
 
+      <CTAButton label="Bypass" onPress={() => router.push("/ChallengePage")} />
+
       {/* <CTAButton label="App" onPress={() => router.push("/ExportIconPage")} /> */}
 
       <View style={styles.infoBox}>

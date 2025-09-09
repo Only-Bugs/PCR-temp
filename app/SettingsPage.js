@@ -148,6 +148,7 @@ const SettingsPage = () => {
         setEmail={setEmail}
         onLogout={handleLogout}
       />
+      <Text>Version: Iteration 2 - beta 1</Text>
     </View>
   );
 };
