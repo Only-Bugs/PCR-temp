@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
+import Constants from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -22,6 +23,8 @@ import { useHaptics } from "../context/HapticsContext";
 import colors from "../theme/colors";
 
 const SettingsPage = () => {
+  const version = Constants.expoConfig?.version || "1.0.0";
+  const buildStage = Constants.expoConfig?.extra?.buildStage || "";
   const [ecoId, setEcoId] = useState(null);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [showEmailInput, setShowEmailInput] = useState(false);
@@ -148,7 +151,9 @@ const SettingsPage = () => {
         setEmail={setEmail}
         onLogout={handleLogout}
       />
-      <Text>Version: Iteration 2 - beta 1</Text>
+      <Text style={styles.versionText}>
+        {`Version ${version}${buildStage ? ` (${buildStage})` : ""}`}
+      </Text>
     </View>
   );
 };
@@ -266,6 +271,13 @@ const styles = StyleSheet.create({
   },
   confirmBtn: {
     backgroundColor: "#DC2626",
+  },
+  versionText: {
+    position: "absolute",
+    bottom: 16,
+    alignSelf: "center",
+    fontSize: 12,
+    color: colors.neutral.gray600,
   },
 });
 
