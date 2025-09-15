@@ -20,11 +20,7 @@ const VoucherCard = ({ title, subtitle, expiry, icon, color }) => {
 
       {/* Actions */}
       <View style={styles.actions}>
-        <CTAButton
-          label="Redeem"
-          variant="primary"
-          onPress={() => console.log("Redeem")}
-        />
+        <CTAButton label="Redeem" onPress={() => console.log("Redeem")} />
         <CTAButton
           label="Details"
           variant="outline"

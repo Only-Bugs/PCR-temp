@@ -4,7 +4,7 @@ export default {
   expo: {
     name: "Verde",
     slug: "Verde",
-    version: "1.0.0",
+    version: "2.0.1",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     userInterfaceStyle: "automatic",
@@ -15,7 +15,7 @@ export default {
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
-        backgroundColor: "#ffffff",
+        backgroundColor: "#16a34a",
       },
       edgeToEdgeEnabled: true,
       package: "com.spra0063.Verde",

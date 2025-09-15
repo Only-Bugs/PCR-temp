@@ -1,9 +1,4 @@
 /**
- * @fileoverview Validation helper functions for questionnaire inputs.
- * Provides reusable validation rules for number, stepper, and boolean input types.
- */
-
-/**
  * Validates a numeric input value.
  * @param {any} value - Input value to validate
  * @returns {boolean} True if value is a number greater than 0
@@ -36,8 +31,26 @@ export const validateBoolean = (value) => {
 };
 
 /**
+ * Validates an enum/range input value.
+ * @param {any} value - Input value to validate
+ * @returns {boolean} True if value is a non-empty string
+ */
+export const validateEnumRange = (value) => {
+  return typeof value === "string" && value.trim().length > 0;
+};
+
+/**
+ * Validates a select/enum input value.
+ * @param {any} value - Input value to validate
+ * @returns {boolean} True if value is a non-empty string
+ */
+export const validateSelectEnum = (value) => {
+  return typeof value === "string" && value.trim().length > 0;
+};
+
+/**
  * General-purpose validation dispatcher.
- * @param {string} inputType - Input type string ("number", "number_int", "bool")
+ * @param {string} inputType - Input type string ("number", "number_int", "bool", "enum_range", "select_enum")
  * @param {any} value - Value to validate
  * @returns {boolean} True if value passes validation for the input type
  */
@@ -49,6 +62,10 @@ export const validateInput = (inputType, value) => {
       return validateInteger(value);
     case "bool":
       return validateBoolean(value);
+    case "enum_range":
+      return validateEnumRange(value);
+    case "select_enum":
+      return validateSelectEnum(value);
     default:
       return false;
   }

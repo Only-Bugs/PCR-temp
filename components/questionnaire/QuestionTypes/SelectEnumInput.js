@@ -1,0 +1,123 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import { useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  FlatList,
+  Modal,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import colors from "../../../theme/colors";
+import styles from "./styles";
+
+/**
+ * @component SelectEnumInput
+ * @description Dropdown selector for select_enum questions with instant close and bounce animation.
+ *
+ * @param {Object} props
+ * @param {string} props.value - Current selected value
+ * @param {Function} props.onChange - Callback when a value is selected
+ * @param {string[]} props.options - List of available options
+ */
+const SelectEnumInput = ({ value, onChange, options = [] }) => {
+  const [visible, setVisible] = useState(false);
+  const scaleY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.spring(scaleY, {
+        toValue: 1,
+        friction: 6,
+        tension: 80,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      scaleY.setValue(0);
+    }
+  }, [visible]);
+
+  const handleSelect = (option) => {
+    // ✅ update value immediately
+    onChange(option);
+
+    // ✅ close dropdown right away
+    setVisible(false);
+
+    // still play bounce collapse for polish (even if modal disappears fast)
+    Animated.spring(scaleY, {
+      toValue: 0,
+      friction: 6,
+      tension: 80,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  return (
+    <View>
+      <TouchableOpacity
+        style={styles.selectBox}
+        onPress={() => setVisible(true)}
+      >
+        <Text style={styles.selectBoxText}>{value || "Select an option"}</Text>
+        <MaterialIcons
+          name="arrow-drop-down"
+          size={24}
+          color={colors.textSecondary}
+        />
+      </TouchableOpacity>
+
+      <Modal
+        visible={visible}
+        transparent
+        animationType="none"
+        onRequestClose={() => setVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <Animated.View
+              style={[styles.dropdownContent, { transform: [{ scaleY }] }]}
+            >
+              <FlatList
+                data={options}
+                keyExtractor={(item, index) => `${item}-${index}`}
+                renderItem={({ item }) => {
+                  const selected = item === value;
+                  return (
+                    <TouchableOpacity
+                      style={[
+                        styles.dropdownOption,
+                        selected && styles.dropdownOptionSelected,
+                      ]}
+                      onPress={() => handleSelect(item)}
+                    >
+                      <Text
+                        style={[
+                          styles.dropdownOptionText,
+                          selected && styles.dropdownOptionTextSelected,
+                        ]}
+                      >
+                        {item}
+                      </Text>
+                      {selected && (
+                        <MaterialIcons
+                          name="check"
+                          size={20}
+                          color={colors.eco.green[600]}
+                          style={styles.checkIcon}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            </Animated.View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </View>
+  );
+};
+
+export default SelectEnumInput;

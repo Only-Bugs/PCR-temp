@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   StyleSheet,
   TouchableOpacity,
+  TouchableOpacityProps,
 } from "react-native";
 import colors from "../../theme/colors";
 import { useHapticsUtils } from "../../utils/haptics";
@@ -30,14 +31,16 @@ export default function TabsLayout() {
    * @param {Object} props - Props forwarded to the tab bar button.
    * @returns {JSX.Element} TouchableOpacity with haptic feedback.
    */
-  const withHaptics = (props) => (
+  const withHaptics = (props: TouchableOpacityProps) => (
     <TouchableOpacity
       {...props}
       onPress={async () => {
         await hapticPress();
         props.onPress?.();
       }}
-    />
+    >
+      {props.children}
+    </TouchableOpacity>
   );
 
   const tabContent = (

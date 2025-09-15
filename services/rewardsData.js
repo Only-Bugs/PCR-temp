@@ -3,7 +3,6 @@
 export const achievement = {
   title: "Eco Warrior Unlocked!",
   message: "You reduced 20kg of CO₂ this month 🎉",
-  cta: "Share",
 };
 
 export const badges = [
@@ -27,6 +26,15 @@ export const badges = [
   },
   {
     id: 3,
+    title: "Water Saver",
+    level: "Complete water challenge",
+    icon: "water",
+    color: "#0EA5E9",
+    locked: false,
+    progress: 0.3,
+  },
+  {
+    id: 4,
     title: "Green Thumb",
     level: "Complete 2 challenges",
     icon: "eco",
@@ -35,22 +43,13 @@ export const badges = [
     progress: 0,
   },
   {
-    id: 4,
+    id: 5,
     title: "Solar Saver",
     level: "Track energy for 7 days",
     icon: "sunny",
     color: "#6B7280",
     locked: true,
     progress: 0,
-  },
-  {
-    id: 5,
-    title: "Water Saver",
-    level: "Complete water challenge",
-    icon: "water",
-    color: "#0EA5E9",
-    locked: false,
-    progress: 0.3,
   },
 ];
 

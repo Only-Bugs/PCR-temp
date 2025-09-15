@@ -1,8 +1,3 @@
-/**
- * @fileoverview Onboarding questionnaire page.
- * Fetches questions, captures answers, validates, submits to API, and stores UID.
- */
-
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -50,8 +45,24 @@ const OnboardingPage = () => {
     fetchQuestions();
   }, []);
 
-  const currentQuestion = questions[currentIndex];
-  const completedSteps = Object.keys(answers).length;
+  /**
+   * Derives the list of active questions with skip logic applied.
+   * If Q4 = false, skips Q4A and Q4B.
+   */
+  const activeQuestions = questions.filter((q) => {
+    if (q.question_code === "Q4A" || q.question_code === "Q4B") {
+      const drives = answers[4];
+      if (drives === false) return false;
+    }
+    return true;
+  });
+
+  const currentQuestion = activeQuestions[currentIndex];
+  const totalSteps = activeQuestions.length;
+  const completedSteps = Object.keys(answers).filter(
+    (id) =>
+      answers[id] !== null && answers[id] !== undefined && answers[id] !== ""
+  ).length;
 
   const isAnswerValid = () => {
     if (!currentQuestion) return false;
@@ -60,13 +71,13 @@ const OnboardingPage = () => {
   };
 
   /**
-   * Advances to the next question or submits responses if at the end.
+   * Advances to the next active question or submits responses if at the end.
    * @async
    */
   const handleNext = async () => {
     if (!isAnswerValid()) return;
 
-    const isLastQuestion = currentIndex === questions.length - 1;
+    const isLastQuestion = currentIndex === activeQuestions.length - 1;
 
     if (!isLastQuestion) {
       setCurrentIndex((prev) => prev + 1);
@@ -77,10 +88,36 @@ const OnboardingPage = () => {
       setSubmitting(true);
 
       const payload = {
-        responses: Object.entries(answers).map(([id, value]) => ({
-          question_id: Number(id),
-          question_response: Number(value),
-        })),
+        responses: questions.map((q) => {
+          const value = answers[q.question_id];
+
+          if (value === undefined || value === null || value === "") {
+            return { question_id: q.question_id, question_response: null };
+          }
+
+          let response;
+
+          switch (q.input_type) {
+            case "number":
+            case "number_int":
+              response = Number(value);
+              break;
+            case "bool":
+              response = value;
+              break;
+            case "enum_range":
+            case "select_enum":
+              response = String(value);
+              break;
+            default:
+              response = null;
+          }
+
+          return {
+            question_id: q.question_id,
+            question_response: response,
+          };
+        }),
       };
       console.log(payload);
 
@@ -107,7 +144,7 @@ const OnboardingPage = () => {
         /* noop */
       }
       setError("Failed to submit answers. Please try again.");
-      throw err; // don’t swallow — surface it up
+      throw err;
     } finally {
       setSubmitting(false);
     }
@@ -118,6 +155,14 @@ const OnboardingPage = () => {
       router.replace("/WelcomePage");
     } else {
       setCurrentIndex((prev) => Math.max(prev - 1, 0));
+    }
+  };
+
+  const handleSkip = () => {
+    if (currentIndex < activeQuestions.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    } else {
+      router.replace("/ProfileCreatedPage");
     }
   };
 
@@ -147,14 +192,25 @@ const OnboardingPage = () => {
           <OnboardingHeader
             currentStep={currentIndex + 1}
             completedSteps={completedSteps}
-            totalSteps={questions.length}
+            totalSteps={totalSteps}
             onBack={handleBack}
+            onSkip={handleSkip}
           />
 
           {currentQuestion && (
             <QuestionCard
               question={currentQuestion}
-              value={answers[currentQuestion.question_id] || ""}
+              value={
+                Object.prototype.hasOwnProperty.call(
+                  answers,
+                  currentQuestion.question_id
+                )
+                  ? answers[currentQuestion.question_id]
+                  : currentQuestion.input_type === "number" ||
+                    currentQuestion.input_type === "number_int"
+                  ? ""
+                  : null
+              }
               setValue={(val) =>
                 setAnswers((prev) => ({
                   ...prev,

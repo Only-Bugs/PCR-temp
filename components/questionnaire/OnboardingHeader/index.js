@@ -1,8 +1,3 @@
-/**
- * @fileoverview OnboardingHeader component.
- * Displays back button, onboarding progress bar, and step counter text.
- */
-
 import { MaterialIcons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
 import OnboardingProgressBar from "../OnboardingProgressBar";
@@ -17,21 +12,25 @@ import styles from "./styles";
  * @param {number} props.completedSteps - Number of steps the user has completed.
  * @param {number} props.totalSteps - Total number of steps in the onboarding flow.
  * @param {Function} props.onBack - Callback when the back button is pressed.
+ * @param {Function} props.onSkip - Callback when the skip button is pressed.
  */
 const OnboardingHeader = ({
   currentStep,
   completedSteps,
   totalSteps,
   onBack,
+  onSkip,
 }) => {
   return (
     <View style={styles.container}>
-      {/* Back button */}
       <TouchableOpacity style={styles.backButton} onPress={onBack}>
         <MaterialIcons name="arrow-back" size={24} color="black" />
       </TouchableOpacity>
 
-      {/* Centered progress bar + step text */}
+      <TouchableOpacity style={styles.skipButton} onPress={onSkip}>
+        <Text style={styles.skipText}>Skip</Text>
+      </TouchableOpacity>
+
       <View style={styles.progressContainer}>
         <OnboardingProgressBar progress={completedSteps / totalSteps} />
         <Text style={styles.stepText}>

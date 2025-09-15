@@ -1,74 +1,148 @@
 import { StyleSheet } from "react-native";
 
+/**
+ * Stylesheet for FeaturedChallengeCard component.
+ * Defines card appearance, stacking visuals, and supporting UI elements.
+ */
 export default StyleSheet.create({
   card: {
-    backgroundColor: "#2E7D32", // fallback, ideally use colors.successDark
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 20,
-    marginBottom: 20,
+    minHeight: 260,
+    alignSelf: "center",
+    justifyContent: "flex-start",
   },
+
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 16,
   },
+
   iconWrapper: {
     backgroundColor: "rgba(255,255,255,0.2)",
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 8,
   },
+
   badge: {
     backgroundColor: "#FFA726",
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 4,
   },
+
   badgeText: {
     fontSize: 12,
     fontWeight: "600",
     color: "white",
   },
+
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
     color: "white",
-    marginBottom: 6,
+    marginBottom: 8,
   },
+
   subtitle: {
-    fontSize: 13,
+    fontSize: 14,
     color: "white",
-    opacity: 0.85,
+    opacity: 0.9,
     marginBottom: 16,
   },
+
   progressRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 6,
+    marginBottom: 8,
   },
+
   progressLabel: {
     fontSize: 12,
     color: "white",
     opacity: 0.85,
   },
+
   progressValue: {
     fontSize: 12,
     fontWeight: "600",
     color: "white",
   },
+
   rewardsRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 16,
+    justifyContent: "flex-start",
+    gap: 12,
+    marginTop: 16,
   },
-  rewardItem: {
+
+  rewardPill: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
   },
+
   rewardText: {
     marginLeft: 6,
     fontSize: 13,
     fontWeight: "500",
     color: "white",
+  },
+
+  swipeAction: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 100,
+  },
+
+  swipeText: {
+    color: "white",
+    fontWeight: "600",
+  },
+
+  activeCard: {
+    borderColor: "#22c55e",
+    borderWidth: 2,
+  },
+
+  ghostCardFirst: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 12,
+    height: 260,
+    borderRadius: 20,
+    backgroundColor: "rgba(46,125,50,0.9)",
+    transform: [{ scale: 0.96 }],
+    zIndex: 0,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    opacity: 0.9,
+  },
+
+  ghostCardSecond: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 24,
+    height: 260,
+    borderRadius: 20,
+    backgroundColor: "rgba(46,125,50,0.6)",
+    transform: [{ scale: 0.93 }],
+    zIndex: -1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+    opacity: 0.6,
   },
 });

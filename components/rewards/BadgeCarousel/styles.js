@@ -5,12 +5,13 @@ export default StyleSheet.create({
   page: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
+    justifyContent: "center",
+
     paddingHorizontal: 16,
     paddingTop: 8,
   },
   badgeWrapper: {
-    width: "48%", // ✅ ensures 2 cards per row
+    width: "48%",
     marginBottom: 16,
   },
   dots: {

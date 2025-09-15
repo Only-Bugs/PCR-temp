@@ -15,11 +15,13 @@ const AchievementBanner = ({ title, message, cta }) => {
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.message}>{message}</Text>
       </View>
-      <CTAButton
-        label={cta}
-        variant="outline"
-        onPress={() => console.log("Share pressed")}
-      />
+      <View style={{ width: 100 }}>
+        <CTAButton
+          label="Share"
+          variant="outline"
+          onPress={() => console.log("Share pressed")}
+        />
+      </View>
     </LinearGradient>
   );
 };
