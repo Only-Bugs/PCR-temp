@@ -8,7 +8,6 @@ import { Text, View } from "react-native";
 import Swiper from "react-native-deck-swiper";
 import { fetchUserChallenges } from "../../../services/apis/challengeAPI";
 import { useHapticsUtils } from "../../../utils/haptics";
-import ProgressBar from "../../ProgressBar";
 import styles from "./styles";
 
 /**
@@ -97,7 +96,8 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
 
   return (
     <View
-      style={{ height: 300, alignItems: "center", justifyContent: "center" }}
+      style={{ alignItems: "center", justifyContent: "center" }}
+      pointerEvents="box-none"
     >
       <Swiper
         ref={swiperRef}
@@ -109,20 +109,24 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
         onSwipedAll={() => setCardIndex(0)}
         disableTopSwipe={true}
         disableBottomSwipe={true}
+        scrollEnabled={false}
+        verticalSwipe={false}
         stackSize={3}
+        stackSeparation={15}
+        animateCardOpacity
         backgroundColor="transparent"
         containerStyle={{ height: 300 }}
         cardStyle={{ width: "90%", alignSelf: "center" }}
         renderCard={(challenge, index) =>
           challenge && (
             <LinearGradient
-              colors={["#10b981", "#059669"]}
+              colors={["#22C55E", "#16A34A"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={[
                 styles.card,
-                index === challenges.length - 2 && styles.ghostCardFirst,
-                index === challenges.length - 1 && styles.ghostCardSecond,
+                // index === challenges.length - 2 && styles.ghostCardFirst,
+                // index === challenges.length - 1 && styles.ghostCardSecond,
               ]}
             >
               <View style={styles.topRow}>
@@ -134,9 +138,7 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
                   />
                 </View>
                 <View style={styles.badge}>
-                  <Text style={styles.badgeText}>
-                    {challenge.isActive ? "Active" : "Featured"}
-                  </Text>
+                  <Text style={styles.badgeText}>Featured</Text>
                 </View>
               </View>
 
@@ -148,22 +150,6 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
               >
                 {challenge.description}
               </Text>
-
-              <View style={styles.progressRow}>
-                <Text style={styles.progressLabel}>Progress</Text>
-                <Text style={styles.progressValue}>
-                  {challenge.progress.current} of {challenge.progress.target}{" "}
-                  completed
-                </Text>
-              </View>
-              <ProgressBar
-                progress={
-                  challenge.progress.current / challenge.progress.target || 0
-                }
-                color="white"
-                height={8}
-                backgroundColor="rgba(255,255,255,0.3)"
-              />
 
               <View style={styles.rewardsRow}>
                 <View style={styles.rewardPill}>

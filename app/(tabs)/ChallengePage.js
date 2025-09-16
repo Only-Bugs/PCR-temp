@@ -1,40 +1,58 @@
-// src/pages/ChallengePage/index.js
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import ChallengeCard from "../../components/challenges/ChallengeCard";
+// import CompletionOverlay from "../../components/challenges/CompletionOverlay";
 import EncouragementBanner from "../../components/challenges/EncouragementBanner";
 import FeaturedChallengeCard from "../../components/challenges/FeaturedChallengeCard";
 import CTAButton from "../../components/CTAButton";
 import PageHeader from "../../components/PageHeader";
 import colors from "../../theme/colors";
 
-/**
- * ChallengePage
- *
- * Main challenges screen.
- * - Displays featured swipe deck of challenges.
- * - Shows active challenges added by the user.
- * - Includes create challenge option, encouragement banner, and rewards button.
- *
- * @returns {JSX.Element}
- */
 const ChallengePage = () => {
   const [activeChallenges, setActiveChallenges] = useState([]);
+  const [overlayVisible, setOverlayVisible] = useState(false);
+  const [overlayPoints, setOverlayPoints] = useState(0);
   const router = useRouter();
 
-  /**
-   * Handles adding a challenge to the active list.
-   * New challenges are placed at the top.
-   * @param {object} challenge - Activated challenge object
-   */
   const handleActivateChallenge = (challenge) => {
     setActiveChallenges((prev) => [challenge, ...prev]);
   };
 
+  const handleCompleteChallenge = async (challenge) => {
+    try {
+      // Show overlay with earned points
+      setOverlayPoints(challenge.rewards?.points || 0);
+      setOverlayVisible(true);
+
+      // Update AsyncStorage points
+      const storedUser = await AsyncStorage.getItem("user");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        user.carbonPoints =
+          (user.carbonPoints || 0) + (challenge.rewards?.points || 0);
+        await AsyncStorage.setItem("user", JSON.stringify(user));
+      }
+
+      // Remove from active challenges after overlay auto-dismisses
+      setTimeout(() => {
+        setActiveChallenges((prev) =>
+          prev.filter((c) => c.id !== challenge.id)
+        );
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to update points:", err);
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <PageHeader title="Challenges" />
 
         <View style={styles.featuredWrapper}>
@@ -49,7 +67,14 @@ const ChallengePage = () => {
           {activeChallenges.length > 0 ? (
             activeChallenges.map((challenge) => (
               <View key={challenge.id} style={styles.cardWrapper}>
-                <ChallengeCard title={challenge.title} />
+                <ChallengeCard
+                  title={challenge.title}
+                  initialProgress={challenge.progress?.current || 0}
+                  total={challenge.progress?.target || 1}
+                  onInfoPress={() => console.log("Info pressed")}
+                  // Pass in callback for completion
+                  onComplete={() => handleCompleteChallenge(challenge)}
+                />
               </View>
             ))
           ) : (
@@ -68,6 +93,13 @@ const ChallengePage = () => {
           />
         </View>
       </ScrollView>
+
+      {/* Completion overlay */}
+      {/* <CompletionOverlay
+        visible={overlayVisible}
+        points={overlayPoints}
+        onClose={() => setOverlayVisible(false)}
+      /> */}
     </View>
   );
 };
@@ -79,9 +111,9 @@ const styles = StyleSheet.create({
   featuredWrapper: {
     height: 300,
     marginBottom: 48,
-    zIndex: 10,
   },
   activeSection: {
+    marginTop: 16,
     marginBottom: 32,
     zIndex: 1,
   },
@@ -94,10 +126,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginTop: 24,
     color: colors.text,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: colors.neutral.gray600,
   },
   cardWrapper: {
     marginBottom: 16,

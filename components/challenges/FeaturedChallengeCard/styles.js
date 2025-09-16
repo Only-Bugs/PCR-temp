@@ -11,6 +11,8 @@ export default StyleSheet.create({
     minHeight: 260,
     alignSelf: "center",
     justifyContent: "flex-start",
+    borderWidth: 0.45,
+    borderColor: "#055d29ff",
   },
 
   topRow: {
@@ -117,7 +119,7 @@ export default StyleSheet.create({
     top: 12,
     height: 260,
     borderRadius: 20,
-    backgroundColor: "rgba(46,125,50,0.9)",
+    backgroundColor: "hsla(123, 46%, 34%, 0.90)",
     transform: [{ scale: 0.96 }],
     zIndex: 0,
     shadowColor: "#000",
@@ -135,7 +137,7 @@ export default StyleSheet.create({
     top: 24,
     height: 260,
     borderRadius: 20,
-    backgroundColor: "rgba(46,125,50,0.6)",
+    backgroundColor: "rgba(43, 106, 46, 0.6)",
     transform: [{ scale: 0.93 }],
     zIndex: -1,
     shadowColor: "#000",
