@@ -14,7 +14,7 @@ import CarbonCard from "./CarbonCard";
  */
 const ScoreCard = ({ data }) => {
   if (!data) return null;
-  return <CarbonCard data={data} />;
+  return <CarbonCard key={data.value} data={data} />;
 };
 
 export default ScoreCard;

@@ -1,10 +1,10 @@
 /**
  * @fileoverview Global context for managing haptic feedback settings.
- * Provides toggle functionality and persists preference in AsyncStorage.
+ * Provides toggle functionality and persists preference in StorageService.
  */
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, useContext, useEffect, useState } from "react";
+import StorageService from "../services/storage";
 
 /**
  * @typedef {Object} HapticsContextValue
@@ -19,18 +19,20 @@ const HapticsContext = createContext();
  * HapticsProvider component wraps the app and provides haptic settings.
  *
  * @component
- * @param {Object} props - Component props.
- * @param {React.ReactNode} props.children - Child components.
- * @returns {JSX.Element} Haptics context provider.
+ * @param {Object} props
+ * @param {React.ReactNode} props.children
+ * @returns {JSX.Element}
  */
 export const HapticsProvider = ({ children }) => {
   const [enabled, setEnabled] = useState(true);
 
-  /** Load haptic preference from AsyncStorage on mount */
+  /** Load haptic preference from StorageService on mount */
   useEffect(() => {
-    AsyncStorage.getItem("hapticsEnabled").then((value) => {
-      if (value !== null) setEnabled(value === "true");
-    });
+    const loadPreference = async () => {
+      const stored = await StorageService.getHapticsEnabled();
+      setEnabled(stored);
+    };
+    loadPreference();
   }, []);
 
   /**
@@ -41,7 +43,7 @@ export const HapticsProvider = ({ children }) => {
   const toggleHaptics = async () => {
     const newValue = !enabled;
     setEnabled(newValue);
-    await AsyncStorage.setItem("hapticsEnabled", String(newValue));
+    await StorageService.setHapticsEnabled(newValue);
   };
 
   return (
@@ -54,6 +56,6 @@ export const HapticsProvider = ({ children }) => {
 /**
  * Hook to access haptic feedback settings and toggle function.
  *
- * @returns {HapticsContextValue} Current haptics state and toggle handler.
+ * @returns {HapticsContextValue}
  */
 export const useHaptics = () => useContext(HapticsContext);

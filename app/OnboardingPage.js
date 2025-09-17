@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -19,6 +18,7 @@ import {
   getBaselineQuestions,
   submitBaselineResponses,
 } from "../services/apis/onboardingAPI";
+import StorageService from "../services/storage";
 import colors from "../theme/colors";
 import { hapticError, hapticSuccess } from "../utils/haptics";
 
@@ -45,10 +45,6 @@ const OnboardingPage = () => {
     fetchQuestions();
   }, []);
 
-  /**
-   * Derives the list of active questions with skip logic applied.
-   * If Q4 = false, skips Q4A and Q4B.
-   */
   const activeQuestions = questions.filter((q) => {
     if (q.question_code === "Q4A" || q.question_code === "Q4B") {
       const drives = answers[4];
@@ -70,10 +66,6 @@ const OnboardingPage = () => {
     return validateInput(currentQuestion.input_type, value);
   };
 
-  /**
-   * Advances to the next active question or submits responses if at the end.
-   * @async
-   */
   const handleNext = async () => {
     if (!isAnswerValid()) return;
 
@@ -96,7 +88,6 @@ const OnboardingPage = () => {
           }
 
           let response;
-
           switch (q.input_type) {
             case "number":
             case "number_int":
@@ -127,8 +118,8 @@ const OnboardingPage = () => {
         throw new Error("eco_id not found in API response");
       }
 
-      await AsyncStorage.setItem("eco_id", eco_id.toString());
-      await AsyncStorage.setItem("baseline", baseline.toString());
+      await StorageService.setEcoId(eco_id.toString());
+      await StorageService.setBaseline(baseline.toString());
 
       try {
         await hapticSuccess();

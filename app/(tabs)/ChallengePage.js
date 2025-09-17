@@ -1,19 +1,26 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+
 import ChallengeCard from "../../components/challenges/ChallengeCard";
 // import CompletionOverlay from "../../components/challenges/CompletionOverlay";
 import EncouragementBanner from "../../components/challenges/EncouragementBanner";
 import FeaturedChallengeCard from "../../components/challenges/FeaturedChallengeCard";
 import CTAButton from "../../components/CTAButton";
 import PageHeader from "../../components/PageHeader";
+import { useUser } from "../../context/UserContext";
 import colors from "../../theme/colors";
 
+/**
+ * ChallengePage component.
+ *
+ * @returns {JSX.Element}
+ */
 const ChallengePage = () => {
   const [activeChallenges, setActiveChallenges] = useState([]);
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayPoints, setOverlayPoints] = useState(0);
+  const { user, updateUser } = useUser(); // 🔑 use global context
   const router = useRouter();
 
   const handleActivateChallenge = (challenge) => {
@@ -22,27 +29,25 @@ const ChallengePage = () => {
 
   const handleCompleteChallenge = async (challenge) => {
     try {
-      // Show overlay with earned points
       setOverlayPoints(challenge.rewards?.points || 0);
       setOverlayVisible(true);
 
-      // Update AsyncStorage points
-      const storedUser = await AsyncStorage.getItem("user");
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        user.carbonPoints =
-          (user.carbonPoints || 0) + (challenge.rewards?.points || 0);
-        await AsyncStorage.setItem("user", JSON.stringify(user));
+      if (user) {
+        const updatedUser = {
+          ...user,
+          carbonPoints:
+            (user.carbonPoints || 0) + (challenge.rewards?.points || 0),
+        };
+        await updateUser(updatedUser); // 🔑 updates context + storage
       }
 
-      // Remove from active challenges after overlay auto-dismisses
       setTimeout(() => {
         setActiveChallenges((prev) =>
           prev.filter((c) => c.id !== challenge.id)
         );
       }, 2000);
     } catch (err) {
-      console.error("Failed to update points:", err);
+      console.error("[ChallengePage] Failed to update points:", err);
     }
   };
 
@@ -64,22 +69,19 @@ const ChallengePage = () => {
 
         <View style={styles.activeSection}>
           <Text style={styles.sectionTitle}>Active Challenges</Text>
-          {activeChallenges.length > 0 ? (
-            activeChallenges.map((challenge) => (
-              <View key={challenge.id} style={styles.cardWrapper}>
-                <ChallengeCard
-                  title={challenge.title}
-                  initialProgress={challenge.progress?.current || 0}
-                  total={challenge.progress?.target || 1}
-                  onInfoPress={() => console.log("Info pressed")}
-                  // Pass in callback for completion
-                  onComplete={() => handleCompleteChallenge(challenge)}
-                />
-              </View>
-            ))
-          ) : (
-            <></>
-          )}
+          {activeChallenges.length > 0
+            ? activeChallenges.map((challenge) => (
+                <View key={challenge.id} style={styles.cardWrapper}>
+                  <ChallengeCard
+                    title={challenge.title}
+                    initialProgress={challenge.progress?.current || 0}
+                    total={challenge.progress?.target || 1}
+                    onInfoPress={() => console.log("Info pressed")}
+                    onComplete={() => handleCompleteChallenge(challenge)}
+                  />
+                </View>
+              ))
+            : null}
         </View>
 
         <View style={styles.section}>
@@ -94,7 +96,6 @@ const ChallengePage = () => {
         </View>
       </ScrollView>
 
-      {/* Completion overlay */}
       {/* <CompletionOverlay
         visible={overlayVisible}
         points={overlayPoints}
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 16,
     marginTop: 24,
-    color: colors.text,
+    color: colors.textPrimary,
   },
   cardWrapper: {
     marginBottom: 16,

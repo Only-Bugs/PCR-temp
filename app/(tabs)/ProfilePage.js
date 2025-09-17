@@ -1,6 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 import CTAButton from "../../components/CTAButton";
@@ -10,27 +9,16 @@ import MonthlySnapshot from "../../components/profile/MonthlySnapshot";
 import ScoreCard from "../../components/profile/ScoreCard";
 import colors from "../../theme/colors";
 
+import { useUser } from "../../context/UserContext";
 import { avatar, monthlySnapshot } from "../../services/profileData";
 
 const ProfilePage = () => {
-  const [user, setUser] = useState(null);
+  const { user } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const storedUser = await AsyncStorage.getItem("user");
-        if (storedUser) {
-          const parsed = JSON.parse(storedUser);
-          console.log("[ProfilePage] Loaded user from storage:", parsed);
-          setUser(parsed);
-        }
-      } catch (err) {
-        console.log("[ProfilePage] Failed to load user:", err.message);
-      }
-    };
-    fetchUser();
-  }, []);
+    console.log("[ProfilePage] user changed:", user);
+  }, [user]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -45,6 +33,7 @@ const ProfilePage = () => {
         {/* Score Card (Carbon Points) */}
         {user && (
           <ScoreCard
+            key={user.carbonPoints}
             data={{
               title: "Carbon Points",
               value: user.carbonPoints,
@@ -53,9 +42,7 @@ const ProfilePage = () => {
               level: {
                 icon: { name: "star" },
                 text:
-                  user.user_carbon_point >= 500
-                    ? "Eco Warrior"
-                    : "Getting Started",
+                  user.carbonPoints >= 500 ? "Eco Warrior" : "Getting Started",
               },
             }}
           />
@@ -67,6 +54,10 @@ const ProfilePage = () => {
         <CTAButton
           label="View My Rewards"
           onPress={() => router.push("/RewardsPage")}
+        />
+        <CTAButton
+          label="view async object"
+          onPress={() => console.log(user)}
         />
       </ScrollView>
     </View>

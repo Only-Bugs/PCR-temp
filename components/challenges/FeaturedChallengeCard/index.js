@@ -1,12 +1,12 @@
 // src/components/challenges/FeaturedChallengeCard/index.js
 import { MaterialIcons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import LottieView from "lottie-react-native";
 import { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import Swiper from "react-native-deck-swiper";
 import { fetchUserChallenges } from "../../../services/apis/challengeAPI";
+import StorageService from "../../../services/storage";
 import { useHapticsUtils } from "../../../utils/haptics";
 import styles from "./styles";
 
@@ -33,14 +33,15 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
   useEffect(() => {
     const loadChallenges = async () => {
       try {
-        const storedUser = await AsyncStorage.getItem("user");
-        if (!storedUser) return;
-        const { eco_id } = JSON.parse(storedUser);
-        if (!eco_id) return;
-        const data = await fetchUserChallenges(eco_id);
+        const user = await StorageService.getUser();
+        if (!user?.eco_id) return;
+        const data = await fetchUserChallenges(user.eco_id);
         setChallenges(data);
       } catch (error) {
-        console.error("Failed to load challenges", error);
+        console.error(
+          "[FeaturedChallengeCard] Failed to load challenges:",
+          error
+        );
       }
     };
     loadChallenges();
@@ -82,12 +83,12 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
 
   useEffect(() => {
     const checkOverlay = async () => {
-      const seen = await AsyncStorage.getItem("hasSeenSwipeOverlay");
+      const seen = await StorageService.getHasSeenSwipeOverlay();
       if (!seen) {
         setShowOverlay(true);
-        setTimeout(() => {
+        setTimeout(async () => {
           setShowOverlay(false);
-          AsyncStorage.setItem("hasSeenSwipeOverlay", "true");
+          await StorageService.setHasSeenSwipeOverlay(true);
         }, 3000);
       }
     };
@@ -107,8 +108,8 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
         onSwipedRight={handleSwipeRight}
         onSwipedLeft={handleSwipeLeft}
         onSwipedAll={() => setCardIndex(0)}
-        disableTopSwipe={true}
-        disableBottomSwipe={true}
+        disableTopSwipe
+        disableBottomSwipe
         scrollEnabled={false}
         verticalSwipe={false}
         stackSize={3}
@@ -123,11 +124,7 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
               colors={["#22C55E", "#16A34A"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
-              style={[
-                styles.card,
-                // index === challenges.length - 2 && styles.ghostCardFirst,
-                // index === challenges.length - 1 && styles.ghostCardSecond,
-              ]}
+              style={styles.card}
             >
               <View style={styles.topRow}>
                 <View style={styles.iconWrapper}>
