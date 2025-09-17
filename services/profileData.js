@@ -11,28 +11,28 @@ export const profileHeader = {
   },
 };
 
-export const scoreCards = {
-  baseline: {
-    icon: { name: "insights", color: "success" },
-    title: "Your Lifestyle Baseline",
-    value: 11.11,
-    unit: "tonnes CO₂/year",
-    nationalAvg: 15.3,
-    change: "46% below average",
-    changeDirection: "down", // "up" or "down"
-    progress: 0.54,
-  },
-  carbon: {
-    icon: { name: "star", color: "#FFC107" },
-    title: "Carbon Score",
-    value: 742,
-    progress: 0.74,
-    level: {
-      icon: { name: "emoji-events", color: "purple" },
-      text: "Level 2: Conscious Explorer",
-    },
-  },
-};
+// export const scoreCards = {
+//   baseline: {
+//     icon: { name: "insights", color: "success" },
+//     title: "Your Lifestyle Baseline",
+//     value: 11.11,
+//     unit: "tonnes CO₂/year",
+//     nationalAvg: 15.3,
+//     change: "46% below average",
+//     changeDirection: "down", // "up" or "down"
+//     progress: 0.54,
+//   },
+//   carbon: {
+//     icon: { name: "star", color: "#FFC107" },
+//     title: "Carbon Score",
+//     value: 742,
+//     progress: 0.74,
+//     level: {
+//       icon: { name: "emoji-events", color: "purple" },
+//       text: "Level 2: Conscious Explorer",
+//     },
+//   },
+// };
 
 export const avatar = {
   gradients: {

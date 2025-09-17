@@ -1,9 +1,10 @@
+// app/(tabs)/ChallengePage.js
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import ChallengeCard from "../../components/challenges/ChallengeCard";
-// import CompletionOverlay from "../../components/challenges/CompletionOverlay";
+import ChallengeDetailsModal from "../../components/challenges/ChallengeDetailsModal";
 import EncouragementBanner from "../../components/challenges/EncouragementBanner";
 import FeaturedChallengeCard from "../../components/challenges/FeaturedChallengeCard";
 import CTAButton from "../../components/CTAButton";
@@ -14,41 +15,74 @@ import colors from "../../theme/colors";
 /**
  * ChallengePage component.
  *
+ * Manages active challenges, completion handling, and challenge details modal.
+ *
  * @returns {JSX.Element}
  */
 const ChallengePage = () => {
   const [activeChallenges, setActiveChallenges] = useState([]);
-  const [overlayVisible, setOverlayVisible] = useState(false);
-  const [overlayPoints, setOverlayPoints] = useState(0);
-  const { user, updateUser } = useUser(); // 🔑 use global context
+  const [hasCompletedAny, setHasCompletedAny] = useState(false); // track user’s progress
+  const { user, updateUser } = useUser();
   const router = useRouter();
 
+  const [selectedChallenge, setSelectedChallenge] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  /**
+   * Activates a new challenge and adds it to the active list.
+   * @param {Object} challenge - Challenge object to activate
+   */
   const handleActivateChallenge = (challenge) => {
     setActiveChallenges((prev) => [challenge, ...prev]);
   };
 
+  /**
+   * Handles completion of a challenge.
+   * Updates user points in context and API.
+   * Challenge is removed from active list once animation finishes.
+   *
+   * @async
+   * @param {Object} challenge - Completed challenge
+   */
   const handleCompleteChallenge = async (challenge) => {
     try {
-      setOverlayPoints(challenge.rewards?.points || 0);
-      setOverlayVisible(true);
-
       if (user) {
         const updatedUser = {
           ...user,
           carbonPoints:
             (user.carbonPoints || 0) + (challenge.rewards?.points || 0),
         };
-        await updateUser(updatedUser); // 🔑 updates context + storage
+        await updateUser(updatedUser);
       }
 
-      setTimeout(() => {
+      if (challenge.finished) {
+        setHasCompletedAny(true); // user finished at least one challenge
         setActiveChallenges((prev) =>
           prev.filter((c) => c.id !== challenge.id)
         );
-      }, 2000);
+      }
     } catch (err) {
-      console.error("[ChallengePage] Failed to update points:", err);
+      console.error("[ChallengePage] Failed to update challenge:", err);
     }
+  };
+
+  /**
+   * Renders message when there are no active challenges.
+   */
+  const renderEmptyState = () => {
+    if (!hasCompletedAny) {
+      return (
+        <Text style={styles.emptyStateText}>
+          Pick a challenge above to get started!
+        </Text>
+      );
+    }
+    return (
+      <Text style={styles.emptyStateText}>
+        Well done! You’ve completed your active challenges. Pick a new one to
+        keep going!
+      </Text>
+    );
   };
 
   return (
@@ -73,15 +107,20 @@ const ChallengePage = () => {
             ? activeChallenges.map((challenge) => (
                 <View key={challenge.id} style={styles.cardWrapper}>
                   <ChallengeCard
+                    id={challenge.id}
                     title={challenge.title}
                     initialProgress={challenge.progress?.current || 0}
                     total={challenge.progress?.target || 1}
-                    onInfoPress={() => console.log("Info pressed")}
-                    onComplete={() => handleCompleteChallenge(challenge)}
+                    rewards={challenge.rewards}
+                    onInfoPress={() => {
+                      setSelectedChallenge(challenge);
+                      setModalVisible(true);
+                    }}
+                    onComplete={handleCompleteChallenge}
                   />
                 </View>
               ))
-            : null}
+            : renderEmptyState()}
         </View>
 
         <View style={styles.section}>
@@ -96,11 +135,11 @@ const ChallengePage = () => {
         </View>
       </ScrollView>
 
-      {/* <CompletionOverlay
-        visible={overlayVisible}
-        points={overlayPoints}
-        onClose={() => setOverlayVisible(false)}
-      /> */}
+      <ChallengeDetailsModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        challenge={selectedChallenge}
+      />
     </View>
   );
 };
@@ -130,6 +169,12 @@ const styles = StyleSheet.create({
   },
   cardWrapper: {
     marginBottom: 16,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    marginTop: 8,
   },
 });
 

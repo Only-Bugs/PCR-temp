@@ -6,11 +6,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type User = {
-  eco_id: string,
-  carbonPoints: number,
-  daily: number,
-  monthly: number,
-  yearly: number,
+  eco_id: string;
+  carbonPoints: number;
+  daily: number;
+  monthly: number;
+  yearly: number;
 };
 
 class StorageService {
@@ -104,6 +104,25 @@ class StorageService {
       await AsyncStorage.setItem("challenges", JSON.stringify(challenges));
     } catch (err) {
       console.error("[StorageService] setChallenges error:", err);
+    }
+  }
+
+  // ---------- MONTHLY SNAPSHOT ----------
+  static async getMonthlySnapshot(): Promise<any | null> {
+    try {
+      const json = await AsyncStorage.getItem("monthlySnapshot");
+      return json ? JSON.parse(json) : null;
+    } catch (err) {
+      console.error("[StorageService] getMonthlySnapshot error:", err);
+      return null;
+    }
+  }
+
+  static async setMonthlySnapshot(snapshot: any): Promise<void> {
+    try {
+      await AsyncStorage.setItem("monthlySnapshot", JSON.stringify(snapshot));
+    } catch (err) {
+      console.error("[StorageService] setMonthlySnapshot error:", err);
     }
   }
 

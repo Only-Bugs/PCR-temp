@@ -2,7 +2,7 @@ import apiConfig from "../../config/apiConfig";
 
 /**
  * Fetches challenges for a specific user.
- * @param {string} userId
+ * @param {string} ecoId
  * @returns {Promise<any[]>}
  */
 export const fetchUserChallenges = async (ecoId) => {
@@ -28,6 +28,45 @@ export const fetchUserChallenges = async (ecoId) => {
     }));
   } catch (error) {
     console.error("[challengeAPI] fetchUserChallenges error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Marks a challenge as complete or updates its progress.
+ * @param {string} ecoId - User Eco ID
+ * @param {string} challengeId - Challenge identifier
+ * @param {number} userProgress - Updated progress value
+ * @returns {Promise<any>} Updated challenge or user data
+ */
+export const completeUserChallenge = async (
+  ecoId,
+  challengeId,
+  userProgress = 1
+) => {
+  try {
+    const url = `${apiConfig.baseURL}/user/${ecoId}/challenge`;
+    const payload = {
+      challenges: [
+        {
+          challenge_id: challengeId,
+          user_progress: userProgress,
+        },
+      ],
+    };
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw new Error("Failed to complete challenge");
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error("[challengeAPI] completeUserChallenge error:", error);
     throw error;
   }
 };

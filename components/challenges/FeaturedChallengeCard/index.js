@@ -1,31 +1,30 @@
 // src/components/challenges/FeaturedChallengeCard/index.js
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import LottieView from "lottie-react-native";
 import { useEffect, useRef, useState } from "react";
-import { Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import Swiper from "react-native-deck-swiper";
 import { fetchUserChallenges } from "../../../services/apis/challengeAPI";
 import StorageService from "../../../services/storage";
 import { useHapticsUtils } from "../../../utils/haptics";
+import AllChallengesComplete from "../AllChallengesComplete";
 import styles from "./styles";
 
 /**
  * FeaturedChallengeCard
  *
  * Swipeable deck of challenges.
- * - Swipe right: activates a challenge unless max active limit reached.
- * - Swipe left: cycles challenge to back of stack.
- * - Overlay shown only on first run.
+ * Shows loading state while fetching.
+ * Shows AllChallengesComplete when no challenges remain.
  *
  * @param {object} props
- * @param {(challenge: object) => void} props.onActivateChallenge - Callback when a challenge is activated
- * @param {number} props.activeCount - Current number of active challenges
+ * @param {(challenge: object) => void} props.onActivateChallenge
+ * @param {number} props.activeCount
  * @returns {JSX.Element}
  */
 const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
-  const [showOverlay, setShowOverlay] = useState(false);
   const [challenges, setChallenges] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [cardIndex, setCardIndex] = useState(0);
   const { hapticSuccess, hapticError } = useHapticsUtils();
   const swiperRef = useRef(null);
@@ -42,6 +41,8 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
           "[FeaturedChallengeCard] Failed to load challenges:",
           error
         );
+      } finally {
+        setLoading(false);
       }
     };
     loadChallenges();
@@ -51,24 +52,23 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
     if (activeCount >= 5) {
       const blocked = challenges[index];
       if (blocked) {
-        // move it to back instead of activating
         const updated = challenges.filter((_, i) => i !== index);
         setChallenges([...updated, blocked]);
         setCardIndex(0);
         await hapticError();
-        console.log("Blocked right swipe 👎 - Limit reached", blocked);
+        return;
       }
-      return;
     }
-
     const activated = challenges[index];
     if (!activated) return;
     const updated = challenges.filter((_, i) => i !== index);
     setChallenges(updated);
     setCardIndex(0);
+    if (updated.length === 0) {
+      return;
+    }
     await hapticSuccess();
-    if (onActivateChallenge) onActivateChallenge(activated);
-    console.log("Challenge Activated ✅", activated);
+    onActivateChallenge?.(activated);
   };
 
   const handleSwipeLeft = async (index) => {
@@ -78,28 +78,27 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
     setChallenges([...updated, skipped]);
     setCardIndex(0);
     await hapticError();
-    console.log("Challenge sent to back 👈", skipped);
   };
 
-  useEffect(() => {
-    const checkOverlay = async () => {
-      const seen = await StorageService.getHasSeenSwipeOverlay();
-      if (!seen) {
-        setShowOverlay(true);
-        setTimeout(async () => {
-          setShowOverlay(false);
-          await StorageService.setHasSeenSwipeOverlay(true);
-        }, 3000);
-      }
-    };
-    checkOverlay();
-  }, []);
+  if (loading) {
+    return (
+      <View
+        style={{ height: 320, justifyContent: "center", alignItems: "center" }}
+      >
+        <ActivityIndicator size="large" color="#22C55E" />
+        <Text style={{ marginTop: 8, color: "#6B7280" }}>
+          Loading challenges…
+        </Text>
+      </View>
+    );
+  }
+
+  if (!challenges.length) {
+    return <AllChallengesComplete />;
+  }
 
   return (
-    <View
-      style={{ alignItems: "center", justifyContent: "center" }}
-      pointerEvents="box-none"
-    >
+    <View style={{ alignItems: "center" }}>
       <Swiper
         ref={swiperRef}
         key={challenges.map((c) => c.id).join("-")}
@@ -107,18 +106,17 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
         cardIndex={cardIndex}
         onSwipedRight={handleSwipeRight}
         onSwipedLeft={handleSwipeLeft}
-        onSwipedAll={() => setCardIndex(0)}
+        onSwipedAll={() => setChallenges([])}
         disableTopSwipe
         disableBottomSwipe
-        scrollEnabled={false}
         verticalSwipe={false}
+        backgroundColor="transparent"
+        containerStyle={{ width: "100%", height: 320 }}
+        cardStyle={{ width: "90%", alignSelf: "center", borderRadius: 16 }}
         stackSize={3}
         stackSeparation={15}
         animateCardOpacity
-        backgroundColor="transparent"
-        containerStyle={{ height: 300 }}
-        cardStyle={{ width: "90%", alignSelf: "center" }}
-        renderCard={(challenge, index) =>
+        renderCard={(challenge) =>
           challenge && (
             <LinearGradient
               colors={["#22C55E", "#16A34A"]}
@@ -168,17 +166,6 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
                   </View>
                 )}
               </View>
-
-              {showOverlay && (
-                <View style={styles.overlay}>
-                  <LottieView
-                    source={require("../../../assets/animations/swipe-right.json")}
-                    autoPlay
-                    loop={false}
-                    style={{ width: 120, height: 120 }}
-                  />
-                </View>
-              )}
             </LinearGradient>
           )
         }

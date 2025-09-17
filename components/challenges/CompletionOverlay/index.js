@@ -1,49 +1,56 @@
-// import LottieView from "lottie-react-native";
-import { useEffect } from "react";
+import LottieView from "lottie-react-native";
 import { StyleSheet, Text, View } from "react-native";
 
+/**
+ * CompletionOverlay
+ *
+ * Inline celebration banner for completed challenges.
+ * Shows animation on the left and points text on the right.
+ *
+ * @param {Object} props
+ * @param {boolean} props.visible - Whether the overlay is visible
+ * @param {number} props.points - Points earned
+ * @param {() => void} props.onClose - Callback when animation finishes
+ * @returns {JSX.Element|null}
+ */
 const CompletionOverlay = ({ visible, points = 0, onClose }) => {
-  useEffect(() => {
-    if (visible) {
-      const timer = setTimeout(() => {
-        onClose?.();
-      }, 2000); // auto close after 2s
-      return () => clearTimeout(timer);
-    }
-  }, [visible]);
-
   if (!visible) return null;
 
   return (
-    <View style={styles.overlay}>
-      {/* <LottieView
-        source={require("../../../assets/animations/swipe-right.json")}
+    <View style={styles.container}>
+      <LottieView
+        source={require("../../../assets/animations/confetti.json")}
         autoPlay
         loop={false}
-        style={{ width: 120, height: 120 }}
-      /> */}
-      <Text style={styles.text}>
-        🎉 Congratulations! You earned +{points} points
-      </Text>
+        style={styles.animation}
+        onAnimationFinish={() => onClose?.()}
+      />
+      <Text style={styles.text}> + {points} points!</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
+  container: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255,255,255,0.95)",
-    borderRadius: 12,
-    justifyContent: "center",
+    flexDirection: "row", // animation left, text right
     alignItems: "center",
-    zIndex: 10,
+    justifyContent: "flex-start",
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.95)",
+    marginTop: 8,
+  },
+  animation: {
+    width: 60,
+    height: 60,
+    marginRight: 12,
   },
   text: {
-    marginTop: 12,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
-    textAlign: "center",
     color: "#22C55E",
+    flexShrink: 1,
   },
 });
 

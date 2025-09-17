@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 import CTAButton from "../../components/CTAButton";
@@ -10,15 +10,47 @@ import ScoreCard from "../../components/profile/ScoreCard";
 import colors from "../../theme/colors";
 
 import { useUser } from "../../context/UserContext";
-import { avatar, monthlySnapshot } from "../../services/profileData";
+import {
+  fetchMonthlySnapshot,
+  getStoredMonthlySnapshot,
+} from "../../services/apis/monthlySnapshotAPI";
+import { avatar } from "../../services/profileData";
 
+/**
+ * ProfilePage
+ *
+ * Displays user profile with:
+ * - Carbon score card
+ * - Avatar progress
+ * - Monthly emissions snapshot (API + AsyncStorage)
+ * - Rewards navigation
+ */
 const ProfilePage = () => {
   const { user } = useUser();
   const router = useRouter();
+  const [snapshotData, setSnapshotData] = useState(null);
 
   useEffect(() => {
-    console.log("[ProfilePage] user changed:", user);
-  }, [user]);
+    const loadSnapshot = async () => {
+      try {
+        // 1. Load cached snapshot first
+        const stored = await getStoredMonthlySnapshot();
+        if (stored) {
+          setSnapshotData(stored);
+        }
+
+        // 2. Fetch fresh snapshot if eco_id is available
+        if (user?.eco_id) {
+          const fresh = await fetchMonthlySnapshot(user.eco_id);
+          if (fresh) setSnapshotData(fresh);
+        }
+      } catch (err) {
+        console.error("[ProfilePage] Failed to load monthly snapshot:", err);
+      }
+    };
+
+    loadSnapshot();
+  }, [user?.eco_id]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -30,7 +62,7 @@ const ProfilePage = () => {
           showSettings={true}
         />
 
-        {/* Score Card (Carbon Points) */}
+        {/* Carbon Points */}
         {user && (
           <ScoreCard
             key={user.carbonPoints}
@@ -48,16 +80,24 @@ const ProfilePage = () => {
           />
         )}
 
+        {/* Avatar */}
         <AvatarCard {...avatar} />
-        <MonthlySnapshot {...monthlySnapshot} />
 
+        {/* Monthly Snapshot */}
+        {snapshotData && <MonthlySnapshot data={snapshotData} />}
+
+        {/* Rewards */}
         <CTAButton
           label="View My Rewards"
           onPress={() => router.push("/RewardsPage")}
         />
+
         <CTAButton
-          label="view async object"
-          onPress={() => console.log(user)}
+          label="View async object"
+          onPress={async () => {
+            const stored = await getStoredMonthlySnapshot();
+            console.log("[Async Monthly Snapshot]", stored);
+          }}
         />
       </ScrollView>
     </View>

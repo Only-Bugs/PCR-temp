@@ -1,16 +1,25 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import ProgressBar from "../../ProgressBar";
 import CompletionOverlay from "../CompletionOverlay";
 import styles from "./styles";
 
 /**
- * ChallengeCard
+ * ChallengeCard component.
  *
- * - Tick button increments progress locally
- * - Shows card-scoped overlay on completion
- * - Calls onComplete(challenge) when progress reaches total
+ * Displays a challenge with progress tracking, tick button,
+ * and an overlay when completed.
+ *
+ * @param {Object} props
+ * @param {string} props.id - Unique challenge identifier
+ * @param {string} props.title - Challenge title
+ * @param {number} props.initialProgress - Initial progress value
+ * @param {number} props.total - Target progress to complete challenge
+ * @param {{ points: number }} props.rewards - Rewards associated with challenge
+ * @param {() => void} props.onInfoPress - Callback when info icon pressed
+ * @param {(challenge: Object) => void} props.onComplete - Callback when challenge is completed
+ * @returns {JSX.Element}
  */
 const ChallengeCard = ({
   id,
@@ -36,30 +45,12 @@ const ChallengeCard = ({
     setProgress(newProgress);
 
     if (newProgress === total) {
-      setShowOverlay(true); // show overlay inside the card
-      onComplete?.({
-        id,
-        title,
-        rewards,
-        progress: newProgress,
-        target: total,
-      });
+      setShowOverlay(true);
     }
   };
 
-  // Auto-hide overlay after 2s (parent will remove card)
-  useEffect(() => {
-    if (showOverlay) {
-      const timer = setTimeout(() => {
-        setShowOverlay(false);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [showOverlay]);
-
   return (
     <View style={styles.card}>
-      {/* Regular card content */}
       <View style={styles.topRow}>
         <View style={styles.leftColumn}>
           <Pressable onPress={handleTickPress}>
@@ -84,39 +75,48 @@ const ChallengeCard = ({
             <MaterialIcons name="info-outline" size={22} color="#2563EB" />
           </Pressable>
 
-          <View style={styles.progressContainer}>
-            <Text
-              style={styles.progressText}
-              onLayout={(e) => {
-                const { width } = e.nativeEvent.layout;
-                setTextWidth(width);
-              }}
-            >
-              {isCompleted ? "Completed 🎉" : `${remaining} more to go`}
-            </Text>
+          {remaining > 1 && (
+            <View style={styles.progressContainer}>
+              <Text
+                style={styles.progressText}
+                onLayout={(e) => {
+                  const { width } = e.nativeEvent.layout;
+                  setTextWidth(width);
+                }}
+              >
+                {remaining} more to go
+              </Text>
 
-            {textWidth > 0 && (
-              <View style={{ width: textWidth }}>
-                <ProgressBar
-                  progress={completion}
-                  height={6}
-                  color={isCompleted ? "#9CA3AF" : "#22C55E"}
-                  backgroundColor="#E5E7EB"
-                />
-              </View>
-            )}
-          </View>
+              {textWidth > 0 && (
+                <View style={{ width: textWidth }}>
+                  <ProgressBar
+                    progress={completion}
+                    height={6}
+                    color={isCompleted ? "#9CA3AF" : "#22C55E"}
+                    backgroundColor="#E5E7EB"
+                  />
+                </View>
+              )}
+            </View>
+          )}
         </View>
       </View>
-
-      {/* !Todo: Replace with completion overlay */}
-      {/* Overlay on completion */}
 
       {showOverlay && (
         <CompletionOverlay
           visible={showOverlay}
           points={rewards?.points || 0}
-          onClose={() => setShowOverlay(false)}
+          onClose={() => {
+            setShowOverlay(false);
+            onComplete?.({
+              id,
+              title,
+              rewards,
+              progress,
+              target: total,
+              finished: true,
+            });
+          }}
         />
       )}
     </View>

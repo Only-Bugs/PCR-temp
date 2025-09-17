@@ -34,9 +34,7 @@ const CarbonCard = ({ data }) => {
       </View>
 
       <View style={styles.carbon.mainRow}>
-        <Text key={data.value} style={styles.carbon.value}>
-          {String(data.value)}
-        </Text>
+        <Text style={styles.carbon.value}>{String(data.value)}</Text>
         <ProgressCircle
           key={data.progress}
           progress={data.progress}
