@@ -12,38 +12,79 @@ export default StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
   },
+
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
+    alignItems: "flex-start",
   },
-  iconWrapper: {
+
+  // Left column (tick + title)
+  leftColumn: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
+    paddingRight: 12,
   },
+
   title: {
     fontSize: 14,
     fontWeight: "600",
     color: colors.neutral.gray900,
-    marginLeft: 8,
     flexShrink: 1,
   },
-  badge: {
-    backgroundColor: colors.eco.blue,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+
+  tickCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "rgba(34,197,94,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 8,
   },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: colors.neutral.white,
+
+  tickCircleCompleted: {
+    backgroundColor: "#22C55E",
+    borderColor: "#22C55E",
   },
+
+  rightColumn: {
+    width: 100,
+    alignItems: "flex-end",
+  },
+
+  infoWrapper: {
+    marginBottom: 4,
+  },
+
+  progressContainer: {
+    width: "100%",
+    alignItems: "flex-end",
+  },
+
   progressText: {
     fontSize: 12,
+    fontWeight: "500",
     color: colors.neutral.gray600,
-    marginBottom: 6,
+    marginBottom: 4,
+    textAlign: "right",
+  },
+
+  completionOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(255,255,255,0.95)",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+
+  completionText: {
+    marginTop: 12,
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#22C55E",
+    textAlign: "center",
   },
 });

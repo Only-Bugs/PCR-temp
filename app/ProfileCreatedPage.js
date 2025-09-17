@@ -5,12 +5,12 @@
  */
 
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import CTAButton from "../components/CTAButton";
+import StorageService from "../services/storage";
 import colors from "../theme/colors";
 
 const ProfileCreatedPage = () => {
@@ -20,7 +20,7 @@ const ProfileCreatedPage = () => {
 
   useEffect(() => {
     const fetchEcoId = async () => {
-      const storedEcoId = await AsyncStorage.getItem("eco_id");
+      const storedEcoId = await StorageService.getEcoId();
       setEcoId(storedEcoId);
     };
     fetchEcoId();

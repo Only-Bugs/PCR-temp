@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
@@ -10,27 +9,48 @@ import MonthlySnapshot from "../../components/profile/MonthlySnapshot";
 import ScoreCard from "../../components/profile/ScoreCard";
 import colors from "../../theme/colors";
 
-import { avatar, monthlySnapshot } from "../../services/profileData";
+import { useUser } from "../../context/UserContext";
+import {
+  fetchMonthlySnapshot,
+  getStoredMonthlySnapshot,
+} from "../../services/apis/monthlySnapshotAPI";
+import { avatar } from "../../services/profileData";
 
+/**
+ * ProfilePage
+ *
+ * Displays user profile with:
+ * - Carbon score card
+ * - Avatar progress
+ * - Monthly emissions snapshot (API + AsyncStorage)
+ * - Rewards navigation
+ */
 const ProfilePage = () => {
-  const [user, setUser] = useState(null);
+  const { user } = useUser();
   const router = useRouter();
+  const [snapshotData, setSnapshotData] = useState(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const loadSnapshot = async () => {
       try {
-        const storedUser = await AsyncStorage.getItem("user");
-        if (storedUser) {
-          const parsed = JSON.parse(storedUser);
-          console.log("[ProfilePage] Loaded user from storage:", parsed);
-          setUser(parsed);
+        // 1. Load cached snapshot first
+        const stored = await getStoredMonthlySnapshot();
+        if (stored) {
+          setSnapshotData(stored);
+        }
+
+        // 2. Fetch fresh snapshot if eco_id is available
+        if (user?.eco_id) {
+          const fresh = await fetchMonthlySnapshot(user.eco_id);
+          if (fresh) setSnapshotData(fresh);
         }
       } catch (err) {
-        console.log("[ProfilePage] Failed to load user:", err.message);
+        console.error("[ProfilePage] Failed to load monthly snapshot:", err);
       }
     };
-    fetchUser();
-  }, []);
+
+    loadSnapshot();
+  }, [user?.eco_id]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -42,9 +62,10 @@ const ProfilePage = () => {
           showSettings={true}
         />
 
-        {/* Score Card (Carbon Points) */}
+        {/* Carbon Points */}
         {user && (
           <ScoreCard
+            key={user.carbonPoints}
             data={{
               title: "Carbon Points",
               value: user.carbonPoints,
@@ -53,20 +74,30 @@ const ProfilePage = () => {
               level: {
                 icon: { name: "star" },
                 text:
-                  user.user_carbon_point >= 500
-                    ? "Eco Warrior"
-                    : "Getting Started",
+                  user.carbonPoints >= 500 ? "Eco Warrior" : "Getting Started",
               },
             }}
           />
         )}
 
+        {/* Avatar */}
         <AvatarCard {...avatar} />
-        <MonthlySnapshot {...monthlySnapshot} />
 
+        {/* Monthly Snapshot */}
+        {snapshotData && <MonthlySnapshot data={snapshotData} />}
+
+        {/* Rewards */}
         <CTAButton
           label="View My Rewards"
           onPress={() => router.push("/RewardsPage")}
+        />
+
+        <CTAButton
+          label="View async object"
+          onPress={async () => {
+            const stored = await getStoredMonthlySnapshot();
+            console.log("[Async Monthly Snapshot]", stored);
+          }}
         />
       </ScrollView>
     </View>

@@ -1,11 +1,11 @@
 /**
  * @fileoverview SignInPage.
  * Provides a UI for users to enter their ECO_ID and sign in.
- * Fetches user profile from API, stores it, then navigates to ProfilePage.
+ * Fetches user profile from API, stores it via StorageService,
+ * then navigates to ProfilePage.
  */
 
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -21,6 +21,7 @@ import AppIcon from "../../components/AppIcon";
 import CTAButton from "../../components/CTAButton";
 import { AuthCard } from "../../components/forms/auth";
 import { getUser } from "../../services/apis/userAPI";
+import StorageService from "../../services/storage";
 import colors from "../../theme/colors";
 import styles from "./styles";
 
@@ -32,8 +33,7 @@ const SignInPage = () => {
 
   /**
    * Handles user sign in.
-   * Calls API with ECO_ID, stores user in AsyncStorage, and redirects to ProfilePage.
-   * @async
+   * Calls API with ECO_ID, stores user in StorageService, and redirects to ProfilePage.
    */
   const handleSignIn = async () => {
     if (!ecoId.trim()) {
@@ -48,8 +48,8 @@ const SignInPage = () => {
 
       const user = await getUser(ecoId.trim());
 
-      await AsyncStorage.setItem("eco_id", user.eco_id);
-      await AsyncStorage.setItem("user", JSON.stringify(user));
+      await StorageService.setEcoId(user.eco_id);
+      await StorageService.setUser(user);
 
       console.log("[SignIn] Success, navigating with Eco ID:", user.eco_id);
 

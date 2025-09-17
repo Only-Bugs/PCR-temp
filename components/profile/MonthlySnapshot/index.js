@@ -1,62 +1,57 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Text, View } from "react-native";
+import EmissionSourceList from "../EmissionSourceList";
 import styles from "./styles";
 
-const MonthlySnapshot = ({ title, performance, sources, tip, badge }) => {
+/**
+ * MonthlySnapshot component.
+ *
+ * @param {object} props
+ * @param {object} props.data - Monthly snapshot data (from API or storage)
+ * @returns {JSX.Element}
+ */
+const MonthlySnapshot = ({ data }) => {
+  if (!data) return null;
+
   return (
     <View style={styles.card}>
       {/* Header */}
       <View style={styles.header}>
         <MaterialIcons name="show-chart" size={20} color="blue" />
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title}>Monthly Snapshot</Text>
       </View>
 
       {/* Performance Box */}
       <View style={styles.performanceBox}>
         <View>
-          <Text style={styles.performanceTitle}>{performance.title}</Text>
-          <Text style={styles.performanceSub}>{performance.message}</Text>
+          <Text style={styles.performanceTitle}>vs. Last Month</Text>
+          <Text style={styles.performanceSub}>
+            You reduced car trips this month
+          </Text>
         </View>
         <View style={styles.performanceRight}>
-          <MaterialIcons
-            name={
-              performance.direction === "down"
-                ? "arrow-downward"
-                : "arrow-upward"
-            }
-            size={16}
-            color={performance.direction === "down" ? "green" : "red"}
-          />
-          <Text style={styles.performanceChange}>{performance.change}%</Text>
+          <MaterialIcons name="arrow-downward" size={16} color="green" />
+          <Text style={styles.performanceChange}>-12%</Text>
         </View>
       </View>
 
       {/* Top Emission Sources */}
       <Text style={styles.sectionTitle}>Top Emission Sources</Text>
-      {sources.map((s) => (
-        <View key={s.id} style={styles.sourceRow}>
-          <View style={styles.sourceLeft}>
-            <MaterialIcons name={s.icon} size={20} color={s.color} />
-            <Text style={styles.sourceLabel}>{s.label}</Text>
-          </View>
-          <Text style={[styles.sourceValue, { color: s.color }]}>
-            {s.value}%
-          </Text>
-        </View>
-      ))}
+      <EmissionSourceList data={data} />
 
       {/* Tip Box */}
       <View style={styles.tipBox}>
-        <MaterialIcons name={tip.icon} size={20} color={tip.color} />
-        <Text style={styles.tipText}>{tip.text}</Text>
+        <MaterialIcons name="lightbulb-outline" size={20} color="#FFC107" />
+        <Text style={styles.tipText}>
+          Try replacing 2 car trips with cycling for even better progress
+        </Text>
       </View>
 
       {/* Badge Box */}
       <View style={styles.badgeBox}>
-        <MaterialIcons name={badge.icon} size={20} color={badge.color} />
+        <MaterialIcons name="emoji-events" size={20} color="purple" />
         <Text style={styles.badgeText}>
-          {badge.text.replace(badge.highlight, "")}
-          {/* <Text style={styles.highlight}>{badge.highlight}</Text> */}
+          You’re greener than 65% of users in Melbourne
         </Text>
       </View>
     </View>

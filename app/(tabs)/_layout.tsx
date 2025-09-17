@@ -25,12 +25,6 @@ import { useHapticsUtils } from "../../utils/haptics";
 export default function TabsLayout() {
   const { hapticPress } = useHapticsUtils();
 
-  /**
-   * Wraps the default tab bar button with haptic feedback on press.
-   *
-   * @param {Object} props - Props forwarded to the tab bar button.
-   * @returns {JSX.Element} TouchableOpacity with haptic feedback.
-   */
   const withHaptics = (props: TouchableOpacityProps) => (
     <TouchableOpacity
       {...props}
@@ -59,7 +53,6 @@ export default function TabsLayout() {
         },
         tabBarButton: withHaptics,
         tabBarIcon: ({ color, focused }) => {
-          /** @type {string} */
           let iconName;
 
           switch (route.name) {
@@ -100,16 +93,13 @@ export default function TabsLayout() {
     </Tabs>
   );
 
-  const wrappedTabs =
-    Platform.OS === "android" ? (
-      <SafeAreaView style={[styles.container, styles.androidSafeArea]}>
-        {tabContent}
-      </SafeAreaView>
-    ) : (
-      tabContent
-    );
-
-  return wrappedTabs;
+  return Platform.OS === "android" ? (
+    <SafeAreaView style={[styles.container, styles.androidSafeArea]}>
+      {tabContent}
+    </SafeAreaView>
+  ) : (
+    tabContent
+  );
 }
 
 const styles = StyleSheet.create({

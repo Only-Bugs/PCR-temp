@@ -5,7 +5,6 @@
  * persona, tip of the day, and a CTA button to continue.
  */
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -17,6 +16,7 @@ import {
   PersonaCard,
   TipOfTheDayCard,
 } from "../components/results";
+import StorageService from "../services/storage";
 import colors from "../theme/colors";
 
 /**
@@ -26,7 +26,7 @@ import colors from "../theme/colors";
  * @returns {JSX.Element} The rendered ResultsPage screen.
  *
  * @description
- * - Fetches `baseline` value from AsyncStorage (saved during onboarding).
+ * - Fetches `baseline` value from StorageService (saved during onboarding).
  * - Displays results using modular cards:
  *   - DailyFootprintCard → shows user’s baseline.
  *   - ComparedToAverageCard → compares user’s baseline with national average.
@@ -40,12 +40,12 @@ export default function ResultsPage() {
   const router = useRouter();
 
   /**
-   * Fetch baseline from AsyncStorage on mount.
+   * Fetch baseline from StorageService on mount.
    * Converts stored string value into a number.
    */
   useEffect(() => {
     const fetchBaseline = async () => {
-      const storedBaseline = await AsyncStorage.getItem("baseline");
+      const storedBaseline = await StorageService.getBaseline();
       setBaseline(storedBaseline ? parseFloat(storedBaseline) : null);
     };
     fetchBaseline();

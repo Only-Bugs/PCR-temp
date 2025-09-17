@@ -6,20 +6,19 @@ export default StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  icon: {
-    fontSize: 16,
-    marginRight: 6,
+  left: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   label: {
-    flex: 1,
+    marginLeft: 8,
     fontSize: 14,
     color: colors.textPrimary,
   },
   value: {
     fontSize: 14,
     fontWeight: "600",
-    color: colors.textSecondary,
   },
 });
