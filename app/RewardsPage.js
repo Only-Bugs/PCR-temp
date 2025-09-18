@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import colors from "../theme/colors";
 
 import AchievementBanner from "../components/rewards/AchievementBanner";
@@ -21,6 +21,7 @@ const RewardsPage = () => {
         <RewardsHeader />
 
         <AchievementBanner {...achievement} />
+        <Text style={styles.text}>Work in Progress</Text>
 
         <BadgeCarousel badges={badges} />
 

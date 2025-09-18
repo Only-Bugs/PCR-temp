@@ -7,30 +7,24 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import CTAButton from "../components/CTAButton";
-import StorageService from "../services/storage";
+import { useUser } from "../context/UserContext";
 import colors from "../theme/colors";
 
 const ProfileCreatedPage = () => {
-  const [ecoId, setEcoId] = useState(null);
+  const { user } = useUser();
   const [copied, setCopied] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchEcoId = async () => {
-      const storedEcoId = await StorageService.getEcoId();
-      setEcoId(storedEcoId);
-    };
-    fetchEcoId();
-  }, []);
+  const ecoId = user?.eco_id ?? null;
 
   const copyToClipboard = async () => {
     if (ecoId) {
       await Clipboard.setStringAsync(ecoId);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // reset message after 2s
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -42,7 +36,7 @@ const ProfileCreatedPage = () => {
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Eco ID Generated</Text>
-        <View style={{ width: 24 }} /> {/* Spacer for symmetry */}
+        <View style={{ width: 24 }} />
       </View>
 
       {/* Success Icon */}

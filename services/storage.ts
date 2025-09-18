@@ -1,6 +1,6 @@
 /**
  * @file storage.ts
- * @description Centralized AsyncStorage service for user, settings, and challenge data.
+ * @description Centralized AsyncStorage service for user, persona, settings, challenges, and snapshots.
  */
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -11,10 +11,15 @@ type User = {
   daily: number;
   monthly: number;
   yearly: number;
+  personaStage?: "leaf" | "sapling" | "tree";
 };
 
 class StorageService {
   // ---------- USER ----------
+  /**
+   * Get the full user object.
+   * @returns {Promise<User | null>} Parsed user object or null if not found.
+   */
   static async getUser(): Promise<User | null> {
     try {
       const json = await AsyncStorage.getItem("user");
@@ -25,11 +30,82 @@ class StorageService {
     }
   }
 
+  /**
+   * Save the full user object.
+   * @param {User} user - User object to persist.
+   */
   static async setUser(user: User): Promise<void> {
     try {
       await AsyncStorage.setItem("user", JSON.stringify(user));
     } catch (err) {
       console.error("[StorageService] setUser error:", err);
+    }
+  }
+
+  // ---------- CARBON POINTS ----------
+  /**
+   * Get carbon points from user object.
+   * @returns {Promise<number>} Carbon points or 0 if not found.
+   */
+  static async getCarbonPoints(): Promise<number> {
+    try {
+      const user = await StorageService.getUser();
+      return user?.carbonPoints ?? 0;
+    } catch (err) {
+      console.error("[StorageService] getCarbonPoints error:", err);
+      return 0;
+    }
+  }
+
+  /**
+   * Update carbon points in user object.
+   * @param {number} points - New carbon points value.
+   */
+  static async setCarbonPoints(points: number): Promise<void> {
+    try {
+      const user = (await StorageService.getUser()) || {
+        eco_id: "",
+        carbonPoints: 0,
+        daily: 0,
+        monthly: 0,
+        yearly: 0,
+      };
+      user.carbonPoints = points;
+      await StorageService.setUser(user);
+    } catch (err) {
+      console.error("[StorageService] setCarbonPoints error:", err);
+    }
+  }
+
+  // ---------- PERSONA ----------
+  /**
+   * Get persona stage.
+   * @returns {Promise<"leaf"|"sapling"|"tree"|null>} Persona stage or null.
+   */
+  static async getPersonaStage(): Promise<"leaf" | "sapling" | "tree" | null> {
+    try {
+      return (await AsyncStorage.getItem("personaStage")) as
+        | "leaf"
+        | "sapling"
+        | "tree"
+        | null;
+    } catch (err) {
+      console.error("[StorageService] getPersonaStage error:", err);
+      return null;
+    }
+  }
+
+  /**
+   * Set persona stage.
+   * @param {"leaf"|"sapling"|"tree"} stage - Persona stage to persist.
+   */
+  static async setPersonaStage(
+    stage: "leaf" | "sapling" | "tree"
+  ): Promise<void> {
+    try {
+      await AsyncStorage.setItem("personaStage", stage);
+    } catch (err) {
+      console.error("[StorageService] setPersonaStage error:", err);
     }
   }
 
@@ -146,6 +222,27 @@ class StorageService {
   }
 
   // ---------- CLEAR ----------
+  /**
+   * Clear only user-related data (eco_id, user, baseline, personaStage, challenges, monthlySnapshot).
+   */
+  static async clearUserData(): Promise<void> {
+    try {
+      await AsyncStorage.multiRemove([
+        "user",
+        "eco_id",
+        "baseline",
+        "personaStage",
+        "challenges",
+        "monthlySnapshot",
+      ]);
+    } catch (err) {
+      console.error("[StorageService] clearUserData error:", err);
+    }
+  }
+
+  /**
+   * Clear entire AsyncStorage.
+   */
   static async clearAll(): Promise<void> {
     try {
       await AsyncStorage.clear();

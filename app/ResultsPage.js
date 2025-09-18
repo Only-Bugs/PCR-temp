@@ -2,21 +2,20 @@
  * @fileoverview ResultsPage.
  * Displays the user’s sustainability results after onboarding.
  * Includes daily footprint, comparison to national average,
- * persona, tip of the day, and a CTA button to continue.
+ * carbon persona, tip of the day, and a CTA button to continue.
  */
 
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import CTAButton from "../components/CTAButton";
+import AvatarCard from "../components/persona/AvatarCard";
 import {
   ComparedToAverageCard,
   DailyFootprintCard,
-  PersonaCard,
   TipOfTheDayCard,
 } from "../components/results";
-import StorageService from "../services/storage";
+import { useUser } from "../context/UserContext";
 import colors from "../theme/colors";
 
 /**
@@ -26,30 +25,20 @@ import colors from "../theme/colors";
  * @returns {JSX.Element} The rendered ResultsPage screen.
  *
  * @description
- * - Fetches `baseline` value from StorageService (saved during onboarding).
+ * - Reads `baseline` value from UserContext (synced with StorageService during onboarding).
  * - Displays results using modular cards:
  *   - DailyFootprintCard → shows user’s baseline.
  *   - ComparedToAverageCard → compares user’s baseline with national average.
- *   - PersonaCard → placeholder persona info.
+ *   - AvatarCard → dynamic persona visuals based on carbon points.
  *   - TipOfTheDayCard → static sustainability tip.
  * - Provides a CTA button that navigates the user to `/ProfilePage`.
  */
 export default function ResultsPage() {
-  const [baseline, setBaseline] = useState(null);
+  const { user } = useUser();
   const nationalAverage = 8.4;
   const router = useRouter();
 
-  /**
-   * Fetch baseline from StorageService on mount.
-   * Converts stored string value into a number.
-   */
-  useEffect(() => {
-    const fetchBaseline = async () => {
-      const storedBaseline = await StorageService.getBaseline();
-      setBaseline(storedBaseline ? parseFloat(storedBaseline) : null);
-    };
-    fetchBaseline();
-  }, []);
+  const baseline = user?.daily ?? null;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -67,7 +56,7 @@ export default function ResultsPage() {
         baseline={baseline}
         nationalAverage={nationalAverage}
       />
-      <PersonaCard />
+      <AvatarCard />
       <TipOfTheDayCard tip="Try using public transport twice a week instead of driving. This simple change can reduce your weekly emissions by up to 2.1 kg CO₂e!" />
 
       {/* CTA */}

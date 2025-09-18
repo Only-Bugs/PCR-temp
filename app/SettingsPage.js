@@ -1,11 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import Constants from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Alert,
   StyleSheet,
@@ -20,29 +19,39 @@ import SettingsCard from "../components/settings/SettingsCard";
 import SettingsIcon from "../components/settings/SettingsIcon";
 import UserInfoCard from "../components/settings/UserInfoCard";
 import { useHaptics } from "../context/HapticsContext";
+import { useUser } from "../context/UserContext";
+import StorageService from "../services/storage";
 import colors from "../theme/colors";
 
 const SettingsPage = () => {
   const version = Constants.expoConfig?.version || "1.0.0";
   const buildStage = Constants.expoConfig?.extra?.buildStage || "";
-  const [ecoId, setEcoId] = useState(null);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [email, setEmail] = useState("");
   const router = useRouter();
   const { enabled, toggleHaptics } = useHaptics();
+  const { user, resetUser, updateUser } = useUser();
 
-  useEffect(() => {
-    const fetchEcoId = async () => {
-      const storedEcoId = await AsyncStorage.getItem("eco_id");
-      setEcoId(storedEcoId);
-    };
-    fetchEcoId();
-  }, []);
+  // Debug toggle
+  // const [showDebug, setShowDebug] = useState(false);
+
+  const cyclePersonaStage = async () => {
+    if (!user) return;
+    const order = ["leaf", "sapling", "tree"];
+    const currentIndex = order.indexOf(user.personaStage || "leaf");
+    const nextStage = order[(currentIndex + 1) % order.length];
+
+    const newUser = { ...user, personaStage: nextStage };
+    await StorageService.setUser(newUser); // force persist first
+    await updateUser(newUser); // then sync into context
+
+    console.log(`[Debug] Persona stage forced to: ${nextStage}`);
+  };
 
   const copyEcoId = async () => {
-    if (ecoId) {
-      await Clipboard.setStringAsync(ecoId);
+    if (user?.eco_id) {
+      await Clipboard.setStringAsync(user.eco_id);
       Alert.alert("Copied", "Your Eco ID has been copied to clipboard.");
     }
   };
@@ -53,7 +62,7 @@ const SettingsPage = () => {
       return;
     }
     try {
-      console.log(`[SettingsPage] Sending Eco ID ${ecoId} to ${email}`);
+      console.log(`[SettingsPage] Sending Eco ID ${user?.eco_id} to ${email}`);
       Alert.alert("Success", `Eco ID sent to ${email}`);
       setEmail("");
       setShowEmailInput(false);
@@ -64,10 +73,10 @@ const SettingsPage = () => {
 
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem("eco_id");
-      await AsyncStorage.removeItem("baseline");
-      await AsyncStorage.removeItem("user");
-      console.log("[SettingsPage] User logged out, cleared AsyncStorage");
+      await resetUser();
+      console.log(
+        "[SettingsPage] User logged out, cleared context and storage"
+      );
       router.replace("/WelcomePage");
     } catch (err) {
       console.log("[SettingsPage] Logout error:", err.message);
@@ -96,7 +105,7 @@ const SettingsPage = () => {
       </View>
 
       {/* User Information Card */}
-      <UserInfoCard ecoId={ecoId} onCopy={copyEcoId} />
+      <UserInfoCard ecoId={user?.eco_id} onCopy={copyEcoId} />
 
       {/* Haptics Toggle */}
       <SettingsCard
@@ -129,6 +138,28 @@ const SettingsPage = () => {
         rightContent={<Text style={styles.arrow}>›</Text>}
       />
 
+      {/* Debug */}
+      {/* <CTAButton
+        label="Show User Context"
+        variant="outlined"
+        onPress={() => setShowDebug((prev) => !prev)}
+        style={{ marginTop: 12 }}
+      />
+
+      {showDebug && (
+        <Text style={{ color: "red", fontSize: 12, marginTop: 8 }}>
+          {JSON.stringify(user, null, 2)}
+        </Text>
+      )}
+
+      <CTAButton
+        label="Cycle Persona Stage"
+        variant="outlined"
+        onPress={cyclePersonaStage}
+        style={{ marginTop: 12 }}
+      /> */}
+      {/* End - Debug */}
+
       {/* Logout Button */}
       <CTAButton
         label="Log Out"
@@ -142,7 +173,7 @@ const SettingsPage = () => {
       <LogoutModal
         visible={logoutModalVisible}
         onClose={handleCloseLogoutModal}
-        ecoId={ecoId}
+        ecoId={user?.eco_id}
         onCopyEcoId={copyEcoId}
         onSendEmail={sendEcoIdByEmail}
         showEmailInput={showEmailInput}
@@ -186,7 +217,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
   },
-
   arrow: {
     fontSize: 20,
     color: colors.textSecondary,

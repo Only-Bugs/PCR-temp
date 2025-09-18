@@ -4,16 +4,13 @@ import { ScrollView, StyleSheet, View } from "react-native";
 
 import CTAButton from "../../components/CTAButton";
 import PageHeader from "../../components/PageHeader";
-import AvatarCard from "../../components/profile/AvatarCard";
+import AvatarCard from "../../components/persona/AvatarCard";
 import MonthlySnapshot from "../../components/profile/MonthlySnapshot";
 import ScoreCard from "../../components/profile/ScoreCard";
 import colors from "../../theme/colors";
 
 import { useUser } from "../../context/UserContext";
-import {
-  fetchMonthlySnapshot,
-  getStoredMonthlySnapshot,
-} from "../../services/apis/monthlySnapshotAPI";
+import { fetchMonthlySnapshot } from "../../services/apis/monthlySnapshotAPI";
 import { avatar } from "../../services/profileData";
 
 /**
@@ -22,19 +19,19 @@ import { avatar } from "../../services/profileData";
  * Displays user profile with:
  * - Carbon score card
  * - Avatar progress
- * - Monthly emissions snapshot (API + AsyncStorage)
+ * - Monthly emissions snapshot (API + context + AsyncStorage)
  * - Rewards navigation
  */
 const ProfilePage = () => {
-  const { user } = useUser();
+  const { user, getMonthlySnapshot, setMonthlySnapshot } = useUser();
   const router = useRouter();
   const [snapshotData, setSnapshotData] = useState(null);
 
   useEffect(() => {
     const loadSnapshot = async () => {
       try {
-        // 1. Load cached snapshot first
-        const stored = await getStoredMonthlySnapshot();
+        // 1. Load cached snapshot from context/storage
+        const stored = await getMonthlySnapshot();
         if (stored) {
           setSnapshotData(stored);
         }
@@ -42,7 +39,10 @@ const ProfilePage = () => {
         // 2. Fetch fresh snapshot if eco_id is available
         if (user?.eco_id) {
           const fresh = await fetchMonthlySnapshot(user.eco_id);
-          if (fresh) setSnapshotData(fresh);
+          if (fresh) {
+            setSnapshotData(fresh);
+            await setMonthlySnapshot(fresh);
+          }
         }
       } catch (err) {
         console.error("[ProfilePage] Failed to load monthly snapshot:", err);
@@ -90,14 +90,6 @@ const ProfilePage = () => {
         <CTAButton
           label="View My Rewards"
           onPress={() => router.push("/RewardsPage")}
-        />
-
-        <CTAButton
-          label="View async object"
-          onPress={async () => {
-            const stored = await getStoredMonthlySnapshot();
-            console.log("[Async Monthly Snapshot]", stored);
-          }}
         />
       </ScrollView>
     </View>
