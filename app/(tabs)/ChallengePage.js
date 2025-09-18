@@ -21,8 +21,8 @@ import colors from "../../theme/colors";
  */
 const ChallengePage = () => {
   const [activeChallenges, setActiveChallenges] = useState([]);
-  const [hasCompletedAny, setHasCompletedAny] = useState(false); // track user’s progress
-  const { user, updateUser } = useUser();
+  const [hasCompletedAny, setHasCompletedAny] = useState(false);
+  const { user, setCarbonPoints } = useUser();
   const router = useRouter();
 
   const [selectedChallenge, setSelectedChallenge] = useState(null);
@@ -38,7 +38,7 @@ const ChallengePage = () => {
 
   /**
    * Handles completion of a challenge.
-   * Updates user points in context and API.
+   * Updates user carbon points in context.
    * Challenge is removed from active list once animation finishes.
    *
    * @async
@@ -47,16 +47,12 @@ const ChallengePage = () => {
   const handleCompleteChallenge = async (challenge) => {
     try {
       if (user) {
-        const updatedUser = {
-          ...user,
-          carbonPoints:
-            (user.carbonPoints || 0) + (challenge.rewards?.points || 0),
-        };
-        await updateUser(updatedUser);
+        const pointsEarned = challenge.rewards?.points || 0;
+        await setCarbonPoints((user.carbonPoints || 0) + pointsEarned);
       }
 
       if (challenge.finished) {
-        setHasCompletedAny(true); // user finished at least one challenge
+        setHasCompletedAny(true);
         setActiveChallenges((prev) =>
           prev.filter((c) => c.id !== challenge.id)
         );

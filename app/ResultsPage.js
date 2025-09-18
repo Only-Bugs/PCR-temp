@@ -6,7 +6,6 @@
  */
 
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import CTAButton from "../components/CTAButton";
@@ -16,7 +15,7 @@ import {
   PersonaCard,
   TipOfTheDayCard,
 } from "../components/results";
-import StorageService from "../services/storage";
+import { useUser } from "../context/UserContext";
 import colors from "../theme/colors";
 
 /**
@@ -26,7 +25,7 @@ import colors from "../theme/colors";
  * @returns {JSX.Element} The rendered ResultsPage screen.
  *
  * @description
- * - Fetches `baseline` value from StorageService (saved during onboarding).
+ * - Reads `baseline` value from UserContext (synced with StorageService during onboarding).
  * - Displays results using modular cards:
  *   - DailyFootprintCard → shows user’s baseline.
  *   - ComparedToAverageCard → compares user’s baseline with national average.
@@ -35,21 +34,11 @@ import colors from "../theme/colors";
  * - Provides a CTA button that navigates the user to `/ProfilePage`.
  */
 export default function ResultsPage() {
-  const [baseline, setBaseline] = useState(null);
+  const { user } = useUser();
   const nationalAverage = 8.4;
   const router = useRouter();
 
-  /**
-   * Fetch baseline from StorageService on mount.
-   * Converts stored string value into a number.
-   */
-  useEffect(() => {
-    const fetchBaseline = async () => {
-      const storedBaseline = await StorageService.getBaseline();
-      setBaseline(storedBaseline ? parseFloat(storedBaseline) : null);
-    };
-    fetchBaseline();
-  }, []);
+  const baseline = user?.daily ?? null;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

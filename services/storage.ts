@@ -15,6 +15,10 @@ type User = {
 
 class StorageService {
   // ---------- USER ----------
+  /**
+   * Get the full user object.
+   * @returns {Promise<User | null>} Parsed user object or null if not found.
+   */
   static async getUser(): Promise<User | null> {
     try {
       const json = await AsyncStorage.getItem("user");
@@ -25,11 +29,49 @@ class StorageService {
     }
   }
 
+  /**
+   * Save the full user object.
+   * @param {User} user - User object to persist.
+   */
   static async setUser(user: User): Promise<void> {
     try {
       await AsyncStorage.setItem("user", JSON.stringify(user));
     } catch (err) {
       console.error("[StorageService] setUser error:", err);
+    }
+  }
+
+  /**
+   * Get carbon points from user object.
+   * @returns {Promise<number>} Carbon points or 0 if not found.
+   */
+  static async getCarbonPoints(): Promise<number> {
+    try {
+      const user = await StorageService.getUser();
+      return user?.carbonPoints ?? 0;
+    } catch (err) {
+      console.error("[StorageService] getCarbonPoints error:", err);
+      return 0;
+    }
+  }
+
+  /**
+   * Update carbon points in user object.
+   * @param {number} points - New carbon points value.
+   */
+  static async setCarbonPoints(points: number): Promise<void> {
+    try {
+      const user = (await StorageService.getUser()) || {
+        eco_id: "",
+        carbonPoints: 0,
+        daily: 0,
+        monthly: 0,
+        yearly: 0,
+      };
+      user.carbonPoints = points;
+      await StorageService.setUser(user);
+    } catch (err) {
+      console.error("[StorageService] setCarbonPoints error:", err);
     }
   }
 
@@ -146,6 +188,26 @@ class StorageService {
   }
 
   // ---------- CLEAR ----------
+  /**
+   * Clear only user-related data (eco_id, user, baseline, challenges, monthlySnapshot).
+   */
+  static async clearUserData(): Promise<void> {
+    try {
+      await AsyncStorage.multiRemove([
+        "user",
+        "eco_id",
+        "baseline",
+        "challenges",
+        "monthlySnapshot",
+      ]);
+    } catch (err) {
+      console.error("[StorageService] clearUserData error:", err);
+    }
+  }
+
+  /**
+   * Clear entire AsyncStorage.
+   */
   static async clearAll(): Promise<void> {
     try {
       await AsyncStorage.clear();

@@ -14,11 +14,11 @@ import CTAButton from "../components/CTAButton";
 import OnboardingHeader from "../components/questionnaire/OnboardingHeader";
 import QuestionCard from "../components/questionnaire/QuestionCard";
 import { validateInput } from "../components/questionnaire/validation";
+import { useUser } from "../context/UserContext";
 import {
   getBaselineQuestions,
   submitBaselineResponses,
 } from "../services/apis/onboardingAPI";
-import StorageService from "../services/storage";
 import colors from "../theme/colors";
 import { hapticError, hapticSuccess } from "../utils/haptics";
 
@@ -30,6 +30,7 @@ const OnboardingPage = () => {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const router = useRouter();
+  const { updateUser } = useUser();
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -110,7 +111,6 @@ const OnboardingPage = () => {
           };
         }),
       };
-      console.log(payload);
 
       const { eco_id, baseline } = await submitBaselineResponses(payload);
 
@@ -118,8 +118,15 @@ const OnboardingPage = () => {
         throw new Error("eco_id not found in API response");
       }
 
-      await StorageService.setEcoId(eco_id.toString());
-      await StorageService.setBaseline(baseline.toString());
+      // Seed context + storage with initial user object
+      const newUser = {
+        eco_id: eco_id.toString(),
+        carbonPoints: 0,
+        daily: Number(baseline),
+        monthly: 0,
+        yearly: 0,
+      };
+      await updateUser(newUser);
 
       try {
         await hapticSuccess();
