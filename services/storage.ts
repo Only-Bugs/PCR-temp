@@ -1,6 +1,6 @@
 /**
  * @file storage.ts
- * @description Centralized AsyncStorage service for user, settings, and challenge data.
+ * @description Centralized AsyncStorage service for user, persona, settings, challenges, and snapshots.
  */
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -11,6 +11,7 @@ type User = {
   daily: number;
   monthly: number;
   yearly: number;
+  personaStage?: "leaf" | "sapling" | "tree";
 };
 
 class StorageService {
@@ -41,6 +42,7 @@ class StorageService {
     }
   }
 
+  // ---------- CARBON POINTS ----------
   /**
    * Get carbon points from user object.
    * @returns {Promise<number>} Carbon points or 0 if not found.
@@ -72,6 +74,38 @@ class StorageService {
       await StorageService.setUser(user);
     } catch (err) {
       console.error("[StorageService] setCarbonPoints error:", err);
+    }
+  }
+
+  // ---------- PERSONA ----------
+  /**
+   * Get persona stage.
+   * @returns {Promise<"leaf"|"sapling"|"tree"|null>} Persona stage or null.
+   */
+  static async getPersonaStage(): Promise<"leaf" | "sapling" | "tree" | null> {
+    try {
+      return (await AsyncStorage.getItem("personaStage")) as
+        | "leaf"
+        | "sapling"
+        | "tree"
+        | null;
+    } catch (err) {
+      console.error("[StorageService] getPersonaStage error:", err);
+      return null;
+    }
+  }
+
+  /**
+   * Set persona stage.
+   * @param {"leaf"|"sapling"|"tree"} stage - Persona stage to persist.
+   */
+  static async setPersonaStage(
+    stage: "leaf" | "sapling" | "tree"
+  ): Promise<void> {
+    try {
+      await AsyncStorage.setItem("personaStage", stage);
+    } catch (err) {
+      console.error("[StorageService] setPersonaStage error:", err);
     }
   }
 
@@ -189,7 +223,7 @@ class StorageService {
 
   // ---------- CLEAR ----------
   /**
-   * Clear only user-related data (eco_id, user, baseline, challenges, monthlySnapshot).
+   * Clear only user-related data (eco_id, user, baseline, personaStage, challenges, monthlySnapshot).
    */
   static async clearUserData(): Promise<void> {
     try {
@@ -197,6 +231,7 @@ class StorageService {
         "user",
         "eco_id",
         "baseline",
+        "personaStage",
         "challenges",
         "monthlySnapshot",
       ]);

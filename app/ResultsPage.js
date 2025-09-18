@@ -2,17 +2,17 @@
  * @fileoverview ResultsPage.
  * Displays the user’s sustainability results after onboarding.
  * Includes daily footprint, comparison to national average,
- * persona, tip of the day, and a CTA button to continue.
+ * carbon persona, tip of the day, and a CTA button to continue.
  */
 
 import { useRouter } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import CTAButton from "../components/CTAButton";
+import AvatarCard from "../components/persona/AvatarCard";
 import {
   ComparedToAverageCard,
   DailyFootprintCard,
-  PersonaCard,
   TipOfTheDayCard,
 } from "../components/results";
 import { useUser } from "../context/UserContext";
@@ -29,7 +29,7 @@ import colors from "../theme/colors";
  * - Displays results using modular cards:
  *   - DailyFootprintCard → shows user’s baseline.
  *   - ComparedToAverageCard → compares user’s baseline with national average.
- *   - PersonaCard → placeholder persona info.
+ *   - AvatarCard → dynamic persona visuals based on carbon points.
  *   - TipOfTheDayCard → static sustainability tip.
  * - Provides a CTA button that navigates the user to `/ProfilePage`.
  */
@@ -56,7 +56,7 @@ export default function ResultsPage() {
         baseline={baseline}
         nationalAverage={nationalAverage}
       />
-      <PersonaCard />
+      <AvatarCard />
       <TipOfTheDayCard tip="Try using public transport twice a week instead of driving. This simple change can reduce your weekly emissions by up to 2.1 kg CO₂e!" />
 
       {/* CTA */}

@@ -1,6 +1,6 @@
 // app/(tabs)/ChallengePage.js
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import ChallengeCard from "../../components/challenges/ChallengeCard";
@@ -10,61 +10,95 @@ import FeaturedChallengeCard from "../../components/challenges/FeaturedChallenge
 import CTAButton from "../../components/CTAButton";
 import PageHeader from "../../components/PageHeader";
 import { useUser } from "../../context/UserContext";
+import {
+  activateChallenge,
+  completeUserChallenge,
+  fetchUserChallenges,
+} from "../../services/apis/challengeAPI";
+import { getUser } from "../../services/apis/userAPI";
 import colors from "../../theme/colors";
 
 /**
  * ChallengePage component.
  *
- * Manages active challenges, completion handling, and challenge details modal.
+ * Fetches user’s active challenges from API,
+ * handles activation and completion,
+ * and keeps user points in sync with backend.
  *
  * @returns {JSX.Element}
  */
 const ChallengePage = () => {
   const [activeChallenges, setActiveChallenges] = useState([]);
   const [hasCompletedAny, setHasCompletedAny] = useState(false);
-  const { user, setCarbonPoints } = useUser();
+  const { user, updateUser } = useUser();
   const router = useRouter();
 
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
   /**
-   * Activates a new challenge and adds it to the active list.
+   * Load active challenges from API on mount or when user changes.
+   */
+  useEffect(() => {
+    const loadChallenges = async () => {
+      try {
+        if (!user?.eco_id) return;
+        const data = await fetchUserChallenges(user.eco_id);
+        const active = data.filter((c) => c.isActive);
+        setActiveChallenges(active);
+      } catch (err) {
+        console.error("[ChallengePage] Failed to fetch challenges:", err);
+      }
+    };
+    loadChallenges();
+  }, [user?.eco_id]);
+
+  /**
+   * Activates a new challenge (persisted to API).
+   * Called by FeaturedChallengeCard when swiping right.
+   *
+   * @async
    * @param {Object} challenge - Challenge object to activate
    */
-  const handleActivateChallenge = (challenge) => {
-    setActiveChallenges((prev) => [challenge, ...prev]);
+  const handleActivateChallenge = async (challenge) => {
+    try {
+      if (!user?.eco_id) return;
+      await activateChallenge(user.eco_id, challenge.id, true);
+      setActiveChallenges((prev) => [challenge, ...prev]);
+    } catch (err) {
+      console.error("[ChallengePage] Failed to activate challenge:", err);
+    }
   };
 
   /**
    * Handles completion of a challenge.
-   * Updates user carbon points in context.
-   * Challenge is removed from active list once animation finishes.
+   * Updates backend, refreshes points, and removes challenge locally.
    *
    * @async
    * @param {Object} challenge - Completed challenge
    */
   const handleCompleteChallenge = async (challenge) => {
     try {
-      if (user) {
-        const pointsEarned = challenge.rewards?.points || 0;
-        await setCarbonPoints((user.carbonPoints || 0) + pointsEarned);
-      }
+      if (!user?.eco_id) return;
 
-      if (challenge.finished) {
-        setHasCompletedAny(true);
-        setActiveChallenges((prev) =>
-          prev.filter((c) => c.id !== challenge.id)
-        );
-      }
+      await completeUserChallenge(
+        user.eco_id,
+        challenge.id,
+        challenge.progress?.target || 1,
+        1
+      );
+
+      // Refresh user from backend for updated points/persona
+      const refreshed = await getUser(user.eco_id);
+      await updateUser(refreshed);
+
+      setHasCompletedAny(true);
+      setActiveChallenges((prev) => prev.filter((c) => c.id !== challenge.id));
     } catch (err) {
-      console.error("[ChallengePage] Failed to update challenge:", err);
+      console.error("[ChallengePage] Failed to complete challenge:", err);
     }
   };
 
-  /**
-   * Renders message when there are no active challenges.
-   */
   const renderEmptyState = () => {
     if (!hasCompletedAny) {
       return (

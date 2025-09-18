@@ -85,7 +85,10 @@ const OnboardingPage = () => {
           const value = answers[q.question_id];
 
           if (value === undefined || value === null || value === "") {
-            return { question_id: q.question_id, question_response: null };
+            return {
+              question_id: q.question_id,
+              question_response: q.default_option ?? null,
+            };
           }
 
           let response;
@@ -95,14 +98,18 @@ const OnboardingPage = () => {
               response = Number(value);
               break;
             case "bool":
-              response = value;
+              response =
+                value === true ||
+                value === "1" ||
+                value === "true" ||
+                value === 1;
               break;
             case "enum_range":
             case "select_enum":
               response = String(value);
               break;
             default:
-              response = null;
+              response = value;
           }
 
           return {
@@ -118,7 +125,6 @@ const OnboardingPage = () => {
         throw new Error("eco_id not found in API response");
       }
 
-      // Seed context + storage with initial user object
       const newUser = {
         eco_id: eco_id.toString(),
         carbonPoints: 0,
@@ -148,19 +154,62 @@ const OnboardingPage = () => {
     }
   };
 
+  /**
+   * Handles progression when the user skips a question.
+   * Applies default values if provided, including for dependent children.
+   */
+  const handleSkip = () => {
+    const current = currentQuestion;
+
+    if (current) {
+      setAnswers((prev) => {
+        const updated = { ...prev };
+
+        if (current.question_code === "Q4") {
+          updated[current.question_id] = false;
+
+          const q4A = questions.find((q) => q.question_code === "Q4A");
+          const q4B = questions.find((q) => q.question_code === "Q4B");
+          if (q4A) updated[q4A.question_id] = q4A.default_option;
+          if (q4B) updated[q4B.question_id] = q4B.default_option;
+        } else {
+          const defaultOption = current.default_option;
+          switch (current.input_type) {
+            case "number":
+            case "number_int":
+              updated[current.question_id] = Number(defaultOption);
+              break;
+            case "bool":
+              updated[current.question_id] =
+                defaultOption === "1" ||
+                defaultOption === true ||
+                defaultOption === "true";
+              break;
+            case "enum_range":
+            case "select_enum":
+              updated[current.question_id] = String(defaultOption);
+              break;
+            default:
+              updated[current.question_id] = defaultOption ?? null;
+          }
+        }
+
+        return updated;
+      });
+    }
+
+    if (currentIndex < activeQuestions.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    } else {
+      router.replace("/ProfileCreatedPage");
+    }
+  };
+
   const handleBack = () => {
     if (currentIndex === 0) {
       router.replace("/WelcomePage");
     } else {
       setCurrentIndex((prev) => Math.max(prev - 1, 0));
-    }
-  };
-
-  const handleSkip = () => {
-    if (currentIndex < activeQuestions.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    } else {
-      router.replace("/ProfileCreatedPage");
     }
   };
 

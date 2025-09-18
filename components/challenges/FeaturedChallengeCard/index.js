@@ -35,7 +35,23 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
         const user = await StorageService.getUser();
         if (!user?.eco_id) return;
         const data = await fetchUserChallenges(user.eco_id);
-        setChallenges(data);
+
+        // Temporary filter: only allow CH14 and above (backend bug with CH1–CH13)
+        const valid = data.filter((c) => {
+          const num = parseInt(c.id.replace("CH", ""), 10);
+          return !isNaN(num) && num >= 14;
+        });
+
+        console.log(
+          "[FeaturedChallengeCard] Fetched challenges:",
+          data.map((c) => c.id)
+        );
+        console.log(
+          "[FeaturedChallengeCard] Filtered to valid challenges:",
+          valid.map((c) => c.id)
+        );
+
+        setChallenges(valid);
       } catch (error) {
         console.error(
           "[FeaturedChallengeCard] Failed to load challenges:",

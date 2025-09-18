@@ -56,20 +56,18 @@ export default function TabsLayout() {
           let iconName;
 
           switch (route.name) {
-            case "ProfilePage":
-              iconName = focused ? "person" : "person-outline";
+            case "ChallengePage":
+              iconName = focused ? "trophy" : "trophy-outline";
               break;
             case "TrackingPage":
               iconName = focused ? "stats-chart" : "stats-chart-outline";
               break;
-            case "ChallengePage":
-              iconName = focused ? "trophy" : "trophy-outline";
-              break;
             case "CommunityPage":
               iconName = focused ? "people" : "people-outline";
               break;
-            case "LearningPage":
-              iconName = focused ? "book" : "book-outline";
+
+            case "ProfilePage":
+              iconName = focused ? "person" : "person-outline";
               break;
             default:
               iconName = "ellipse-outline";
@@ -79,8 +77,6 @@ export default function TabsLayout() {
         },
       })}
     >
-      <Tabs.Screen name="ProfilePage" options={{ tabBarLabel: "Profile" }} />
-      <Tabs.Screen name="TrackingPage" options={{ tabBarLabel: "Tracking" }} />
       <Tabs.Screen
         name="ChallengePage"
         options={{ tabBarLabel: "Challenges" }}
@@ -89,7 +85,8 @@ export default function TabsLayout() {
         name="CommunityPage"
         options={{ tabBarLabel: "Community" }}
       />
-      <Tabs.Screen name="LearningPage" options={{ tabBarLabel: "Learning" }} />
+      <Tabs.Screen name="TrackingPage" options={{ tabBarLabel: "Tracking" }} />
+      <Tabs.Screen name="ProfilePage" options={{ tabBarLabel: "Profile" }} />
     </Tabs>
   );
 

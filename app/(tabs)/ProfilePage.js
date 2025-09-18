@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 
 import CTAButton from "../../components/CTAButton";
 import PageHeader from "../../components/PageHeader";
-import AvatarCard from "../../components/profile/AvatarCard";
+import AvatarCard from "../../components/persona/AvatarCard";
 import MonthlySnapshot from "../../components/profile/MonthlySnapshot";
 import ScoreCard from "../../components/profile/ScoreCard";
 import colors from "../../theme/colors";

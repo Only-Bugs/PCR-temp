@@ -3,11 +3,6 @@ import colors from "../../theme/colors";
 
 import CTAButton from "../../components/CTAButton";
 import PageHeader from "../../components/PageHeader";
-import ActivityCard from "../../components/tracking/ActivityCard";
-
-import WeeklySummary from "../../components/tracking/WeeklySummary";
-
-import { activities, weeklyImpact } from "../../services/trackingData";
 
 const TrackingPage = () => {
   return (
@@ -19,7 +14,7 @@ const TrackingPage = () => {
 
         {/* Today’s activities */}
         <Text style={styles.sectionTitle}>Log Today’s Activities</Text>
-        {activities.map((item) => (
+        {/* {activities.map((item) => (
           <ActivityCard
             key={item.id}
             title={item.title}
@@ -27,12 +22,12 @@ const TrackingPage = () => {
             value={item.value}
             icon={item.icon}
           />
-        ))}
-
+        ))} */}
+        {/* 
         <WeeklySummary
           total={weeklyImpact.saved}
           baseline={weeklyImpact.baseline}
-        />
+        /> */}
 
         <View style={{ marginTop: 20 }}>
           <CTAButton
@@ -40,6 +35,7 @@ const TrackingPage = () => {
             onPress={() => console.log("Add Activity")}
           />
         </View>
+        <Text>Work in progress</Text>
       </ScrollView>
     </View>
   );

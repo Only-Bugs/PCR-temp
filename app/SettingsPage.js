@@ -20,6 +20,7 @@ import SettingsIcon from "../components/settings/SettingsIcon";
 import UserInfoCard from "../components/settings/UserInfoCard";
 import { useHaptics } from "../context/HapticsContext";
 import { useUser } from "../context/UserContext";
+import StorageService from "../services/storage";
 import colors from "../theme/colors";
 
 const SettingsPage = () => {
@@ -30,10 +31,23 @@ const SettingsPage = () => {
   const [email, setEmail] = useState("");
   const router = useRouter();
   const { enabled, toggleHaptics } = useHaptics();
-  const { user, resetUser } = useUser();
+  const { user, resetUser, updateUser } = useUser();
 
   // Debug toggle
-  const [showDebug, setShowDebug] = useState(false);
+  // const [showDebug, setShowDebug] = useState(false);
+
+  const cyclePersonaStage = async () => {
+    if (!user) return;
+    const order = ["leaf", "sapling", "tree"];
+    const currentIndex = order.indexOf(user.personaStage || "leaf");
+    const nextStage = order[(currentIndex + 1) % order.length];
+
+    const newUser = { ...user, personaStage: nextStage };
+    await StorageService.setUser(newUser); // force persist first
+    await updateUser(newUser); // then sync into context
+
+    console.log(`[Debug] Persona stage forced to: ${nextStage}`);
+  };
 
   const copyEcoId = async () => {
     if (user?.eco_id) {
@@ -125,7 +139,7 @@ const SettingsPage = () => {
       />
 
       {/* Debug */}
-      <CTAButton
+      {/* <CTAButton
         label="Show User Context"
         variant="outlined"
         onPress={() => setShowDebug((prev) => !prev)}
@@ -137,6 +151,13 @@ const SettingsPage = () => {
           {JSON.stringify(user, null, 2)}
         </Text>
       )}
+
+      <CTAButton
+        label="Cycle Persona Stage"
+        variant="outlined"
+        onPress={cyclePersonaStage}
+        style={{ marginTop: 12 }}
+      /> */}
       {/* End - Debug */}
 
       {/* Logout Button */}

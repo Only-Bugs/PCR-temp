@@ -20,6 +20,7 @@ import {
 import AppIcon from "../../components/AppIcon";
 import CTAButton from "../../components/CTAButton";
 import { AuthCard } from "../../components/forms/auth";
+import { useUser } from "../../context/UserContext";
 import { getUser } from "../../services/apis/userAPI";
 import StorageService from "../../services/storage";
 import colors from "../../theme/colors";
@@ -29,6 +30,7 @@ const SignInPage = () => {
   const [ecoId, setEcoId] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { updateUser } = useUser();
   const router = useRouter();
 
   /**
@@ -47,6 +49,7 @@ const SignInPage = () => {
       Keyboard.dismiss();
 
       const user = await getUser(ecoId.trim());
+      await updateUser(user);
 
       await StorageService.setEcoId(user.eco_id);
       await StorageService.setUser(user);

@@ -1,12 +1,25 @@
 /**
- * @fileoverview Global context for managing user data (eco_id, carbonPoints, snapshots, etc.).
+ * @fileoverview Global context for managing user data (eco_id, carbonPoints, personaStage, snapshots, etc.).
  * Syncs with AsyncStorage via StorageService and provides live updates across the app.
  */
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { updateUserPoints } from "../services/apis/userAPI";
 import StorageService from "../services/storage";
 
 const UserContext = createContext(null);
+
+/**
+ * Derives persona stage from carbon points.
+ *
+ * @param {number} carbonPoints - Current user carbon points.
+ * @returns {"leaf"|"sapling"|"tree"} Persona stage string.
+ */
+const derivePersonaStage = (carbonPoints) => {
+  if (!carbonPoints || carbonPoints <= 100) return "leaf";
+  if (carbonPoints <= 500) return "sapling";
+  return "tree";
+};
 
 /**
  * UserProvider wraps the app and provides user state + updater methods.
@@ -24,7 +37,12 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const loadUser = async () => {
       const stored = await StorageService.getUser();
-      if (stored) setUser({ ...stored });
+      if (stored) {
+        setUser({
+          ...stored,
+          personaStage: derivePersonaStage(stored.carbonPoints),
+        });
+      }
     };
     loadUser();
   }, []);
@@ -36,8 +54,12 @@ export const UserProvider = ({ children }) => {
    * @returns {Promise<void>}
    */
   const updateUser = async (newUser) => {
-    setUser({ ...newUser });
-    await StorageService.setUser(newUser);
+    const withPersona = {
+      ...newUser,
+      personaStage: derivePersonaStage(newUser.carbonPoints),
+    };
+    setUser(withPersona);
+    await StorageService.setUser(withPersona);
   };
 
   /**
@@ -48,9 +70,40 @@ export const UserProvider = ({ children }) => {
    */
   const setCarbonPoints = async (points) => {
     if (!user) return;
-    const updated = { ...user, carbonPoints: points };
+    const updated = {
+      ...user,
+      carbonPoints: points,
+      personaStage: derivePersonaStage(points),
+    };
     setUser(updated);
-    await StorageService.setCarbonPoints(points);
+    await StorageService.setUser(updated);
+  };
+
+  /**
+   * Increment carbon points and sync with API.
+   *
+   * @param {number} points - Points to add to the current user.
+   * @returns {Promise<void>}
+   */
+  const addCarbonPoints = async (points) => {
+    if (!user) return;
+    const newTotal = (user.carbonPoints || 0) + points;
+    const updated = {
+      ...user,
+      carbonPoints: newTotal,
+      personaStage: derivePersonaStage(newTotal),
+    };
+    setUser(updated);
+    await StorageService.setUser(updated);
+
+    try {
+      await updateUserPoints(user.eco_id, newTotal);
+    } catch (err) {
+      console.error(
+        "[UserContext] Failed to sync carbon points with API:",
+        err
+      );
+    }
   };
 
   /**
@@ -89,6 +142,7 @@ export const UserProvider = ({ children }) => {
         user,
         updateUser,
         setCarbonPoints,
+        addCarbonPoints,
         setMonthlySnapshot,
         getMonthlySnapshot,
         resetUser,

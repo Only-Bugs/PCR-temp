@@ -56,10 +56,6 @@ const CarbonCard = ({ data }) => {
         />
         <Text style={styles.carbon.levelText}>{data.level.text}</Text>
       </View>
-
-      <Text style={{ color: "red", marginTop: 8 }}>
-        Debug Value: {String(data.value)}
-      </Text>
     </View>
   );
 };

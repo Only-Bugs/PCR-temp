@@ -5,7 +5,7 @@ export default function CommunityPage() {
   return (
     <View style={styles.container}>
       {/* <PageHeader title="Community"/> */}
-      <Text style={styles.text}>Hello Community!</Text>
+      <Text style={styles.text}>Work in Progress</Text>
     </View>
   );
 }
