@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { View } from "react-native";
+// import { LinearGradient } from "expo-linear-gradient";
+import { Text, View } from "react-native";
 import colors from "../../../theme/colors";
 import styles from "./styles";
 
@@ -19,16 +19,16 @@ import CarbonPersona from "../CarbonPersona";
 const AvatarCircle = ({ stage, status }) => {
   return (
     <View style={styles.avatarWrapper}>
-      <LinearGradient
+      {/* <LinearGradient
         colors={["#2E7D32", "#388E3C"]}
         style={styles.avatarCircle}
-      >
-        <CarbonPersona stage={stage} status={status} />
+      > */}
+      <CarbonPersona stage={stage} status={status} />
 
-        <View style={styles.statusPill}>
-          {/* <Text style={styles.statusText}>{status}</Text> */}
-        </View>
-      </LinearGradient>
+      <View style={styles.statusPill}>
+        <Text style={styles.statusText}>{status}</Text>
+      </View>
+      {/* </LinearGradient> */}
 
       <View style={styles.badge}>
         <MaterialIcons name="star" size={18} color={colors.eco.yellow} />
