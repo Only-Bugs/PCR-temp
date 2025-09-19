@@ -24,8 +24,8 @@ export default StyleSheet.create({
   },
   statusPill: {
     position: "absolute",
-    bottom: 12, // ✅ keeps it inside the circle
-    backgroundColor: colors.neutral.white,
+    bottom: 12,
+    backgroundColor: colors.eco.green[600],
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -33,9 +33,10 @@ export default StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
+    // marginTop: 10,
   },
   statusText: {
-    color: colors.eco.green[600],
+    color: colors.neutral.white,
     fontWeight: "600",
   },
   badge: {
