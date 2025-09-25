@@ -17,9 +17,9 @@ import { StyleSheet, View } from "react-native";
  */
 const CarbonPersona = ({ stage }) => {
   const animationMap = {
-    leaf: require("../../../assets/animations/leaf.json"), // Growing Plant Animation.json
-    sapling: require("../../../assets/animations/sapling.json"), // Tomato Plant Animation.json
-    tree: require("../../../assets/animations/tree.json"), // Tree in the Wind Animation.json
+    leaf: require("../../../assets/animations/leaf.json"),
+    sapling: require("../../../assets/animations/sapling.json"),
+    tree: require("../../../assets/animations/tree.json"),
   };
 
   const animationSource = animationMap[stage] || animationMap.leaf;

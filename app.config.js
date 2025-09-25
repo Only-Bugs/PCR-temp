@@ -2,8 +2,8 @@ import "dotenv/config";
 
 export default {
   expo: {
-    name: "Verde",
-    slug: "Verde",
+    name: "FloraBit",
+    slug: "FLoraBit",
     version: "2.0.1",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
@@ -18,7 +18,7 @@ export default {
         backgroundColor: "#16a34a",
       },
       edgeToEdgeEnabled: true,
-      package: "com.spra0063.Verde",
+      package: "com.spra0063.FloraBit",
     },
     web: {
       bundler: "metro",

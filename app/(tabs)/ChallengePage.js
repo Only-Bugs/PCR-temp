@@ -1,3 +1,4 @@
+import logger from "../../utils/logger";
 // app/(tabs)/ChallengePage.js
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -5,7 +6,6 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import ChallengeCard from "../../components/challenges/ChallengeCard";
 import ChallengeDetailsModal from "../../components/challenges/ChallengeDetailsModal";
-import EncouragementBanner from "../../components/challenges/EncouragementBanner";
 import FeaturedChallengeCard from "../../components/challenges/FeaturedChallengeCard";
 import CTAButton from "../../components/CTAButton";
 import PageHeader from "../../components/PageHeader";
@@ -47,7 +47,7 @@ const ChallengePage = () => {
         const active = data.filter((c) => c.isActive);
         setActiveChallenges(active);
       } catch (err) {
-        console.error("[ChallengePage] Failed to fetch challenges:", err);
+        logger.error("[ChallengePage] Failed to fetch challenges:", err);
       }
     };
     loadChallenges();
@@ -66,7 +66,7 @@ const ChallengePage = () => {
       await activateChallenge(user.eco_id, challenge.id, true);
       setActiveChallenges((prev) => [challenge, ...prev]);
     } catch (err) {
-      console.error("[ChallengePage] Failed to activate challenge:", err);
+      logger.error("[ChallengePage] Failed to activate challenge:", err);
     }
   };
 
@@ -95,7 +95,7 @@ const ChallengePage = () => {
       setHasCompletedAny(true);
       setActiveChallenges((prev) => prev.filter((c) => c.id !== challenge.id));
     } catch (err) {
-      console.error("[ChallengePage] Failed to complete challenge:", err);
+      logger.error("[ChallengePage] Failed to complete challenge:", err);
     }
   };
 
@@ -153,9 +153,7 @@ const ChallengePage = () => {
             : renderEmptyState()}
         </View>
 
-        <View style={styles.section}>
-          <EncouragementBanner />
-        </View>
+        <View style={styles.section}>{/* <EncouragementBanner /> */}</View>
 
         <View style={styles.section}>
           <CTAButton
