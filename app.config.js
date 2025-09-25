@@ -2,9 +2,9 @@ import "dotenv/config";
 
 export default {
   expo: {
-    name: "FloraBit",
-    slug: "FLoraBit",
-    version: "2.0.1",
+    name: "Verde",
+    slug: "Verde",
+    version: "2.1.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     userInterfaceStyle: "automatic",
