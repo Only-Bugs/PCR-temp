@@ -62,7 +62,7 @@ jobs:
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Verde-Beta-apk
+          name: FloraBit-apk
           path: app-preview.apk
 
       # 7. Send Discord notification
