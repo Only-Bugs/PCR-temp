@@ -43,3 +43,25 @@ export async function getUser(ecoId) {
     throw error;
   }
 }
+
+/**
+ * Updates user carbon points.
+ * @async
+ * @param {string} ecoId - The eco_id of the user.
+ * @param {number} points - New carbon points total.
+ * @returns {Promise<void>}
+ */
+export async function updateUserPoints(ecoId, points) {
+  try {
+    if (!ecoId) {
+      throw new Error("ecoId is required to update user points");
+    }
+
+    await api.patch(`${apiConfig.endpoints.getUser}/${ecoId}`, {
+      user_carbon_point: points,
+    });
+  } catch (error) {
+    handleApiError(error, "PATCH /user");
+    throw error;
+  }
+}

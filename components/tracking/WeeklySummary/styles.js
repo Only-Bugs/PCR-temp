@@ -31,6 +31,7 @@ export default StyleSheet.create({
     color: colors.textSecondary,
     textAlign: "center",
     marginBottom: 12,
+    lineHeight: 18,
   },
   progressBox: {
     flexDirection: "row",

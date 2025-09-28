@@ -1,36 +1,80 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import colors from "../../theme/colors";
+import { useRouter } from "expo-router";
 
 import CTAButton from "../../components/CTAButton";
 import PageHeader from "../../components/PageHeader";
 import ActivityCard from "../../components/tracking/ActivityCard";
 import ImpactChart from "../../components/tracking/ImpactChart";
 import WeeklySummary from "../../components/tracking/WeeklySummary";
-import { activities, weeklyImpact } from "../../services/trackingData";
+import { useTracking } from "../../context/TrackingContext";
+import colors from "../../theme/colors";
 
 const TrackingPage = () => {
+  const router = useRouter();
+  const { weeklyImpact, todaysActivities, longTermActivities } = useTracking();
+
+  const handleActivityPress = (activityTitle) => {
+    switch (activityTitle) {
+      case 'Transport':
+        router.push('/LogTransportActivity');
+        break;
+      case 'Meals':
+        router.push('/LogMealActivity');
+        break;
+      case 'Shopping':
+        router.push('/LogShoppingActivity');
+        break;
+      case 'Energy':
+        router.push('/LogEnergyActivity');
+        break;
+      default:
+        console.log(`Enter ${activityTitle}`);
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={styles.container}>
         <PageHeader title="Tracking" />
 
-        <ImpactChart />
+        <ImpactChart
+          weeklyTrend={weeklyImpact.trend}
+          baseline={weeklyImpact.baseline}
+          total={weeklyImpact.total}
+        />
 
         {/* Today’s activities */}
         <Text style={styles.sectionTitle}>Log Today’s Activities</Text>
-        {activities.map((item) => (
+        {todaysActivities.map((item) => (
           <ActivityCard
             key={item.id}
             title={item.title}
-            subtitle={item.subtitle}
             value={item.value}
             icon={item.icon}
+            description={item.description}
+            actionText={item.actionText || "Enter"}
+            onEdit={() => handleActivityPress(item.title)}
+          />
+        ))}
+
+        {/* Long-Term Tracking */}
+        <Text style={styles.sectionTitle}>Long-Term Tracking</Text>
+        {longTermActivities.map((item) => (
+          <ActivityCard
+            key={item.id}
+            title={item.title}
+            value={item.value}
+            icon={item.icon}
+            actionText={item.actionText || "Enter"}
+            description={item.description}
+            onEdit={() => handleActivityPress(item.title)}
           />
         ))}
 
         <WeeklySummary
-          total={weeklyImpact.saved}
+          total={weeklyImpact.total}
           baseline={weeklyImpact.baseline}
+          previous={weeklyImpact.previous}
         />
 
         <View style={{ marginTop: 20 }}>

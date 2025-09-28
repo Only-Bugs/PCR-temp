@@ -5,8 +5,8 @@ export default StyleSheet.create({
   card: {
     backgroundColor: colors.neutral.white,
     borderRadius: 16,
-    padding: 14,
-    marginBottom: 14,
+    padding: 16,
+    marginBottom: 12,
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 6,
@@ -17,19 +17,20 @@ export default StyleSheet.create({
     alignItems: "center",
   },
   iconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 56,
+    height: 56,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    marginRight: 16,
   },
   title: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: "600",
     color: colors.textPrimary,
   },
-  subtitle: {
+  description: {
+    marginTop: 4,
     fontSize: 13,
     color: colors.textSecondary,
   },
@@ -38,14 +39,14 @@ export default StyleSheet.create({
     justifyContent: "center",
   },
   value: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
     color: colors.success,
+    marginBottom: 4,
   },
   edit: {
-    fontSize: 13,
+    fontSize: 14,
     color: colors.eco.blue,
     fontWeight: "500",
-    marginTop: 4,
   },
 });

@@ -62,8 +62,8 @@ export default function TabsLayout() {
             case "TrackingPage":
               iconName = focused ? "stats-chart" : "stats-chart-outline";
               break;
-            case "CommunityPage":
-              iconName = focused ? "people" : "people-outline";
+            case "LearningPage":
+              iconName = focused ? "book" : "book-outline";
               break;
 
             case "ProfilePage":
@@ -81,10 +81,7 @@ export default function TabsLayout() {
         name="ChallengePage"
         options={{ tabBarLabel: "Challenges" }}
       />
-      <Tabs.Screen
-        name="CommunityPage"
-        options={{ tabBarLabel: "Community" }}
-      />
+      <Tabs.Screen name="LearningPage" options={{ tabBarLabel: "Learning" }} />
       <Tabs.Screen name="TrackingPage" options={{ tabBarLabel: "Tracking" }} />
       <Tabs.Screen name="ProfilePage" options={{ tabBarLabel: "Profile" }} />
     </Tabs>
