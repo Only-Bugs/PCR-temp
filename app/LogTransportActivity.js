@@ -1,12 +1,14 @@
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 import CTAButton from '../components/CTAButton';
+import PageHeader from '../components/PageHeader';
 import { useTracking } from '../context/TrackingContext';
 import colors from '../theme/colors';
-import { showRewardToast } from '../utils/toast';
+import layout from '../theme/layout';
+import { showFeedbackToast, showRewardToast } from '../utils/toast';
 
 const LogTransportActivity = () => {
     const router = useRouter();
@@ -125,7 +127,11 @@ const LogTransportActivity = () => {
 
         if (validation.hasErrors) {
             if (validation.message) {
-                alert(validation.message);
+                showFeedbackToast({
+                    variant: 'warning',
+                    title: 'Check your entry',
+                    message: validation.message,
+                });
             }
             return;
         }
@@ -150,7 +156,11 @@ const LogTransportActivity = () => {
             });
         } catch (error) {
             console.error('[LogTransportActivity] Failed to record transport activity:', error);
-            Alert.alert('Unable to save', 'Something went wrong while saving your transport activity. Please try again.');
+            showFeedbackToast({
+                variant: 'error',
+                title: 'Unable to save',
+                message: "We couldn't save your transport activity. Please try again.",
+            });
         }
     };
 
@@ -162,6 +172,11 @@ const LogTransportActivity = () => {
         return (
             <View key={category.id}>
                 <TouchableOpacity
+                    accessibilityRole='button'
+                    accessibilityLabel={`${category.title} option`}
+                    accessibilityHint={hasSubcategories ? 'Expands to show transport modes' : 'Enter a distance for this transport'}
+                    hitSlop={layout.hitSlop}
+                    activeOpacity={0.8}
                     style={[
                         styles.transportOption,
                         isSubcategory && styles.subcategoryOption
@@ -236,15 +251,15 @@ const LogTransportActivity = () => {
 
     return (
         <View style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.push('/(tabs)/TrackingPage')} style={styles.backButton}>
-                    <MaterialIcons name="arrow-back" size={24} color={colors.textPrimary} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Log Transport Activity</Text>
+            <View style={styles.headerSpacing}>
+                <PageHeader title="Log Transport Activity" showBack />
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <ScrollView
+                style={styles.content}
+                contentContainerStyle={{ paddingBottom: layout.blockSpacing }}
+                showsVerticalScrollIndicator={false}
+            >
                 <View style={styles.formContainer}>
                     <Text style={styles.sectionTitle}>Transport Trip</Text>
 
@@ -270,7 +285,14 @@ const LogTransportActivity = () => {
                     onPress={saveActivity}
                     style={styles.saveButton}
                 />
-                <TouchableOpacity style={styles.cancelButton} onPress={() => router.push('/(tabs)/TrackingPage')}>
+                <TouchableOpacity
+                    style={styles.cancelButton}
+                    accessibilityRole='button'
+                    accessibilityLabel='Cancel logging transport activity'
+                    accessibilityHint='Returns to the tracking tab without saving'
+                    hitSlop={layout.hitSlop}
+                    onPress={() => router.back()}
+                >
                     <Text style={styles.cancelText}>Cancel</Text>
                 </TouchableOpacity>
             </View>
@@ -283,44 +305,29 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: colors.background,
     },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingTop: 60,
-        paddingBottom: 16,
-        backgroundColor: colors.background,
-    },
-    backButton: {
-        marginRight: 16,
-    },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: colors.textPrimary,
-    },
     content: {
         flex: 1,
+        paddingHorizontal: layout.screenPadding,
     },
     formContainer: {
         backgroundColor: colors.eco.green[50],
-        margin: 16,
         borderRadius: 16,
-        padding: 16,
+        padding: layout.cardSpacing,
+        marginBottom: layout.sectionSpacing,
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: '600',
         color: colors.textPrimary,
-        marginBottom: 16,
+        marginBottom: layout.cardSpacing,
     },
     selectContainer: {
-        marginBottom: 16,
+        marginBottom: layout.cardSpacing,
     },
     selectLabel: {
         fontSize: 14,
         color: colors.textSecondary,
-        marginBottom: 12,
+        marginBottom: layout.cardSpacing / 2,
     },
     required: {
         color: colors.error,
@@ -335,13 +342,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 16,
+        paddingHorizontal: layout.cardSpacing,
+        paddingVertical: layout.cardSpacing,
         borderBottomWidth: 1,
         borderBottomColor: colors.neutral.gray200,
     },
     subcategoryOption: {
-        paddingLeft: 32,
+        paddingLeft: layout.cardSpacing * 2,
         backgroundColor: colors.neutral.gray50,
     },
     selectedOption: {
@@ -403,16 +410,17 @@ const styles = StyleSheet.create({
     },
 
     actionButtons: {
-        padding: 16,
+        paddingHorizontal: layout.screenPadding,
+        paddingVertical: layout.cardSpacing,
         backgroundColor: colors.background,
     },
     saveButton: {
-        marginBottom: 12,
+        marginBottom: layout.cardSpacing,
     },
     cancelButton: {
         backgroundColor: colors.neutral.gray200,
         borderRadius: 12,
-        paddingVertical: 16,
+        paddingVertical: layout.cardSpacing,
         alignItems: 'center',
     },
     cancelText: {

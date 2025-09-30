@@ -29,4 +29,29 @@ export const showRewardToast = ({
   });
 };
 
+export const showFeedbackToast = ({
+  variant = 'info',
+  title,
+  message,
+  autoHide = true,
+  visibilityTime = 4000,
+  onDismiss,
+}) => {
+  Toast.show({
+    type: 'feedback',
+    position: 'top',
+    autoHide,
+    visibilityTime,
+    props: {
+      variant,
+      title,
+      message,
+      onDismiss: () => {
+        Toast.hide();
+        onDismiss?.();
+      },
+    },
+  });
+};
+
 export const hideToast = () => Toast.hide();

@@ -7,6 +7,8 @@ import {
   todaysActivities as baseTodaysActivities,
   weeklyImpact as baseWeeklyImpact,
 } from "../services/trackingData";
+import { submitTrackingActivity } from "../services/apis/trackingAPI";
+import logger from "../utils/logger";
 
 const TrackingContext = createContext(null);
 
@@ -226,7 +228,7 @@ const getMonthInfo = () => {
 };
 
 export const TrackingProvider = ({ children }) => {
-  const { addCarbonPoints } = useUser();
+  const { user, addCarbonPoints } = useUser();
 
   const [weeklyImpact, setWeeklyImpact] = useState(() => {
     const baseline = baseWeeklyImpact.baseline ?? 0;
@@ -394,6 +396,33 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
     );
   }, []);
 
+  /**
+   * Helper function to submit activity data to backend API.
+   * @param {string} activityName - Activity type (transport, diet, shopping, energy)
+   * @param {Object} items - Activity items to submit
+   * @returns {Promise<void>}
+   */
+  const submitActivityToBackend = useCallback(
+    async (activityName, items) => {
+      if (!user?.eco_id) {
+        logger.warn("[TrackingContext] No eco_id available, skipping API call");
+        return;
+      }
+
+      try {
+        await submitTrackingActivity(user.eco_id, {
+          activity_name: activityName,
+          items,
+        });
+        logger.info(`[TrackingContext] Successfully submitted ${activityName} activity`);
+      } catch (error) {
+        logger.error(`[TrackingContext] Failed to submit ${activityName} activity:`, error);
+        // Don't throw - allow local state to update even if API fails
+      }
+    },
+    [user?.eco_id]
+  );
+
   const logTransportActivity = useCallback(
     async (entries) => {
       const dayInfo = getTodayInfo();
@@ -449,9 +478,20 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
         awarded = true;
       }
 
+      // Submit to backend API
+      const apiItems = {};
+      Object.entries(entries).forEach(([transportId, distanceValue]) => {
+        const parsedDistance = parseFloat(distanceValue);
+        if (!Number.isNaN(parsedDistance) && parsedDistance > 0) {
+          const label = TRANSPORT_LABELS[transportId] ?? transportId;
+          apiItems[label] = parsedDistance;
+        }
+      });
+      await submitActivityToBackend("transport", apiItems);
+
       return { points: pointsAwarded, awarded };
     },
-    [addCarbonPoints, applyImpactToTrend, ensureDailyReset, ensureWeekData]
+    [addCarbonPoints, applyImpactToTrend, ensureDailyReset, ensureWeekData, hasAwardedToday, markAwardedToday, submitActivityToBackend]
   );
 
   const logMealActivity = useCallback(
@@ -510,9 +550,14 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
         awarded = true;
       }
 
+      // Submit to backend API (diet activity expects number of days as value)
+      await submitActivityToBackend("diet", {
+        [dietType]: 1, // Log 1 meal entry (use dietType ID, not display label)
+      });
+
       return { points: pointsAwarded, awarded };
     },
-    [addCarbonPoints, applyImpactToTrend, ensureDailyReset, ensureWeekData]
+    [addCarbonPoints, applyImpactToTrend, ensureDailyReset, ensureWeekData, hasAwardedToday, markAwardedToday, submitActivityToBackend]
   );
 
   const logShoppingActivity = useCallback(
@@ -569,9 +614,29 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
         awarded = true;
       }
 
+      // Submit to backend API (shopping expects category title: price range string)
+      const apiItems = {};
+      entries.forEach((entry) => {
+        const categoryTitle = entry.sectionId === 'clothing'
+          ? 'Clothing & Footwear'
+          : entry.sectionId === 'electronics'
+          ? 'Electronics'
+          : entry.sectionId;
+
+        // Normalize price range labels: replace en-dash with hyphen, remove spaces
+        const normalizedLabel = entry.label
+          .replace(/\s*–\s*/g, '-')  // Replace en-dash (–) with hyphen
+          .replace(/\s*-\s*/g, '-')   // Remove spaces around hyphens
+          .replace(/< \$/g, '<$')     // Remove space after <
+          .replace(/\s*\+/g, '+');    // Remove spaces before +
+
+        apiItems[categoryTitle] = normalizedLabel;
+      });
+      await submitActivityToBackend("shopping", apiItems);
+
       return { points: pointsAwarded, awarded };
     },
-    [addCarbonPoints, applyImpactToTrend, ensureDailyReset, ensureWeekData, hasAwardedToday, markAwardedToday, updateLongTermActivity]
+    [addCarbonPoints, applyImpactToTrend, ensureDailyReset, ensureWeekData, hasAwardedToday, markAwardedToday, updateLongTermActivity, submitActivityToBackend]
   );
 
   const energyRewardMonthRef = useRef(null);
@@ -623,9 +688,19 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
         awarded = true;
       }
 
+      // Submit to backend API (energy expects bill amounts)
+      const apiItems = {};
+      if (electricity > 0) {
+        apiItems["Electricity Bill"] = electricity;
+      }
+      if (gas > 0) {
+        apiItems["Gas Bill"] = gas;
+      }
+      await submitActivityToBackend("energy", apiItems);
+
       return { points: pointsAwarded, awarded, monthKey };
     },
-    [addCarbonPoints, updateLongTermActivity]
+    [addCarbonPoints, updateLongTermActivity, submitActivityToBackend]
   );
 
   const value = useMemo(

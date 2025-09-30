@@ -1,12 +1,13 @@
 import { StyleSheet } from "react-native";
 import colors from "../../../theme/colors";
+import layout from "../../../theme/layout";
 
 export default StyleSheet.create({
   card: {
     backgroundColor: colors.neutral.white,
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
+    padding: layout.cardSpacing,
+    marginBottom: layout.cardSpacing,
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 6,
@@ -22,7 +23,7 @@ export default StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 16,
+    marginRight: layout.cardSpacing,
   },
   title: {
     fontSize: 17,

@@ -37,13 +37,37 @@ export default StyleSheet.create({
     fontSize: 13,
     color: colors.textSecondary,
   },
+  rangeSelectorRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  rangeButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: colors.neutral.gray100,
+    minWidth: 50,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rangeButtonActive: {
+    backgroundColor: colors.eco.green[600],
+  },
+  rangeButtonText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.textSecondary,
+  },
+  rangeButtonTextActive: {
+    color: colors.neutral.white,
+  },
   chartWrapper: {
     width: "100%",
   },
   metricsRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 8,
   },
   metric: {
     flex: 1,
@@ -60,6 +84,11 @@ export default StyleSheet.create({
     color: colors.textPrimary,
     lineHeight: 20,
     flexWrap: 'wrap',
+  },
+  dateRangeCaption: {
+    marginTop: 4,
+    fontSize: 11,
+    color: colors.textSecondary,
   },
   metricValueWarning: {
     color: colors.warning,
@@ -79,18 +108,22 @@ export default StyleSheet.create({
     position: "relative",
     height: 56,
     marginTop: 12,
+    marginBottom: 10,
     alignSelf: "center",
   },
   valueLabel: {
     fontSize: 13,
     fontWeight: "600",
-    color: colors.eco.green[600],
+    color: colors.textPrimary,
   },
   dayLabel: {
     fontSize: 11,
     marginTop: 4,
     color: colors.textSecondary,
-    transform: [{ rotate: "-28deg" }],
+  },
+  dayLabelToday: {
+    color: colors.eco.green[700],
+    fontWeight: "600",
   },
   axisLabel: {
     position: "absolute",

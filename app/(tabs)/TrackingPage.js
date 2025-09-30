@@ -1,13 +1,13 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 
-import CTAButton from "../../components/CTAButton";
 import PageHeader from "../../components/PageHeader";
 import ActivityCard from "../../components/tracking/ActivityCard";
 import ImpactChart from "../../components/tracking/ImpactChart";
 import WeeklySummary from "../../components/tracking/WeeklySummary";
 import { useTracking } from "../../context/TrackingContext";
 import colors from "../../theme/colors";
+import layout from "../../theme/layout";
 
 const TrackingPage = () => {
   const router = useRouter();
@@ -35,7 +35,9 @@ const TrackingPage = () => {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={styles.container}>
-        <PageHeader title="Tracking" />
+        <View style={styles.headerSpacing}>
+          <PageHeader title="Tracking" />
+        </View>
 
         <ImpactChart
           weeklyTrend={weeklyImpact.trend}
@@ -43,8 +45,7 @@ const TrackingPage = () => {
           total={weeklyImpact.total}
         />
 
-        {/* Today’s activities */}
-        <Text style={styles.sectionTitle}>Log Today’s Activities</Text>
+        <Text style={styles.sectionHeading}>Log Today’s Activities</Text>
         {todaysActivities.map((item) => (
           <ActivityCard
             key={item.id}
@@ -57,8 +58,7 @@ const TrackingPage = () => {
           />
         ))}
 
-        {/* Long-Term Tracking */}
-        <Text style={styles.sectionTitle}>Long-Term Tracking</Text>
+        <Text style={styles.sectionHeading}>Long-Term Tracking</Text>
         {longTermActivities.map((item) => (
           <ActivityCard
             key={item.id}
@@ -77,12 +77,6 @@ const TrackingPage = () => {
           previous={weeklyImpact.previous}
         />
 
-        <View style={{ marginTop: 20 }}>
-          <CTAButton
-            label="+ Add Activity"
-            onPress={() => console.log("Add Activity")}
-          />
-        </View>
       </ScrollView>
     </View>
   );
@@ -90,14 +84,19 @@ const TrackingPage = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    paddingHorizontal: layout.screenPadding,
+    paddingTop: layout.screenPadding,
+    paddingBottom: layout.blockSpacing,
   },
-  sectionTitle: {
+  headerSpacing: {
+    marginBottom: layout.sectionSpacing,
+  },
+  sectionHeading: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.textPrimary,
-    marginBottom: 12,
-    marginTop: 16,
+    marginTop: layout.sectionSpacing,
+    marginBottom: layout.cardSpacing / 2,
   },
 });
 

@@ -17,6 +17,8 @@ import {
 } from "../../services/apis/challengeAPI";
 import { getUser } from "../../services/apis/userAPI";
 import colors from "../../theme/colors";
+import layout from "../../theme/layout";
+import { showFeedbackToast } from "../../utils/toast";
 
 /**
  * ChallengePage component.
@@ -62,11 +64,28 @@ const ChallengePage = () => {
    */
   const handleActivateChallenge = async (challenge) => {
     try {
-      if (!user?.eco_id) return;
+      if (!user?.eco_id) {
+        showFeedbackToast({
+          variant: 'info',
+          title: 'Sign in required',
+          message: 'Sign in to activate challenges.',
+        });
+        return;
+      }
       await activateChallenge(user.eco_id, challenge.id, true);
       setActiveChallenges((prev) => [challenge, ...prev]);
+      showFeedbackToast({
+        variant: 'success',
+        title: 'Challenge activated',
+        message: `${challenge.title} is now in your active list.`,
+      });
     } catch (err) {
       logger.error("[ChallengePage] Failed to activate challenge:", err);
+      showFeedbackToast({
+        variant: 'error',
+        title: 'Unable to activate',
+        message: 'Please try again in a moment.',
+      });
     }
   };
 
@@ -79,7 +98,14 @@ const ChallengePage = () => {
    */
   const handleCompleteChallenge = async (challenge) => {
     try {
-      if (!user?.eco_id) return;
+      if (!user?.eco_id) {
+        showFeedbackToast({
+          variant: 'info',
+          title: 'Sign in required',
+          message: 'Sign in to track challenge progress.',
+        });
+        return;
+      }
 
       await completeUserChallenge(
         user.eco_id,
@@ -94,8 +120,18 @@ const ChallengePage = () => {
 
       setHasCompletedAny(true);
       setActiveChallenges((prev) => prev.filter((c) => c.id !== challenge.id));
+      showFeedbackToast({
+        variant: 'success',
+        title: 'Challenge complete',
+        message: `${challenge.title} marked as complete. Well done!`,
+      });
     } catch (err) {
       logger.error("[ChallengePage] Failed to complete challenge:", err);
+      showFeedbackToast({
+        variant: 'error',
+        title: 'Unable to save progress',
+        message: 'Check your connection and try again.',
+      });
     }
   };
 
@@ -122,7 +158,9 @@ const ChallengePage = () => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <PageHeader title="Challenges" />
+        <View style={styles.headerSpacing}>
+          <PageHeader title="Challenges" />
+        </View>
 
         <View style={styles.featuredWrapper}>
           <FeaturedChallengeCard
@@ -158,7 +196,7 @@ const ChallengePage = () => {
         <View style={styles.section}>
           <CTAButton
             label="View My Rewards"
-            onPress={() => router.replace("/RewardsPage")}
+            onPress={() => router.push("/RewardsPage")}
           />
         </View>
       </ScrollView>
@@ -174,29 +212,34 @@ const ChallengePage = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    paddingHorizontal: layout.screenPadding,
+    paddingTop: layout.screenPadding,
+    paddingBottom: layout.blockSpacing,
+  },
+  headerSpacing: {
+    marginBottom: layout.sectionSpacing,
   },
   featuredWrapper: {
     height: 300,
-    marginBottom: 48,
+    marginBottom: layout.blockSpacing,
   },
   activeSection: {
-    marginTop: 16,
-    marginBottom: 32,
+    marginTop: layout.sectionSpacing,
+    marginBottom: layout.blockSpacing / 2,
     zIndex: 1,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: layout.sectionSpacing,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 16,
-    marginTop: 24,
+    marginBottom: layout.cardSpacing,
+    marginTop: layout.sectionSpacing,
     color: colors.textPrimary,
   },
   cardWrapper: {
-    marginBottom: 16,
+    marginBottom: layout.cardSpacing,
   },
   emptyStateText: {
     fontSize: 14,

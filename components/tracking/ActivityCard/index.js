@@ -1,6 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
 import colors from "../../../theme/colors";
+import layout from "../../../theme/layout";
 import styles from "./styles";
 
 const ActivityCard = ({ icon, title, value, description, actionText = "Enter", onEdit }) => {
@@ -54,7 +55,14 @@ const ActivityCard = ({ icon, title, value, description, actionText = "Enter", o
         {/* Value + Action link */}
         <View style={styles.right}>
           <Text style={styles.value}>{value}</Text>
-          <TouchableOpacity onPress={onEdit}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={`Log ${title} activity`}
+            accessibilityHint={`Opens the ${title} logging form`}
+            onPress={onEdit}
+            hitSlop={layout.hitSlop}
+            activeOpacity={0.8}
+          >
             <Text style={styles.edit}>{actionText}</Text>
           </TouchableOpacity>
         </View>

@@ -8,6 +8,7 @@ import AvatarCard from "../../components/persona/AvatarCard";
 import MonthlySnapshot from "../../components/profile/MonthlySnapshot";
 import ScoreCard from "../../components/profile/ScoreCard";
 import colors from "../../theme/colors";
+import layout from "../../theme/layout";
 
 import { useUser } from "../../context/UserContext";
 import { fetchMonthlySnapshot } from "../../services/apis/monthlySnapshotAPI";
@@ -55,12 +56,14 @@ const ProfilePage = () => {
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={styles.container}>
-        <PageHeader
-          title="My Profile"
-          onNotificationPress={() => console.log("Notifications Pressed")}
-          onSettingsPress={() => router.push("/SettingsPage")}
-          showSettings={true}
-        />
+        <View style={styles.headerSpacing}>
+          <PageHeader
+            title="My Profile"
+            onNotificationPress={() => console.log("Notifications Pressed")}
+            onSettingsPress={() => router.push("/SettingsPage")}
+            showSettings
+          />
+        </View>
 
         {/* Carbon Points */}
         {user && (
@@ -98,7 +101,12 @@ const ProfilePage = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    paddingHorizontal: layout.screenPadding,
+    paddingTop: layout.screenPadding,
+    paddingBottom: layout.blockSpacing,
+  },
+  headerSpacing: {
+    marginBottom: layout.sectionSpacing,
   },
 });
 
