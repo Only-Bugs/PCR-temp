@@ -17,6 +17,7 @@ import PageHeader from '../../components/PageHeader';
 import colors from '../../theme/colors';
 import layout from '../../theme/layout';
 import { ArticleCard } from '../../components/learning/ArticleCard';
+import RangeSwitch from '../../components/learning/RangeSwitch';
 import { chunk, PAGE_SIZE } from '../../helpers/paging';
 import { logAnalyticsEvent } from '../../utils/analytics';
 
@@ -28,8 +29,8 @@ const API_FALLBACK_ENDPOINT = 'https://ayrnx5os0c.execute-api.ap-southeast-2.ama
 const ARTICLES_SUBTITLE = 'Fresh guidance to support your greener habits.';
 
 const ARTICLE_TABS = [
-  { key: 'featured', label: 'Featured' },
-  { key: 'latest', label: 'Latest' },
+  { key: 'featured', label: 'Featured', accessibilityLabel: 'Show featured articles' },
+  { key: 'latest', label: 'Latest', accessibilityLabel: 'Show latest articles' },
 ];
 
 let ARTICLE_ENDPOINT = API_FALLBACK_ENDPOINT;
@@ -158,10 +159,16 @@ const SkeletonCard = () => {
 
   return (
     <Animated.View style={[styles.articleCardShell, { opacity: pulse }]}> 
-      <View style={styles.skeletonBodyTextOnly}>
-        <View style={[styles.skeletonLine, styles.skeletonLineShort]} />
-        <View style={[styles.skeletonLine, styles.skeletonLineMedium, styles.skeletonLineMarginTop]} />
-        <View style={[styles.skeletonLine, styles.skeletonLineTextMeta]} />
+      <View style={styles.skeletonRow}>
+        <View style={styles.skeletonMedia} />
+        <View style={styles.skeletonBody}>
+          <View style={[styles.skeletonLine, styles.skeletonLineShort]} />
+          <View style={[styles.skeletonLine, styles.skeletonLineMedium, styles.skeletonLineMarginTop]} />
+          <View style={styles.skeletonMetaRow}>
+            <View style={styles.skeletonDot} />
+            <View style={[styles.skeletonLine, styles.skeletonLineTextMeta]} />
+          </View>
+        </View>
       </View>
     </Animated.View>
   );
@@ -493,25 +500,7 @@ const LearningPage = () => {
           <View style={styles.section}>
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionTitle}>Articles</Text>
-              <View style={styles.segmentedControl}>
-                {ARTICLE_TABS.map((tab) => {
-                  const selected = activeTab === tab.key;
-                  return (
-                    <TouchableOpacity
-                      key={tab.key}
-                      style={[styles.segmentedButton, selected && styles.segmentedButtonActive]}
-                      accessibilityRole="button"
-                      accessibilityState={{ selected }}
-                      onPress={() => handleTabChange(tab.key)}
-                      activeOpacity={0.8}
-                    >
-                      <Text style={[styles.segmentedButtonLabel, selected && styles.segmentedButtonLabelActive]}>
-                        {tab.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+              <RangeSwitch options={ARTICLE_TABS} value={activeTab} onChange={handleTabChange} />
             </View>
             <Text style={styles.sectionSubtitle}>{ARTICLES_SUBTITLE}</Text>
             <View style={styles.sectionDividerInset} />
@@ -669,51 +658,36 @@ const styles = StyleSheet.create({
   sectionDividerInset: {
     height: 1,
     backgroundColor: 'rgba(15, 23, 42, 0.06)',
-    marginTop: 12,
+    marginTop: 8,
     borderRadius: 1,
   },
   sectionItemSpacing: {
-    marginTop: layout.sectionSpacing,
+    marginTop: layout.cardSpacing + layout.itemSpacing,
   },
   sectionItemSpacingFirst: {
-    marginTop: layout.cardSpacing,
-  },
-  segmentedControl: {
-    flexDirection: 'row',
-    backgroundColor: colors.neutral.gray100,
-    borderRadius: 999,
-    padding: 4,
-  },
-  segmentedButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  segmentedButtonActive: {
-    backgroundColor: colors.neutral.white,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  segmentedButtonLabel: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: colors.textSecondary,
-  },
-  segmentedButtonLabelActive: {
-    color: colors.textPrimary,
-    fontWeight: '600',
+    marginTop: layout.itemSpacing * 0.5,
   },
   articleCardShell: {
     backgroundColor: colors.neutral.white,
     borderRadius: 16,
     padding: layout.cardSpacing,
   },
-  skeletonBodyTextOnly: {
+  skeletonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
-    alignSelf: 'stretch',
+  },
+  skeletonMedia: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: colors.neutral.gray200,
+    borderWidth: 1,
+    borderColor: 'rgba(15, 23, 42, 0.08)',
+  },
+  skeletonBody: {
+    flex: 1,
+    gap: 8,
   },
   skeletonLine: {
     height: 10,
@@ -729,17 +703,22 @@ const styles = StyleSheet.create({
   skeletonLineMarginTop: {
     marginTop: 8,
   },
-  skeletonLineMeta: {
-    flex: 1,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.neutral.gray200,
-  },
   skeletonLineTextMeta: {
     width: '40%',
     height: 8,
     borderRadius: 4,
     backgroundColor: colors.neutral.gray200,
+  },
+  skeletonMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  skeletonDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.neutral.gray300,
   },
   banner: {
     borderRadius: 16,
