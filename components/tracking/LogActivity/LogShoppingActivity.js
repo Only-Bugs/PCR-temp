@@ -9,10 +9,10 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-import CTAButton from '../components/CTAButton';
-import { useTracking } from '../context/TrackingContext';
-import colors from '../theme/colors';
-import { showRewardToast } from '../utils/toast';
+import CTAButton from '../../CTAButton';
+import { useTracking } from '../../../context/TrackingContext';
+import colors from '../../../theme/colors';
+import { showRewardToast } from '../../../utils/toast';
 
 const SHOPPING_SECTIONS = [
   {

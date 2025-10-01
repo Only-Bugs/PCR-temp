@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View ,Button} from "react-native";
 import { useRouter } from "expo-router";
 
 import PageHeader from "../../components/PageHeader";
@@ -8,6 +8,7 @@ import WeeklySummary from "../../components/tracking/WeeklySummary";
 import { useTracking } from "../../context/TrackingContext";
 import colors from "../../theme/colors";
 import layout from "../../theme/layout";
+
 
 const TrackingPage = () => {
   const router = useRouter();
@@ -76,7 +77,7 @@ const TrackingPage = () => {
           baseline={weeklyImpact.baseline}
           previous={weeklyImpact.previous}
         />
-
+  <Button onClick={()=> console.log(user,"user")}title="click me"/>
       </ScrollView>
     </View>
   );
@@ -101,3 +102,4 @@ const styles = StyleSheet.create({
 });
 
 export default TrackingPage;
+

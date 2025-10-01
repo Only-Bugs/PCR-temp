@@ -10,10 +10,10 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-import CTAButton from '../components/CTAButton';
-import { useTracking } from '../context/TrackingContext';
-import colors from '../theme/colors';
-import { showRewardToast } from '../utils/toast';
+import CTAButton from '../../CTAButton';
+import { useTracking } from '../../../context/TrackingContext';
+import colors from '../../../theme/colors';
+import { showRewardToast } from '../../../utils/toast';
 
 const ENERGY_NOTE =
   'Energy records reflect long-term consumption patterns. Their carbon footprint is applied to your overall progress, not the daily chart.';

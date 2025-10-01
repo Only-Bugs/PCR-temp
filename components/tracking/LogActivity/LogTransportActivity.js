@@ -3,12 +3,12 @@ import { ScrollView, StyleSheet, Text, View, TouchableOpacity, TextInput } from 
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-import CTAButton from '../components/CTAButton';
-import PageHeader from '../components/PageHeader';
-import { useTracking } from '../context/TrackingContext';
-import colors from '../theme/colors';
-import layout from '../theme/layout';
-import { showFeedbackToast, showRewardToast } from '../utils/toast';
+import CTAButton from '../../CTAButton';
+import PageHeader from '../../PageHeader';
+import { useTracking } from '../../../context/TrackingContext';
+import colors from '../../../theme/colors';
+import layout from '../../../theme/layout';
+import { showFeedbackToast, showRewardToast } from '../../../utils/toast';
 
 const LogTransportActivity = () => {
     const router = useRouter();

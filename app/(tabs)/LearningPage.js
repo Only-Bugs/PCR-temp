@@ -105,6 +105,25 @@ const mockArticles = [
   },
 ];
 
+const normalizeTitle = (title) =>
+  (title || '')
+    .toLowerCase()
+    .replace(/—/g, '-')
+    .replace(/–/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const FEATURED_TITLE_PATTERNS = [
+  'everyday sustainability',
+  'eco-friendly habit you can start',
+  'diet help fight climate change',
+];
+const LATEST_TITLE_PATTERNS = [];
+const EXCLUDE_FEATURED_PATTERNS = ['grow your own', 'energy saving tips for households'];
+
+const matchesPattern = (normalizedTitle, patterns) =>
+  Boolean(normalizedTitle) && patterns.some((pattern) => normalizedTitle.includes(pattern));
+
 const mockQuizzes = [
   {
     quiz_id: 'quiz-1',
@@ -349,9 +368,59 @@ const LearningPage = () => {
 
   const articleBuckets = useMemo(() => {
     const sortByDateDesc = (a, b) => (b.published_date || '').localeCompare(a.published_date || '');
-    const list = articles || [];
-    const featured = list.filter((item) => item?.is_featured).sort(sortByDateDesc).slice(0, FEATURED_LIMIT);
-    const latest = list.filter((item) => !item?.is_featured).sort(sortByDateDesc);
+    const list = (articles || []).map((item) => {
+      const normalizedTitle = normalizeTitle(item?.title);
+
+      if (matchesPattern(normalizedTitle, FEATURED_TITLE_PATTERNS)) {
+        return { ...item, is_featured: true };
+      }
+
+      if (
+        matchesPattern(normalizedTitle, LATEST_TITLE_PATTERNS) ||
+        matchesPattern(normalizedTitle, EXCLUDE_FEATURED_PATTERNS)
+      ) {
+        return { ...item, is_featured: false };
+      }
+
+      return item;
+    });
+    const featured = list
+      .filter((item) => item?.is_featured)
+      .sort((a, b) => {
+        const aTitle = normalizeTitle(a?.title);
+        const bTitle = normalizeTitle(b?.title);
+        const aForced = matchesPattern(aTitle, FEATURED_TITLE_PATTERNS);
+        const bForced = matchesPattern(bTitle, FEATURED_TITLE_PATTERNS);
+
+        if (aForced && !bForced) {
+          return -1;
+        }
+
+        if (!aForced && bForced) {
+          return 1;
+        }
+
+        return sortByDateDesc(a, b);
+      })
+      .slice(0, FEATURED_LIMIT);
+    const latest = list
+      .filter((item) => !item?.is_featured)
+      .sort((a, b) => {
+        const aTitle = normalizeTitle(a?.title);
+        const bTitle = normalizeTitle(b?.title);
+        const aForced = matchesPattern(aTitle, LATEST_TITLE_PATTERNS);
+        const bForced = matchesPattern(bTitle, LATEST_TITLE_PATTERNS);
+
+        if (aForced && !bForced) {
+          return -1;
+        }
+
+        if (!aForced && bForced) {
+          return 1;
+        }
+
+        return sortByDateDesc(a, b);
+      });
 
     return {
       featuredArticles: featured,
