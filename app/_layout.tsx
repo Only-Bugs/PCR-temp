@@ -9,8 +9,10 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import Toast from "react-native-toast-message";
 
 import { HapticsProvider } from "../context/HapticsContext";
+import { TrackingProvider } from "../context/TrackingContext";
 import { UserProvider } from "../context/UserContext";
 import colors from "../theme/colors";
+import { toastConfig } from "../utils/toastConfig";
 
 /**
  * RootLayout provides safe area handling and global context.
@@ -23,18 +25,20 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <UserProvider>
         <HapticsProvider>
-          {Platform.OS === "android" ? (
-            <SafeAreaView style={[styles.container, styles.androidSafeArea]}>
-              <Slot />
-            </SafeAreaView>
-          ) : (
-            <SafeAreaView style={styles.container}>
-              <Slot />
-            </SafeAreaView>
-          )}
+          <TrackingProvider>
+            {Platform.OS === "android" ? (
+              <SafeAreaView style={[styles.container, styles.androidSafeArea]}>
+                <Slot />
+              </SafeAreaView>
+            ) : (
+              <SafeAreaView style={styles.container}>
+                <Slot />
+              </SafeAreaView>
+            )}
+          </TrackingProvider>
         </HapticsProvider>
       </UserProvider>
-      <Toast />
+      <Toast config={toastConfig} />
     </GestureHandlerRootView>
   );
 }

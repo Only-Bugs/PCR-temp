@@ -96,13 +96,15 @@ export const UserProvider = ({ children }) => {
     setUser(updated);
     await StorageService.setUser(updated);
 
-    try {
-      await updateUserPoints(user.eco_id, newTotal);
-    } catch (err) {
-      console.error(
-        "[UserContext] Failed to sync carbon points with API:",
-        err
-      );
+    if (!__DEV__) {
+      try {
+        await updateUserPoints(user.eco_id, newTotal);
+      } catch (err) {
+        console.error(
+          "[UserContext] Failed to sync carbon points with API:",
+          err
+        );
+      }
     }
   };
 

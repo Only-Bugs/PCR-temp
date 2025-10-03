@@ -1,12 +1,13 @@
 import { StyleSheet } from "react-native";
 import colors from "../../../theme/colors";
+import layout from "../../../theme/layout";
 
 export default StyleSheet.create({
   card: {
     backgroundColor: colors.eco.green[50], // ✅ light green tint background
     borderRadius: 16,
-    padding: 16,
-    marginTop: 16,
+    padding: layout.cardSpacing,
+    marginTop: layout.sectionSpacing,
     shadowColor: "#000",
     shadowOpacity: 0.04, // ✅ subtle shadow
     shadowRadius: 6,
@@ -31,6 +32,7 @@ export default StyleSheet.create({
     color: colors.textSecondary,
     textAlign: "center",
     marginBottom: 12,
+    lineHeight: 18,
   },
   progressBox: {
     flexDirection: "row",
