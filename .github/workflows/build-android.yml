@@ -56,7 +56,8 @@ jobs:
       - name: Read App Name
         id: app-name
         run: |
-          APP_NAME=$(node -p "require('./app.config.js').expo.name")
+          |
+          APP_NAME=$(node --input-type=module -e "import('./app.config.js').then(m=>console.log(m.default.expo.name))")
           echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
 
       # 8. Upload as GitHub artifact (dynamic name)
