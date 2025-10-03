@@ -1,4 +1,4 @@
-name: Expo EAS Build (Android Only)
+name: Expo EAS Android Build
 
 on:
   push:
@@ -23,25 +23,27 @@ jobs:
           node-version: 18
           cache: "npm"
 
-      # 3. Cache extra dirs (expo, npm, gradle)
-      - name: Cache Expo & Gradle
+      # 3. Cache extra dirs (npm, gradle)
+      - name: Cache npm & Gradle
         uses: actions/cache@v3
         with:
           path: |
-            ~/.expo
             ~/.npm/_npx
             ~/.gradle/caches
-          key: ${{ runner.os }}-expo-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-expo-
+            ${{ runner.os }}-deps-
 
-      # 4. Install deps
+      # 4. Install dependencies
       - name: Install dependencies
         run: npm ci
 
-      # 5. Setup EAS CLI
-      - name: Setup EAS
-        run: npm install -g eas-cli
+      # 5. Setup Expo & EAS CLI via official GitHub Action
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
 
       # 6. Run EAS build (Android only)
       - name: Build Android APK
@@ -49,23 +51,22 @@ jobs:
         run: |
           BUILD_URL=$(eas build --platform android --profile preview --non-interactive --json | jq -r '.[0].artifacts.buildUrl')
           echo "build_url=$BUILD_URL" >> $GITHUB_OUTPUT
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Download APK from Expo
+           # 7. Get app name from app.config.js
+      - name: Read App Name
+        id: app-name
         run: |
-          BUILD_URL="${{ steps.eas-build.outputs.build_url }}"
-          echo "Downloading from $BUILD_URL"
-          curl -L "$BUILD_URL" -o app-preview.apk
+          APP_NAME=$(node -p "require('./app.config.js').expo.name")
+          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
 
-      # 8c. Upload as GitHub artifact
+      # 8. Upload as GitHub artifact (dynamic name)
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: FloraBit-apk
+          name: ${{ steps.app-name.outputs.app_name }}-apk
           path: app-preview.apk
 
-      # 7. Send Discord notification
+      # 9. Send Discord notification
       - name: Discord Notification
         if: always()
         uses: Ilshidur/action-discord@master
@@ -73,15 +74,11 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           args: |
-            *Iteration 2 Android Build - Beta*
+            *${{ steps.app-name.outputs.app_name }} Android Build - Beta*
             Status: **${{ job.status }}**
-
             ━━━━━━━━━━━━━━━━━━
-            ⬇️ [Download here](${{ steps.eas-build.outputs.build_url }})
+            ⬇️ [Download Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
             ━━━━━━━━━━━━━━━━━━
-
-
-
             Message: ${{ github.event.head_commit.message }}
             ━━━━━━━━━━━━━━━━━━━━━━━━━━━
             Commit: `${{ github.sha }}`
