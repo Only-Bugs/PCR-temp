@@ -208,7 +208,7 @@ const OnboardingPage = () => {
 
   const handleBack = () => {
     if (currentIndex === 0) {
-      router.replace("/WelcomePage");
+      router.replace("/SignInPage");
     } else {
       setCurrentIndex((prev) => Math.max(prev - 1, 0));
     }

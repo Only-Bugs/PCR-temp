@@ -5,7 +5,6 @@
  * then navigates to ProfilePage.
  */
 
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -22,8 +21,8 @@ import CTAButton from "../../components/CTAButton";
 import { AuthCard } from "../../components/forms/auth";
 import { useUser } from "../../context/UserContext";
 import { getUser } from "../../services/apis/userAPI";
+import { setSeenIntro } from "../../lib/storage/firstRun";
 import StorageService from "../../services/storage";
-import colors from "../../theme/colors";
 import styles from "./styles";
 
 const SignInPage = () => {
@@ -65,6 +64,18 @@ const SignInPage = () => {
     }
   };
 
+  const handleViewIntro = async () => {
+    try {
+      await setSeenIntro(false);
+    } catch (err) {
+      if (__DEV__) {
+        console.warn("[SignIn] Failed to reset intro flag", err);
+      }
+    } finally {
+      router.replace("/(intro)/intro");
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -72,13 +83,6 @@ const SignInPage = () => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-          </TouchableOpacity>
-
           <View style={styles.iconWrapper}>
             <AppIcon size={32} />
           </View>
@@ -105,8 +109,12 @@ const SignInPage = () => {
             disabled={loading}
           />
 
-          <TouchableOpacity onPress={() => router.push("/OnboardingPage")}>
+          <TouchableOpacity onPress={() => router.push("/OnboardingPage")}> 
             <Text style={styles.link}>New user? Start here →</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleViewIntro} style={{ marginTop: 16 }}>
+            <Text style={styles.link}>View the intro again</Text>
           </TouchableOpacity>
         </View>
       </TouchableWithoutFeedback>

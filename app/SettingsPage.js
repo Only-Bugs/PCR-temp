@@ -77,7 +77,7 @@ const SettingsPage = () => {
       console.log(
         "[SettingsPage] User logged out, cleared context and storage"
       );
-      router.replace("/WelcomePage");
+      router.replace("/");
     } catch (err) {
       console.log("[SettingsPage] Logout error:", err.message);
     }
