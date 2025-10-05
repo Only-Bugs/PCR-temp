@@ -23,7 +23,7 @@ jobs:
           node-version: 18
           cache: "npm"
 
-      # 3. Cache extra dirs (npm, gradle)
+      # 3. Cache npm & Gradle
       - name: Cache npm & Gradle
         uses: actions/cache@v3
         with:
@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 5. Setup Expo & EAS CLI via official GitHub Action
+      # 5. Setup Expo & EAS CLI
       - name: Setup Expo
         uses: expo/expo-github-action@v8
         with:
@@ -52,22 +52,14 @@ jobs:
           BUILD_URL=$(eas build --platform android --profile preview --non-interactive --json | jq -r '.[0].artifacts.buildUrl')
           echo "build_url=$BUILD_URL" >> $GITHUB_OUTPUT
 
-      # 7. Get app name from app.config.js
-      - name: Read App Name
-        id: app-name
-        run: |
-          |
-          APP_NAME=$(node --input-type=module -e "import('./app.config.js').then(m=>console.log(m.default.expo.name))")
-          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
-
-      # 8. Upload as GitHub artifact (dynamic name)
+      # 7. Upload APK Artifact (versioned by branch + run number)
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.app-name.outputs.app_name }}-apk
+          name: app-preview-${{ github.ref_name }}-b${{ github.run_number }}
           path: app-preview.apk
 
-      # 9. Send Discord notification
+      # 8. Send Discord notification
       - name: Discord Notification
         if: always()
         uses: Ilshidur/action-discord@master
@@ -75,10 +67,10 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           args: |
-            *${{ steps.app-name.outputs.app_name }} Android Build - Beta*
+            *Expo Android Build - Beta*
             Status: **${{ job.status }}**
             ━━━━━━━━━━━━━━━━━━
-            ⬇️ [Download Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            **Download Artifact:** app-preview-${{ github.ref_name }}-b${{ github.run_number }}(https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
             ━━━━━━━━━━━━━━━━━━
             Message: ${{ github.event.head_commit.message }}
             ━━━━━━━━━━━━━━━━━━━━━━━━━━━
