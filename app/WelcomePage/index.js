@@ -9,6 +9,7 @@ import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import AppIcon from "../../components/AppIcon";
 import CTAButton from "../../components/CTAButton";
+
 import colors from "../../theme/colors";
 
 /**

@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react';
-import { Slot, useRouter, useSegments } from 'expo-router';
-import { Platform, StyleSheet } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Toast from 'react-native-toast-message';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Slot, useRouter, useSegments } from "expo-router";
+import { useEffect, useState } from "react";
+import { Platform, StyleSheet } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
-import { HapticsProvider } from '../context/HapticsContext';
-import { TrackingProvider } from '../context/TrackingContext';
-import { UserProvider } from '../context/UserContext';
-import colors from '../theme/colors';
-import { toastConfig } from '../utils/toastConfig';
-import { getSeenIntro } from '../lib/storage/firstRun';
+import { HapticsProvider } from "../context/HapticsContext";
+import { TrackingProvider } from "../context/TrackingContext";
+import { UserProvider } from "../context/UserContext";
+import { getSeenIntro } from "../lib/storage/firstRun";
+import colors from "../theme/colors";
+import { toastConfig } from "../utils/toastConfig";
 
 export default function RootLayout() {
   const router = useRouter();
@@ -27,24 +27,24 @@ export default function RootLayout() {
           return;
         }
 
-        const isIntroRoute = segments?.[0] === '(intro)';
+        const isIntroRoute = segments?.[0] === "(intro)";
 
         if (hasSeenIntro && isIntroRoute) {
           setReady(false);
-          router.replace('/');
+          router.replace("/");
           return;
         }
 
         if (!hasSeenIntro && !isIntroRoute) {
           setReady(false);
-          router.replace('/(intro)/intro');
+          router.replace("/(intro)/intro");
           return;
         }
 
         setReady(true);
       } catch (error) {
         if (__DEV__) {
-          console.warn('[RootLayout] intro guard failed', error);
+          console.warn("[RootLayout] intro guard failed", error);
         }
         if (isMounted) {
           setReady(true);
@@ -64,12 +64,14 @@ export default function RootLayout() {
       <UserProvider>
         <HapticsProvider>
           <TrackingProvider>
-            {Platform.OS === 'android' ? (
-              <SafeAreaView style={[styles.container, styles.androidSafeArea]}>
+            {Platform.OS === "android" ? (
+              <SafeAreaView style={styles.container}>
                 {ready ? <Slot /> : null}
               </SafeAreaView>
             ) : (
-              <SafeAreaView style={styles.container}>{ready ? <Slot /> : null}</SafeAreaView>
+              <SafeAreaView style={styles.container}>
+                {ready ? <Slot /> : null}
+              </SafeAreaView>
             )}
           </TrackingProvider>
         </HapticsProvider>
@@ -84,8 +86,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  androidSafeArea: {
-    paddingTop: 12,
-    paddingBottom: 4,
-  },
+  // androidSafeArea: {
+  //   paddingTop: 12,
+  //   paddingBottom: 4,
+  // },
 });

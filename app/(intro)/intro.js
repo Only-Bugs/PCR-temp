@@ -3,41 +3,44 @@
  * Shows first-time users a visual introduction to the app's features.
  */
 
-import { useRouter } from 'expo-router';
-import { useState, useRef } from 'react';
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import { useRef, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
   Dimensions,
-  TouchableOpacity,
   FlatList,
-} from 'react-native';
-import { Image } from 'expo-image';
-import { setSeenIntro } from '../../lib/storage/firstRun';
-import colors from '../../theme/colors';
-import { useHapticsUtils } from '../../utils/haptics';
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { setSeenIntro } from "../../lib/storage/firstRun";
+import colors from "../../theme/colors";
+import { useHapticsUtils } from "../../utils/haptics";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 const SLIDES = [
   {
-    id: '1',
-    title: 'Track Your Impact',
-    description: 'Monitor your carbon footprint and see how your daily choices make a difference.',
-    image: require('../../assets/intro/tracking(2).svg'),
+    id: "1",
+    title: "Track Your Impact",
+    description:
+      "Monitor your carbon footprint and see how your daily choices make a difference.",
+    image: require("../../assets/intro/tracking(2).svg"),
   },
   {
-    id: '2',
-    title: 'Take Challenges',
-    description: 'Join eco-friendly challenges and earn points while making the planet greener.',
-    image: require('../../assets/intro/challenges.svg'),
+    id: "2",
+    title: "Take Challenges",
+    description:
+      "Join eco-friendly challenges and earn points while making the planet greener.",
+    image: require("../../assets/intro/challenges.svg"),
   },
   {
-    id: '3',
-    title: 'Learn & Grow',
-    description: 'Discover sustainable tips and grow your eco-persona from leaf to tree.',
-    image: require('../../assets/intro/learn&grow.svg'),
+    id: "3",
+    title: "Learn & Grow",
+    description:
+      "Discover sustainable tips and grow your eco-persona from leaf to tree.",
+    image: require("../../assets/intro/learn&grow.svg"),
   },
 ];
 
@@ -59,7 +62,7 @@ export default function IntroPage() {
     await hapticPress();
     if (isLastSlide) {
       await setSeenIntro(true);
-      router.replace('/');
+      router.replace("/");
     } else {
       flatListRef.current?.scrollToIndex({
         index: currentIndex + 1,
@@ -71,7 +74,7 @@ export default function IntroPage() {
   const handleSkip = async () => {
     await hapticPress();
     await setSeenIntro(true);
-    router.replace('/');
+    router.replace("/");
   };
 
   const onViewableItemsChanged = useRef(({ viewableItems }) => {
@@ -99,10 +102,7 @@ export default function IntroPage() {
       {SLIDES.map((_, index) => (
         <View
           key={index}
-          style={[
-            styles.dot,
-            index === currentIndex && styles.activeDot,
-          ]}
+          style={[styles.dot, index === currentIndex && styles.activeDot]}
         />
       ))}
     </View>
@@ -136,7 +136,7 @@ export default function IntroPage() {
       {/* Next/Get Started button */}
       <TouchableOpacity style={styles.button} onPress={handleNext}>
         <Text style={styles.buttonText}>
-          {isLastSlide ? 'Get Started' : 'Next'}
+          {isLastSlide ? "Get Started" : "Next"}
         </Text>
       </TouchableOpacity>
     </View>
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   skipButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 50,
     right: 20,
     zIndex: 10,
@@ -159,13 +159,13 @@ const styles = StyleSheet.create({
   skipText: {
     fontSize: 16,
     color: colors.textSecondary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   slide: {
     width,
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 40,
   },
   image: {
@@ -174,25 +174,25 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   textContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.textPrimary,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 16,
   },
   description: {
     fontSize: 16,
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 24,
   },
   pagination: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 40,
   },
   dot: {
@@ -212,11 +212,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.eco.green[600],
     paddingVertical: 16,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   buttonText: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
     color: colors.neutral.white,
   },
 });

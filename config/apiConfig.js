@@ -29,6 +29,7 @@ const apiConfig = {
   endpoints: {
     baseline: "/baseline",
     getUser: "/user",
+    quiz: "/quiz",
   },
 };
 
