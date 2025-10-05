@@ -46,7 +46,6 @@ const SettingsPage = () => {
     await StorageService.setUser(newUser); // force persist first
     await updateUser(newUser); // then sync into context
 
-    console.log(`[Debug] Persona stage forced to: ${nextStage}`);
   };
 
   const copyEcoId = async () => {
@@ -62,7 +61,7 @@ const SettingsPage = () => {
       return;
     }
     try {
-      console.log(`[SettingsPage] Sending Eco ID ${user?.eco_id} to ${email}`);
+
       Alert.alert("Success", `Eco ID sent to ${email}`);
       setEmail("");
       setShowEmailInput(false);
@@ -74,12 +73,10 @@ const SettingsPage = () => {
   const handleLogout = async () => {
     try {
       await resetUser();
-      console.log(
-        "[SettingsPage] User logged out, cleared context and storage"
-      );
+
       router.replace("/");
     } catch (err) {
-      console.log("[SettingsPage] Logout error:", err.message);
+
     }
   };
 

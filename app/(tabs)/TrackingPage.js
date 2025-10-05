@@ -29,7 +29,7 @@ const TrackingPage = () => {
         router.push('/LogEnergyActivity');
         break;
       default:
-        console.log(`Enter ${activityTitle}`);
+
     }
   };
 

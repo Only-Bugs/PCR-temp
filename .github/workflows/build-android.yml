@@ -52,7 +52,7 @@ jobs:
           BUILD_URL=$(eas build --platform android --profile preview --non-interactive --json | jq -r '.[0].artifacts.buildUrl')
           echo "build_url=$BUILD_URL" >> $GITHUB_OUTPUT
 
-           # 7. Get app name from app.config.js
+      # 7. Get app name from app.config.js
       - name: Read App Name
         id: app-name
         run: |

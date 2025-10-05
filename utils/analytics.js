@@ -4,5 +4,5 @@
  * @param {Record<string, any>} payload - Event payload metadata.
  */
 export const logAnalyticsEvent = (eventName, payload = {}) => {
-  console.log(`[analytics] ${eventName}`, payload);
+
 };

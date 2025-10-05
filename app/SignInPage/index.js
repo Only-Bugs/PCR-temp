@@ -53,11 +53,9 @@ const SignInPage = () => {
       await StorageService.setEcoId(user.eco_id);
       await StorageService.setUser(user);
 
-      console.log("[SignIn] Success, navigating with Eco ID:", user.eco_id);
-
       router.replace("/ProfilePage");
     } catch (err) {
-      console.log("[SignIn] Error:", err.message);
+
       setError("Invalid Eco ID or failed to sign in. Please try again.");
     } finally {
       setLoading(false);

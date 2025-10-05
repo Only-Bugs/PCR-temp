@@ -21,7 +21,7 @@ const ExportIconPage = () => {
     await MediaLibrary.createAlbumAsync("Download", asset, false);
 
     Alert.alert("Saved", `${name} saved to Downloads!`);
-    console.log(`${name} saved:`, asset.uri);
+
   };
 
   const handleExportAppIcon = async () => {
