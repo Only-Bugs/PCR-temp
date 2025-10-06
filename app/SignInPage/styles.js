@@ -1,5 +1,5 @@
 /**
- * @fileoverview Styles for SignInPage.
+ * @fileoverview Styles for SignInPage with top-right info icon.
  */
 
 import { StyleSheet } from "react-native";
@@ -13,11 +13,14 @@ export default StyleSheet.create({
     justifyContent: "center",
     padding: 24,
   },
-  backButton: {
+  infoIcon: {
     position: "absolute",
-    top: 40,
-    left: 20,
+    top: 44,
+    right: 24,
     zIndex: 10,
+  },
+  infoIconColor: {
+    color: colors.eco.green[600],
   },
   iconWrapper: {
     alignItems: "center",
@@ -41,10 +44,11 @@ export default StyleSheet.create({
     marginBottom: 12,
     textAlign: "center",
   },
-  link: {
-    marginTop: 16,
-    textAlign: "center",
+  primaryLink: {
     color: colors.eco.green[600],
     fontWeight: "600",
+    fontSize: 14,
+    marginTop: 32,
+    textAlign: "center",
   },
 });

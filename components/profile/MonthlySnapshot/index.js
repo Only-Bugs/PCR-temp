@@ -18,16 +18,16 @@ const MonthlySnapshot = ({ data }) => {
       {/* Header */}
       <View style={styles.header}>
         <MaterialIcons name="show-chart" size={20} color="blue" />
-        <Text style={styles.title}>Monthly Snapshot</Text>
+        <Text style={styles.title}>Your Snapshot</Text>
       </View>
 
       {/* Performance Box */}
       <View style={styles.performanceBox}>
         <View>
-          <Text style={styles.performanceTitle}>vs. Last Month</Text>
-          <Text style={styles.performanceSub}>
-            You reduced car trips this month
-          </Text>
+          <Text
+            style={styles.performanceTitle}
+          >{`${"vs Melbourne's Average"}`}</Text>
+          {/* <Text style={styles.performanceSub}></Text> */}
         </View>
         <View style={styles.performanceRight}>
           <MaterialIcons name="arrow-downward" size={16} color="green" />

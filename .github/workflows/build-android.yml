@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # 2. Setup Node with cache
+      # 2. Setup Node.js with cache
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -45,21 +45,32 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      # 6. Run EAS build (Android only)
-      - name: Build Android APK
+      # 6. Run EAS Build (waits for completion)
+      - name: Run EAS build
         id: eas-build
         run: |
-          BUILD_URL=$(eas build --platform android --profile preview --non-interactive --json | jq -r '.[0].artifacts.buildUrl')
+          echo "Starting EAS build..."
+          BUILD_INFO=$(eas build --platform android --profile preview --non-interactive --wait --json)
+          echo "$BUILD_INFO" > build.json
+          BUILD_URL=$(jq -r '.[0].artifacts.buildUrl' build.json)
+          echo "Build completed: $BUILD_URL"
           echo "build_url=$BUILD_URL" >> $GITHUB_OUTPUT
 
-      # 7. Upload APK Artifact (versioned by branch + run number)
+      # 7. Download built APK
+      - name: Download APK from Expo
+        run: |
+          echo "Downloading APK from Expo..."
+          curl -L "${{ steps.eas-build.outputs.build_url }}" -o app-preview.apk
+          ls -lh app-preview.apk
+
+      # 8. Upload APK as GitHub Artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-preview-${{ github.ref_name }}-b${{ github.run_number }}
           path: app-preview.apk
 
-      # 8. Send Discord notification
+      # 9. Send Discord Notification
       - name: Discord Notification
         if: always()
         uses: Ilshidur/action-discord@master
@@ -70,9 +81,7 @@ jobs:
             *Expo Android Build - Beta*
             Status: **${{ job.status }}**
             ━━━━━━━━━━━━━━━━━━
-            **Download Artifact:** app-preview-${{ github.ref_name }}-b${{ github.run_number }}(https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            **Artifact:** [app-preview-${{ github.ref_name }}-b${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
             ━━━━━━━━━━━━━━━━━━
-            Message: ${{ github.event.head_commit.message }}
-            ━━━━━━━━━━━━━━━━━━━━━━━━━━━
             Commit: `${{ github.sha }}`
             Branch: `${{ github.ref_name }}`
