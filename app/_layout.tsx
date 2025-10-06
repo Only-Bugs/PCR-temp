@@ -1,9 +1,13 @@
 import { Slot, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
-import { Platform, StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaProvider,
+  SafeAreaView,
+} from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { StatusBar } from "expo-status-bar";
 
 import { HapticsProvider } from "../context/HapticsContext";
 import { TrackingProvider } from "../context/TrackingContext";
@@ -61,21 +65,24 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <UserProvider>
-        <HapticsProvider>
-          <TrackingProvider>
-            {Platform.OS === "android" ? (
-              <SafeAreaView style={styles.container}>
-                {ready ? <Slot /> : null}
+      <SafeAreaProvider>
+        <StatusBar
+          style="dark"
+          backgroundColor={colors.background}
+          translucent={false}
+        />
+        <UserProvider>
+          <HapticsProvider>
+            <TrackingProvider>
+              <SafeAreaView style={styles.safeAreaShell} edges={EDGES}>
+                <View style={styles.container}>
+                  {ready ? <Slot /> : null}
+                </View>
               </SafeAreaView>
-            ) : (
-              <SafeAreaView style={styles.container}>
-                {ready ? <Slot /> : null}
-              </SafeAreaView>
-            )}
-          </TrackingProvider>
-        </HapticsProvider>
-      </UserProvider>
+            </TrackingProvider>
+          </HapticsProvider>
+        </UserProvider>
+      </SafeAreaProvider>
       <Toast config={toastConfig} />
     </GestureHandlerRootView>
   );
@@ -86,8 +93,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  safeAreaShell: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   // androidSafeArea: {
   //   paddingTop: 12,
   //   paddingBottom: 4,
   // },
 });
+
+const EDGES: Array<"top" | "bottom" | "left" | "right"> = [
+  "top",
+  "right",
+  "bottom",
+  "left",
+];
