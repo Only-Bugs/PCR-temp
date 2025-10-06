@@ -3,7 +3,7 @@ import { Text, View } from "react-native";
 import CTAButton from "../../CTAButton";
 import styles from "./styles";
 
-const AchievementBanner = ({ title, message, cta }) => {
+const AchievementBanner = ({ title, message, cta, onSharePress }) => {
   return (
     <LinearGradient
       colors={["#E8FEE7", "#FFF8F1"]}
@@ -19,7 +19,7 @@ const AchievementBanner = ({ title, message, cta }) => {
         <CTAButton
           label="Share"
           variant="outline"
-          onPress={() => console.log("Share pressed")}
+          onPress={onSharePress || (() => console.log("Share pressed"))}
         />
       </View>
     </LinearGradient>

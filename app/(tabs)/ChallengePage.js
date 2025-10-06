@@ -196,7 +196,7 @@ const ChallengePage = () => {
         <View style={styles.section}>
           <CTAButton
             label="View My Rewards"
-            onPress={() => router.push("/RewardsPage")}
+            onPress={() => router.push("RewardsPage")}
           />
         </View>
       </ScrollView>

@@ -59,18 +59,17 @@ const ProfilePage = () => {
         <View style={styles.headerSpacing}>
           <PageHeader
             title="My Profile"
-            onNotificationPress={() => console.log("Notifications Pressed")}
             onSettingsPress={() => router.push("/SettingsPage")}
             showSettings
           />
         </View>
 
-        {/* Carbon Points */}
+        {/* Growth Journey Card */}
         {user && (
           <ScoreCard
             key={user.carbonPoints}
             data={{
-              title: "Carbon Points",
+              title: "Growth Journey",
               value: user.carbonPoints,
               progress: user.carbonPoints / 1000,
               icon: { name: "eco" },
@@ -92,7 +91,7 @@ const ProfilePage = () => {
         {/* Rewards */}
         <CTAButton
           label="View My Rewards"
-          onPress={() => router.push("/RewardsPage")}
+          onPress={() => router.push("RewardsPage")}
         />
       </ScrollView>
     </View>

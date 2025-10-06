@@ -31,6 +31,17 @@ const colors = {
   gradients: {
     green: ["#10b981", "#059669"], // ✅ switched to array for LinearGradient
     purple: ["#8b5cf6", "#7c3aed"],
+    posterGreen: ["#A8E6CF", "#56C596"], // mint to leaf for poster backgrounds
+  },
+
+  // Brand colors for poster sharing feature
+  poster: {
+    mint: "#A8E6CF",
+    leaf: "#56C596",
+    eco: "#1DA96B",
+    cta: "#FFD966",
+    text: "#222831",
+    muted: "#5F6B6B",
   },
 
   // ✅ Semantic tokens

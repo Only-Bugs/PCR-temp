@@ -1,6 +1,6 @@
 /**
  * @fileoverview PageHeader component.
- * Displays a title, notification icon, and an optional settings icon.
+ * Displays a title and an optional settings icon.
  */
 
 import { Ionicons } from "@expo/vector-icons";
@@ -13,24 +13,13 @@ import styles from "./styles";
 
 const PageHeader = ({
   title,
-  onNotificationPress,
   onSettingsPress,
-  showNotification = true,
   showSettings = false,
   showBack = false,
   onBackPress,
 }) => {
   const { hapticPress } = useHapticsUtils();
   const router = useRouter();
-
-  const handleNotification = async () => {
-    try {
-      await hapticPress();
-    } catch {
-      console.log("[PageHeader] haptics skipped (notification)");
-    }
-    onNotificationPress?.();
-  };
 
   const handleSettings = async () => {
     try {
@@ -80,22 +69,6 @@ const PageHeader = ({
         </Text>
       </View>
       <View style={styles.actions}>
-        {showNotification && (
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Open notifications"
-            accessibilityHint="Shows recent messages and alerts"
-            onPress={handleNotification}
-            hitSlop={layout.hitSlop}
-            style={styles.iconButton}
-          >
-            <Ionicons
-              name="notifications-outline"
-              size={24}
-              color={colors.textPrimary}
-            />
-          </TouchableOpacity>
-        )}
         {showSettings && (
           <TouchableOpacity
             accessibilityRole="button"
