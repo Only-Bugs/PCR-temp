@@ -8,7 +8,7 @@ import styles from "./styles";
 const BaseLineCard = ({ data }) => {
   return (
     <LinearGradient
-      colors={colors.gradients.green} // ✅ use theme gradient
+      colors={colors.gradients.green}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.base.card}

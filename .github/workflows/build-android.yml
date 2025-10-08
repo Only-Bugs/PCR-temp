@@ -16,14 +16,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # 2. Setup Node with cache
+      # 2. Setup Node.js with cache
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: "npm"
 
-      # 3. Cache extra dirs (npm, gradle)
+      # 3. Cache npm & Gradle
       - name: Cache npm & Gradle
         uses: actions/cache@v3
         with:
@@ -38,36 +38,39 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 5. Setup Expo & EAS CLI via official GitHub Action
+      # 5. Setup Expo & EAS CLI
       - name: Setup Expo
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      # 6. Run EAS build (Android only)
-      - name: Build Android APK
+      # 6. Run EAS Build (waits for completion)
+      - name: Run EAS build
         id: eas-build
         run: |
-          BUILD_URL=$(eas build --platform android --profile preview --non-interactive --json | jq -r '.[0].artifacts.buildUrl')
+          echo "Starting EAS build..."
+          BUILD_INFO=$(eas build --platform android --profile preview --non-interactive --wait --json)
+          echo "$BUILD_INFO" > build.json
+          BUILD_URL=$(jq -r '.[0].artifacts.buildUrl' build.json)
+          echo "Build completed: $BUILD_URL"
           echo "build_url=$BUILD_URL" >> $GITHUB_OUTPUT
 
-      # 7. Get app name from app.config.js
-      - name: Read App Name
-        id: app-name
+      # 7. Download built APK
+      - name: Download APK from Expo
         run: |
-          |
-          APP_NAME=$(node --input-type=module -e "import('./app.config.js').then(m=>console.log(m.default.expo.name))")
-          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
+          echo "Downloading APK from Expo..."
+          curl -L "${{ steps.eas-build.outputs.build_url }}" -o app-preview.apk
+          ls -lh app-preview.apk
 
-      # 8. Upload as GitHub artifact (dynamic name)
+      # 8. Upload APK as GitHub Artifact
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.app-name.outputs.app_name }}-apk
+          name: app-preview-${{ github.ref_name }}-b${{ github.run_number }}
           path: app-preview.apk
 
-      # 9. Send Discord notification
+      # 9. Send Discord Notification
       - name: Discord Notification
         if: always()
         uses: Ilshidur/action-discord@master
@@ -75,12 +78,10 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
           args: |
-            *${{ steps.app-name.outputs.app_name }} Android Build - Beta*
+            *Expo Android Build - Beta*
             Status: **${{ job.status }}**
             ━━━━━━━━━━━━━━━━━━
-            ⬇️ [Download Artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            **Artifact:** [app-preview-${{ github.ref_name }}-b${{ github.run_number }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
             ━━━━━━━━━━━━━━━━━━
-            Message: ${{ github.event.head_commit.message }}
-            ━━━━━━━━━━━━━━━━━━━━━━━━━━━
             Commit: `${{ github.sha }}`
             Branch: `${{ github.ref_name }}`

@@ -1,5 +1,5 @@
-import { ScrollView, StyleSheet, Text, View ,Button} from "react-native";
 import { useRouter } from "expo-router";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import PageHeader from "../../components/PageHeader";
 import ActivityCard from "../../components/tracking/ActivityCard";
@@ -9,27 +9,25 @@ import { useTracking } from "../../context/TrackingContext";
 import colors from "../../theme/colors";
 import layout from "../../theme/layout";
 
-
 const TrackingPage = () => {
   const router = useRouter();
   const { weeklyImpact, todaysActivities, longTermActivities } = useTracking();
 
   const handleActivityPress = (activityTitle) => {
     switch (activityTitle) {
-      case 'Transport':
-        router.push('/LogTransportActivity');
+      case "Transport":
+        router.push("/LogTransportActivity");
         break;
-      case 'Meals':
-        router.push('/LogMealActivity');
+      case "Meals":
+        router.push("/LogMealActivity");
         break;
-      case 'Shopping':
-        router.push('/LogShoppingActivity');
+      case "Shopping":
+        router.push("/LogShoppingActivity");
         break;
-      case 'Energy':
-        router.push('/LogEnergyActivity');
+      case "Energy":
+        router.push("/LogEnergyActivity");
         break;
       default:
-
     }
   };
 
@@ -77,7 +75,6 @@ const TrackingPage = () => {
           baseline={weeklyImpact.baseline}
           previous={weeklyImpact.previous}
         />
-  <Button onClick={()=> console.log(user,"user")}title="click me"/>
       </ScrollView>
     </View>
   );
@@ -102,4 +99,3 @@ const styles = StyleSheet.create({
 });
 
 export default TrackingPage;
-

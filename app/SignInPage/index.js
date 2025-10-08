@@ -1,10 +1,10 @@
 /**
  * @fileoverview SignInPage.
- * Provides a UI for users to enter their ECO_ID and sign in.
- * Fetches user profile from API, stores it via StorageService,
- * then navigates to ProfilePage.
+ * Refined layout with top-right info icon replacing bottom link.
  */
 
+import { MaterialIcons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
@@ -20,8 +20,8 @@ import AppIcon from "../../components/AppIcon";
 import CTAButton from "../../components/CTAButton";
 import { AuthCard } from "../../components/forms/auth";
 import { useUser } from "../../context/UserContext";
-import { getUser } from "../../services/apis/userAPI";
 import { setSeenIntro } from "../../lib/storage/firstRun";
+import { getUser } from "../../services/apis/userAPI";
 import StorageService from "../../services/storage";
 import styles from "./styles";
 
@@ -32,30 +32,21 @@ const SignInPage = () => {
   const { updateUser } = useUser();
   const router = useRouter();
 
-  /**
-   * Handles user sign in.
-   * Calls API with ECO_ID, stores user in StorageService, and redirects to ProfilePage.
-   */
   const handleSignIn = async () => {
     if (!ecoId.trim()) {
       setError("Please enter a valid Eco ID");
       return;
     }
-
     try {
       setLoading(true);
       setError(null);
       Keyboard.dismiss();
-
       const user = await getUser(ecoId.trim());
       await updateUser(user);
-
       await StorageService.setEcoId(user.eco_id);
       await StorageService.setUser(user);
-
       router.replace("/ProfilePage");
-    } catch (err) {
-
+    } catch {
       setError("Invalid Eco ID or failed to sign in. Please try again.");
     } finally {
       setLoading(false);
@@ -66,12 +57,15 @@ const SignInPage = () => {
     try {
       await setSeenIntro(false);
     } catch (err) {
-      if (__DEV__) {
-        console.warn("[SignIn] Failed to reset intro flag", err);
-      }
+      if (__DEV__) console.warn("[SignIn] Failed to reset intro flag", err);
     } finally {
       router.replace("/(intro)/intro");
     }
+  };
+
+  const handleLinkPress = async (callback) => {
+    await Haptics.selectionAsync();
+    callback();
   };
 
   return (
@@ -81,6 +75,19 @@ const SignInPage = () => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
+          {/* Info Icon Top-Right */}
+          <TouchableOpacity
+            activeOpacity={0.6}
+            onPress={() => handleLinkPress(handleViewIntro)}
+            style={styles.infoIcon}
+          >
+            <MaterialIcons
+              name="info-outline"
+              size={26}
+              color={styles.infoIconColor.color}
+            />
+          </TouchableOpacity>
+
           <View style={styles.iconWrapper}>
             <AppIcon size={32} />
           </View>
@@ -107,12 +114,13 @@ const SignInPage = () => {
             disabled={loading}
           />
 
-          <TouchableOpacity onPress={() => router.push("/OnboardingPage")}> 
-            <Text style={styles.link}>New user? Start here →</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={handleViewIntro} style={{ marginTop: 16 }}>
-            <Text style={styles.link}>View the intro again</Text>
+          <TouchableOpacity
+            activeOpacity={0.6}
+            onPress={() =>
+              handleLinkPress(() => router.push("/OnboardingPage"))
+            }
+          >
+            <Text style={styles.primaryLink}>New user? Start here →</Text>
           </TouchableOpacity>
         </View>
       </TouchableWithoutFeedback>
