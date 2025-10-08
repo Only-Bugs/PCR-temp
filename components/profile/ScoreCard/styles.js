@@ -139,6 +139,14 @@ const carbon = StyleSheet.create({
     color: colors.eco.green[700],
     marginLeft: 6,
   },
+  shareIcon: {
+    marginLeft: "auto",
+    padding: 6,
+    borderRadius: 999,
+    backgroundColor: colors.eco.green[100],
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
 
 export default { base, carbon };

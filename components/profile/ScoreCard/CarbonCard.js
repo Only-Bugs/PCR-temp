@@ -1,13 +1,17 @@
 /**
  * @fileoverview CarbonCard component.
  * Displays carbon points with tree-ring progress visualization and level.
+ * Adds SharePosterModal integration (top-right share icon).
  */
 
-import { MaterialIcons } from "@expo/vector-icons";
-import { Text, View } from "react-native";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useState } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
+import { useUser } from "../../../context/UserContext";
 import colors from "../../../theme/colors";
 import TreeRingProgress from "../../progress/TreeRingProgress";
 import { getLevelTier } from "../../../utils/levelTiers";
+import SharePosterModal from "../../rewards/SharePosterModal/index";
 import styles from "./styles";
 
 /**
@@ -25,6 +29,9 @@ const MAX_POINTS_FALLBACK = 1000; // Used when value is missing but progress is 
 const POINTS_PER_RING = 500;
 
 const CarbonCard = ({ data }) => {
+  const [showShareModal, setShowShareModal] = useState(false);
+  const { user } = useUser();
+
   if (!data) return null;
 
   const parsedValue = Number(data.value);
@@ -43,6 +50,12 @@ const CarbonCard = ({ data }) => {
   const pointsToNextMilestone =
     pointsIntoCurrentRing === 0 ? POINTS_PER_RING : POINTS_PER_RING - pointsIntoCurrentRing;
   const levelText = data.level?.text || levelTier.name;
+  const co2SavedKg = Number.isFinite(points)
+    ? Number((points / 18).toFixed(1))
+    : 0;
+  const username = user?.name || "Verde User";
+  const handleOpenShare = () => setShowShareModal(true);
+  const handleCloseShare = () => setShowShareModal(false);
 
   return (
     <View style={styles.carbon.card}>
@@ -57,6 +70,17 @@ const CarbonCard = ({ data }) => {
           />
         )}
         <Text style={styles.carbon.title}>{data.title}</Text>
+        <TouchableOpacity
+          style={styles.carbon.shareIcon}
+          onPress={handleOpenShare}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name="share-outline"
+            size={22}
+            color={colors.eco.green[600]}
+          />
+        </TouchableOpacity>
       </View>
 
       {/* Points display and tree ring visualization */}
@@ -111,6 +135,16 @@ const CarbonCard = ({ data }) => {
           Earn {pointsToNextMilestone} pts more to unlock next stage!
         </Text>
       </View>
+
+      <SharePosterModal
+        visible={showShareModal}
+        onClose={handleCloseShare}
+        points={points}
+        co2SavedKg={co2SavedKg}
+        badgeName={levelTier.name}
+        username={username}
+        dateRangeLabel="this month"
+      />
     </View>
   );
 };
