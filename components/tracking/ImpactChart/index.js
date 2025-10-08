@@ -15,7 +15,6 @@ import Svg, {
 } from "react-native-svg";
 
 import colors from "../../../theme/colors";
-import RangeSwitch from "../RangeSwitch";
 import styles from "./styles";
 import {
   startEndForLastNDays,
@@ -35,8 +34,10 @@ const MISSING_COLOR = "rgba(2,6,23,0.20)";
 const CHART_HEIGHT = 168;
 const CHART_VERTICAL_PADDING = 20;
 const CHART_HORIZONTAL_PADDING = 16;
+const POINT_GUTTER_LEFT = 1;
+const POINT_GUTTER_RIGHT = 24;
 const GRID_LINE_COUNT = 4;
-const AXIS_LABEL_WIDTH = 48;
+const AXIS_LABEL_WIDTH = 60;
 const TOOLTIP_HEIGHT = 52;
 
 const formatNumber = (value) => {
@@ -64,9 +65,7 @@ const formatValue = (value) => `${formatNumber(value)} kg CO₂`;
 
 const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
   const [containerWidth, setContainerWidth] = useState(0);
-  const [range, setRange] = useState("7D"); // Default to 7 days
-
-  const RANGE_N = range === "7D" ? 7 : 30;
+  const RANGE_N = 7;
 
   // Calculate N-day window ending today
   const { start, end } = useMemo(() => startEndForLastNDays(RANGE_N), [RANGE_N]);
@@ -112,29 +111,31 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
     return padded > 0 ? padded : 1;
   }, [baselinePerDay, series]);
 
-  const plotWidth = useMemo(
-    () => Math.max(containerWidth - CHART_HORIZONTAL_PADDING * 2, 0),
-    [containerWidth]
-  );
+  const plotWidth = useMemo(() => {
+    const leftBound = CHART_HORIZONTAL_PADDING + POINT_GUTTER_LEFT;
+    const rightBound =
+      containerWidth - CHART_HORIZONTAL_PADDING - POINT_GUTTER_RIGHT;
+    return Math.max(rightBound - leftBound, 0);
+  }, [containerWidth]);
 
   const plotHeight = Math.max(CHART_HEIGHT - CHART_VERTICAL_PADDING * 2, 0);
 
   // Calculate chart points for line - use index-based positioning for perfect alignment
   const chartPoints = useMemo(() => {
-    if (!plotWidth || !series.length) return [];
+    if (!series.length) return [];
 
-    const step = series.length > 1 ? plotWidth / (series.length - 1) : plotWidth / 2;
+    const leftBound = CHART_HORIZONTAL_PADDING + POINT_GUTTER_LEFT;
+    const step = series.length > 1 ? plotWidth / (series.length - 1) : 0;
 
     return series.map((point, index) => {
       const value = point.value ?? 0;
       const normalized = Math.min(value / safeMax, 1);
       const y = CHART_VERTICAL_PADDING + (1 - normalized) * plotHeight;
+      const offset = series.length > 1 ? step * index : plotWidth / 2;
 
       return {
         ...point,
-        x:
-          CHART_HORIZONTAL_PADDING +
-          (series.length > 1 ? step * index : step),
+        x: leftBound + offset,
         y,
         normalized,
       };
@@ -238,17 +239,20 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
     const width = Math.max(128, maxChars * 7 + 24);
 
     // When active point is at the rightmost edge (Today), nudge tooltip left
-    const isRightmost = activePoint.x >= containerWidth - CHART_HORIZONTAL_PADDING - 20;
-    const x = isRightmost
-      ? containerWidth - CHART_HORIZONTAL_PADDING - width - 8
-      : Math.min(
-          Math.max(activePoint.x - width / 2, CHART_HORIZONTAL_PADDING),
-          containerWidth - CHART_HORIZONTAL_PADDING - width
-        );
+    const leftBound = CHART_HORIZONTAL_PADDING + POINT_GUTTER_LEFT;
+    const rightBound =
+      containerWidth - CHART_HORIZONTAL_PADDING - POINT_GUTTER_RIGHT;
+    const maxTooltipLeft = Math.max(rightBound - width, leftBound);
+    const clampedDefaultLeft = Math.min(
+      Math.max(activePoint.x - width / 2, leftBound),
+      maxTooltipLeft
+    );
+    const isRightmost = activePoint.x >= rightBound - 8;
+    const x = isRightmost ? maxTooltipLeft : clampedDefaultLeft;
 
     const pointerX = Math.min(
-      Math.max(activePoint.x, CHART_HORIZONTAL_PADDING + 12),
-      containerWidth - CHART_HORIZONTAL_PADDING - 12
+      Math.max(activePoint.x, leftBound),
+      rightBound
     );
     const y = Math.max(activePoint.y - 70, 10);
 
@@ -291,7 +295,7 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
     return series.reduce((sum, point) => sum + (point.value ?? 0), 0);
   }, [series]);
 
-  const rangeLabel = range === "30D" ? "Past 30 days" : "Past 7 days";
+  const rangeLabel = "Past 7 days";
 
   // Format date range caption (e.g., "1 Sep – 30 Sep")
   const dateRangeCaption = useMemo(() => {
@@ -304,15 +308,16 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
     return `${formatDate(start)} – ${formatDate(end)}`;
   }, [start, end]);
 
-  // For 7D view, show 3 labels (first/middle/Today); for 30D, show every 5 days + Today
+  // For 7D view, show every 2 days + Today; (30D not used but kept for safety)
   const shouldShowLabel = (index) => {
     const n = chartPoints.length;
     const idxToday = n - 1;
 
     if (RANGE_N === 7) {
-      // Show 3 ticks: first, middle, Today
-      const idxMiddle = Math.floor(n / 2);
-      return index === 0 || index === idxMiddle || index === idxToday;
+      if (index === idxToday) {
+        return true;
+      }
+      return index % 2 === 0;
     }
     if (RANGE_N === 30) {
       // Show every 5 days + Today (~7 ticks total)
@@ -347,9 +352,6 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
           <Text style={styles.metricValue}>{formatValue(rangeTotal)}</Text>
           <Text style={styles.dateRangeCaption}>{dateRangeCaption}</Text>
         </View>
-
-        {/* Range Selector Switch */}
-        <RangeSwitch value={range} onChange={setRange} />
       </View>
 
       <View style={styles.chartWrapper}>
@@ -414,20 +416,6 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
                   opacity={isAxis ? 1 : 0.7}
                 />
               ))}
-
-              {/* Baseline - Subtle dotted line for Daily target */}
-              {baselineY !== null && (
-                <Line
-                  x1={CHART_HORIZONTAL_PADDING}
-                  x2={containerWidth - CHART_HORIZONTAL_PADDING}
-                  y1={baselineY}
-                  y2={baselineY}
-                  stroke={BASELINE_COLOR}
-                  strokeWidth={1.2}
-                  strokeDasharray="2 4"
-                  opacity={0.5}
-                />
-              )}
 
               {/* Tooltip vertical line */}
               {tooltipConfig && (
@@ -560,18 +548,6 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
                     strokeWidth={1.2}
                     opacity={0.98}
                   />
-                  <Path
-                    d={`M ${tooltipConfig.pointerX} ${
-                      tooltipConfig.y + TOOLTIP_HEIGHT + 8
-                    } L ${tooltipConfig.pointerX + 7} ${
-                      tooltipConfig.y + TOOLTIP_HEIGHT
-                    } L ${tooltipConfig.pointerX - 7} ${
-                      tooltipConfig.y + TOOLTIP_HEIGHT
-                    } Z`}
-                    fill={colors.neutral.white}
-                    stroke={colors.eco.green[500]}
-                    strokeWidth={0.8}
-                  />
                   <SvgText
                     x={tooltipConfig.x + tooltipConfig.width / 2}
                     y={tooltipConfig.y + 20}
@@ -603,20 +579,12 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
               <Text style={styles.emptySubtitle}>
                 Once you record data today, your weekly insights will appear here.
               </Text>
-              <View style={styles.emptyBaseline}>
-                {series.slice(0, 7).map((point) => (
-                  <View key={point.dateKey} style={styles.emptyColumn}>
-                    <View style={styles.emptyIndicator} />
-                    <Text style={styles.emptyDay}>{point.label}</Text>
-                  </View>
-                ))}
-              </View>
             </View>
           )}
         </View>
 
         {/* X-axis labels */}
-        {containerWidth > 0 && chartPoints.length > 0 && (
+        {containerWidth > 0 && chartPoints.length > 0 && hasPositiveData && (
           <View style={[styles.labelsRow, { width: containerWidth }]}>
             {chartPoints.map((point, index) => {
               if (!shouldShowLabel(index)) return null;
@@ -627,8 +595,7 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
                   style={[
                     styles.axisLabel,
                     {
-                      left: point.x,
-                      transform: [{ translateX: -AXIS_LABEL_WIDTH / 2 }],
+                      left: point.x - AXIS_LABEL_WIDTH / 3.7,
                     },
                   ]}
                 >
@@ -660,16 +627,11 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
           <View style={[styles.legendBullet, styles.legendBulletDaily]} />
           <Text style={styles.legendLabel}>Daily CO₂ emissions</Text>
         </View>
+        <View style={{ flex: 1 }} />
         <View style={styles.legendItem}>
           <View style={[styles.legendLine, styles.legendLineTrend]} />
           <Text style={styles.legendLabel}>Trend</Text>
         </View>
-        {baselinePerDay > 0 && (
-          <View style={styles.legendItem}>
-            <View style={[styles.legendLine, styles.legendLineBaseline]} />
-            <Text style={styles.legendLabel}>Daily target</Text>
-          </View>
-        )}
       </View>
     </View>
   );

@@ -110,7 +110,6 @@ const carbon = StyleSheet.create({
     marginBottom: 12,
   },
   levelTextContainer: {
-    marginLeft: 6,
     alignItems: "center",
   },
   levelText: {

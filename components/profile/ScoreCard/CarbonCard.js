@@ -58,11 +58,6 @@ const CarbonCard = ({ data }) => {
 
       {/* Level row with subtitle */}
       <View style={styles.carbon.levelRow}>
-        <MaterialIcons
-          name="eco"
-          size={20}
-          color={colors.eco.green[600]}
-        />
         <View style={styles.carbon.levelTextContainer}>
           <Text style={styles.carbon.levelText}>{levelTier.name}</Text>
           <Text style={styles.carbon.levelSubtitle}>
