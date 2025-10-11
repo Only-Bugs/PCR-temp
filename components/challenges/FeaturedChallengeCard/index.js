@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import Swiper from "react-native-deck-swiper";
 import { fetchUserChallenges } from "../../../services/apis/challengeAPI";
-import StorageService from "../../../services/storage";
+import { useUser } from "../../../context/UserContext";
 import { useHapticsUtils } from "../../../utils/haptics";
 import AllChallengesComplete from "../AllChallengesComplete";
 import styles from "./styles";
@@ -28,15 +28,26 @@ const FeaturedChallengeCard = ({
   const [limitMessage, setLimitMessage] = useState(false);
   const { hapticSuccess, hapticError } = useHapticsUtils();
   const swiperRef = useRef(null);
+  const { user } = useUser();
 
   useEffect(() => {
     const loadChallenges = async () => {
       try {
-        const user = await StorageService.getUser();
-        if (!user?.eco_id) return;
+        if (!user?.eco_id) {
+          setChallenges([]);
+          setLoading(false);
+          return;
+        }
+
+        setLoading(true);
         const data = await fetchUserChallenges(user.eco_id);
 
-        const valid = data.filter((c) => {
+        // Temporary filter: only allow CH14 and above (backend bug with CH1–CH13)
+        // Do not surface challenges the user already activated.
+        const available = data.filter((c) => !c.isActive);
+
+        // Temporary filter: only allow CH14 and above (backend bug with CH1–CH13)
+        const valid = available.filter((c) => {
           const num = parseInt(c.id.replace("CH", ""), 10);
           return !isNaN(num) && num >= 14;
         });
@@ -49,7 +60,7 @@ const FeaturedChallengeCard = ({
       }
     };
     loadChallenges();
-  }, []);
+  }, [user?.eco_id]);
 
   const handleSwipeRight = async (index) => {
     if (activeCount >= MAX_ACTIVE) {
