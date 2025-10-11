@@ -19,9 +19,15 @@ function formatMessage(level, message, data) {
   return `[${timestamp}] [${level}] ${message}`;
 }
 
-function safeStringify(value) {
+function safeStringify(value, maxLength = 2000) {
   try {
-    return JSON.stringify(value, replacer, 2);
+    const result = JSON.stringify(value, replacer);
+    if (!result) {
+      return String(value);
+    }
+    return result.length > maxLength
+      ? `${result.slice(0, maxLength)}…`
+      : result;
   } catch {
     return String(value);
   }

@@ -55,7 +55,7 @@ export const fetchRewardsMapping = async ({ ecoId, skipAuth = false } = {}) => {
     logger.info("[rewardsAPI] normalized mapping:", JSON.stringify(mapping));
     return mapping;
   } catch (error) {
-    logger.error("[rewardsAPI] fetchRewardsMapping error:", error);
+    logger.warn("[rewardsAPI] fetchRewardsMapping error:", error);
     throw error;
   }
 };
