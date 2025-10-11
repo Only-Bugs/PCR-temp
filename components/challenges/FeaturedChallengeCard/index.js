@@ -36,8 +36,11 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
         if (!user?.eco_id) return;
         const data = await fetchUserChallenges(user.eco_id);
 
+        // Do not surface challenges the user already activated.
+        const available = data.filter((c) => !c.isActive);
+
         // Temporary filter: only allow CH14 and above (backend bug with CH1–CH13)
-        const valid = data.filter((c) => {
+        const valid = available.filter((c) => {
           const num = parseInt(c.id.replace("CH", ""), 10);
           return !isNaN(num) && num >= 14;
         });
