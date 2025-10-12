@@ -24,12 +24,14 @@ const QuizScreen = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [answers, setAnswers] = useState([]);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   const totalQuestions = parsedQuiz.questions.length;
   const question = parsedQuiz.questions[currentIndex];
+  const isLastQuestion = currentIndex === totalQuestions - 1;
 
-  const progressAnim = useRef(new Animated.Value((currentIndex + 1) / totalQuestions)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const ratio = totalQuestions === 0 ? 0 : (currentIndex + 1) / totalQuestions;
@@ -42,15 +44,19 @@ const QuizScreen = () => {
   }, [currentIndex, totalQuestions, progressAnim]);
 
   const handleSelectOption = (option) => {
-    if (selectedOption) return;
+    if (hasSubmitted) return;
     setSelectedOption(option);
-    setShowExplanation(true);
+  };
 
+  const submitCurrentAnswer = () => {
+    if (!selectedOption || hasSubmitted) return;
+    setHasSubmitted(true);
+    setShowExplanation(true);
     setAnswers((prev) => [
       ...prev,
       {
         quesId: question.quiz_ques_id,
-        isCorrect: option.quiz_option_is_correct === 1,
+        isCorrect: selectedOption.quiz_option_is_correct === 1,
       },
     ]);
   };
@@ -73,10 +79,16 @@ const QuizScreen = () => {
   };
 
   const handleNext = () => {
+    if (!hasSubmitted) {
+      submitCurrentAnswer();
+      return;
+    }
+
     if (currentIndex < parsedQuiz.questions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       setSelectedOption(null);
       setShowExplanation(false);
+      setHasSubmitted(false);
     } else {
       goToResults();
     }
@@ -92,7 +104,7 @@ const QuizScreen = () => {
   const renderOption = ({ item }) => {
     const isSelected = selectedOption?.quiz_option_id === item.quiz_option_id;
     const isCorrect = item.quiz_option_is_correct === 1;
-    const hasAnswered = !!selectedOption;
+    const hasAnswered = hasSubmitted;
 
     const optionStyle = [styles.optionCard];
     const optionTextStyle = [styles.optionText];
@@ -129,6 +141,12 @@ const QuizScreen = () => {
     inputRange: [0, 1],
     outputRange: ["0%", "100%"],
   });
+  const canProceed = hasSubmitted || !!selectedOption;
+  const buttonLabel = hasSubmitted
+    ? isLastQuestion
+      ? "View Results"
+      : "Next Question"
+    : "Submit Answer";
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -173,10 +191,10 @@ const QuizScreen = () => {
           renderItem={renderOption}
           contentContainerStyle={styles.optionsList}
           showsVerticalScrollIndicator={false}
-          extraData={selectedOption}
+          extraData={{ selectedOption, hasSubmitted }}
         />
 
-        {showExplanation && selectedOption && (
+        {showExplanation && hasSubmitted && selectedOption && (
           <View
             style={[
               styles.explanationContainer,
@@ -219,13 +237,21 @@ const QuizScreen = () => {
           </View>
         )}
 
-        {showExplanation && (
-          <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-            <Text style={styles.nextButtonLabel}>
-              {currentIndex === parsedQuiz.questions.length - 1 ? "Finish" : "Next"}
-            </Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={[
+            styles.nextButton,
+            !canProceed && styles.nextButtonDisabled,
+          ]}
+          onPress={handleNext}
+          activeOpacity={canProceed ? 0.92 : 1}
+          disabled={!canProceed}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !canProceed }}
+          accessibilityLabel={buttonLabel}
+        >
+          <Text style={styles.nextButtonLabel}>{buttonLabel}</Text>
+        </TouchableOpacity>
+
       </View>
 
       <Modal
@@ -445,6 +471,9 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 10 },
     elevation: 5,
+  },
+  nextButtonDisabled: {
+    opacity: 0.6,
   },
   nextButtonLabel: {
     fontSize: 16,

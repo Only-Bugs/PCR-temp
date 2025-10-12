@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef } from "react";
 import {
   AccessibilityInfo,
   Animated,
+  Easing,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -14,8 +15,8 @@ import LottieView from "lottie-react-native";
 import colors from "../theme/colors";
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-const radius = 85;
-const strokeWidth = 12;
+const radius = 95;
+const strokeWidth = 14;
 const circumference = 2 * Math.PI * radius;
 
 const QuizResultScreen = () => {
@@ -42,16 +43,28 @@ const QuizResultScreen = () => {
 
   const cardBackground = percent >= 60 ? "#E8F5E9" : "#FDECEA";
 
-  const progressAnim = useRef(new Animated.Value(percent / 100)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
   const contentAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    contentAnim.setValue(0);
     Animated.timing(contentAnim, {
       toValue: 1,
-      duration: 220,
+      duration: 280,
+      easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start();
-  }, [contentAnim]);
+  }, [contentAnim, percent]);
+
+  useEffect(() => {
+    progressAnim.setValue(0);
+    Animated.timing(progressAnim, {
+      toValue: percent / 100,
+      duration: 1100,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
+  }, [percent, progressAnim]);
 
   useEffect(() => {
     const announcement = `Quiz completed, ${percent} percent. ${correct} out of ${total} correct.`;
@@ -98,7 +111,7 @@ const QuizResultScreen = () => {
                 cx={radius + strokeWidth}
                 cy={radius + strokeWidth}
                 r={radius}
-                stroke="#C8E6C9"
+                stroke="#D7F2DE"
                 strokeWidth={strokeWidth}
                 fill="none"
               />
@@ -126,6 +139,17 @@ const QuizResultScreen = () => {
           <Text style={styles.subtitle}>
             {correct} / {total} correct
           </Text>
+          <View style={styles.statRow}>
+            <View style={styles.statBlock}>
+              <Text style={styles.statLabel}>Correct</Text>
+              <Text style={styles.statValue}>{correct}</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statBlock}>
+              <Text style={styles.statLabel}>Total</Text>
+              <Text style={styles.statValue}>{total}</Text>
+            </View>
+          </View>
           <Text style={styles.feedback}>{feedbackText}</Text>
         </Animated.View>
 
@@ -205,10 +229,12 @@ const styles = StyleSheet.create({
   },
   ringContent: {
     position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: -25 }, { translateY: -36 }],
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: "center",
+    justifyContent: "center",
   },
   percentage: {
     fontSize: 42,
@@ -234,6 +260,34 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 12,
     textAlign: "center",
+  },
+  statRow: {
+    marginTop: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  statBlock: {
+    alignItems: "center",
+    paddingHorizontal: 12,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  statValue: {
+    marginTop: 4,
+    fontSize: 18,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
+  statDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: "rgba(15, 23, 42, 0.08)",
+    marginHorizontal: 12,
   },
   pointsPill: {
     paddingHorizontal: 16,
