@@ -1,4 +1,3 @@
-import { MaterialIcons } from "@expo/vector-icons";
 // import { LinearGradient } from "expo-linear-gradient";
 import { Text, View } from "react-native";
 import colors from "../../../theme/colors";
@@ -30,9 +29,6 @@ const AvatarCircle = ({ stage, status }) => {
       </View>
       {/* </LinearGradient> */}
 
-      <View style={styles.badge}>
-        <MaterialIcons name="star" size={18} color={colors.eco.yellow} />
-      </View>
     </View>
   );
 };

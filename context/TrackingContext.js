@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { useUser } from "./UserContext";
 import { logAnalyticsEvent } from "../utils/analytics";
@@ -7,7 +7,21 @@ import {
   todaysActivities as baseTodaysActivities,
   weeklyImpact as baseWeeklyImpact,
 } from "../services/trackingData";
-import { submitTrackingActivity } from "../services/apis/trackingAPI";
+import {
+  fetchDailySnapshot,
+  fetchUserBaseline,
+  fetchWeeklySnapshot,
+  submitTrackingActivity,
+} from "../services/apis/trackingAPI";
+import {
+  DEFAULT_REWARD_MAPPING,
+  loadRewardsMapping,
+  getRewardPoints,
+  canAwardToday as rewardsCanAwardToday,
+  markAwardedToday as rewardsMarkAwardedToday,
+  canAwardThisMonth as rewardsCanAwardThisMonth,
+  markAwardedThisMonth as rewardsMarkAwardedThisMonth,
+} from "../services/rewardsService";
 import logger from "../utils/logger";
 
 const TrackingContext = createContext(null);
@@ -20,6 +34,25 @@ const CATEGORY_KEYS = {
   meals: "Meals",
   shopping: "Shopping",
   energy: "Energy",
+};
+
+const SNAPSHOT_KEY_TO_TITLE = {
+  transport: CATEGORY_KEYS.transport,
+  meals: CATEGORY_KEYS.meals,
+  shopping: CATEGORY_KEYS.shopping,
+  energy: CATEGORY_KEYS.energy,
+};
+
+const REWARD_DB_KEYS = {
+  transport: "transport",
+  meals: "diet",
+  shopping: "shopping",
+  energy: "energy",
+};
+
+const REWARD_ACTIONS = {
+  daily: "daily_log",
+  monthly: "monthly_log",
 };
 
 const TRANSPORT_LABELS = {
@@ -85,18 +118,19 @@ const ENERGY_EMISSION_FACTORS = {
   gas: 0.00053,
 };
 
-const REWARD_POINTS = {
-  transport: 10,
-  meals: 10,
-  shopping: 10,
-  energy: 50,
-};
-
-const AWARD_MODE = 'per_category'; // 'global' | 'per_category'
-
 const formatPositive = (value) => `+${value.toFixed(1)} kg CO₂`;
 const formatCurrency = (value) => `$${value.toFixed(2)}`;
 const clampToStep = (value) => parseFloat(value.toFixed(1));
+
+const TITLE_TO_SNAPSHOT_KEY = Object.entries(SNAPSHOT_KEY_TO_TITLE).reduce(
+  (accumulator, [snapshotKey, title]) => {
+    accumulator[title] = snapshotKey;
+    return accumulator;
+  },
+  {}
+);
+
+const formatSnapshotValue = (value) => (value > 0 ? formatPositive(value) : "+0 kg CO₂");
 
 const getDatePartsInTimeZone = (date, timeZone) => {
   const formatter = new Intl.DateTimeFormat("en-AU", {
@@ -143,6 +177,73 @@ const buildWeekTemplate = () => {
   return template;
 };
 
+const buildRollingTrendFromValues = (values = []) => {
+  const totalDays = 7;
+  const trimmed = Array.isArray(values) ? values.slice(-totalDays) : [];
+  const padding = Math.max(totalDays - trimmed.length, 0);
+  const normalizedValues = [
+    ...Array.from({ length: padding }, () => 0),
+    ...trimmed,
+  ];
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const start = new Date(today);
+  start.setUTCDate(today.getUTCDate() - (totalDays - 1));
+
+  return Array.from({ length: totalDays }, (_, index) => {
+    const date = new Date(start);
+    date.setUTCDate(start.getUTCDate() + index);
+    date.setUTCHours(0, 0, 0, 0);
+    const rawValue = Number(normalizedValues[index]);
+    const safeValue = Number.isNaN(rawValue) ? 0 : rawValue;
+
+    const parts = getDatePartsInTimeZone(date, HOBART_TZ);
+    const label = getWeekdayLabelInTimeZone(date, HOBART_TZ);
+
+    return {
+      dateKey: formatDateKey(parts),
+      label,
+      day: label,
+      value: clampToStep(safeValue),
+    };
+  });
+};
+
+const computeWeeklyImpactFromSnapshot = (snapshot = [], previous = {}) => {
+  const baseline = previous?.baseline ?? baseWeeklyImpact.baseline ?? 0;
+  const previousTrend = Array.isArray(previous?.trend)
+    ? previous.trend
+    : buildRollingTrendFromValues();
+  const template = buildRollingTrendFromValues(snapshot);
+
+  const mergedTrend = template.map((point) => {
+    const prior =
+      previousTrend.find((item) => item.dateKey === point.dateKey) ?? null;
+    const mergedValue = clampToStep(
+      Math.max(point.value ?? 0, prior?.value ?? 0)
+    );
+
+    return {
+      ...point,
+      value: mergedValue,
+    };
+  });
+
+  const total = clampToStep(
+    mergedTrend.reduce((sum, point) => sum + (point.value ?? 0), 0)
+  );
+  const saved = clampToStep(Math.max(baseline - total, 0));
+
+  return {
+    ...previous,
+    baseline,
+    trend: mergedTrend,
+    total,
+    saved,
+    emitted: total,
+  };
+};
+
 const mergeTrendWithTemplate = (baseTrend = []) => {
   const template = buildWeekTemplate();
 
@@ -185,7 +286,7 @@ const buildTransportSummary = (entries) => {
       const distanceText = `${clampToStep(parsedDistance)}km`;
 
       return factor === 0
-        ? `${label} ${distanceText} • 0kg CO₂`
+        ? `${label} ${distanceText} • 0 kg CO₂`
         : `${label} ${distanceText}`;
     })
     .filter(Boolean);
@@ -269,26 +370,183 @@ export const TrackingProvider = ({ children }) => {
   const shoppingSpendRef = useRef(0);
   const shoppingSpendDayRef = useRef(null);
   const [energyRecord, setEnergyRecord] = useState(null);
-  const rewardStateRef = useRef({});
+  const [rewardMapping, setRewardMapping] = useState({
+    ...DEFAULT_REWARD_MAPPING,
+  });
 
-  const getRewardKey = useCallback(
-    (categoryKey) => (AWARD_MODE === 'per_category' ? categoryKey : 'global'),
-    []
-  );
+  const applyDailySnapshotToActivities = useCallback((totals = {}) => {
+    setTodaysActivities((previous) =>
+      previous.map((activity) => {
+        const snapshotKey = TITLE_TO_SNAPSHOT_KEY[activity.title];
+        if (!snapshotKey || !(snapshotKey in totals)) {
+          return activity;
+        }
 
-  const hasAwardedToday = useCallback(
-    (categoryKey, dayInfo) =>
-      rewardStateRef.current[getRewardKey(categoryKey)] === dayInfo.dateKey,
-    [getRewardKey]
-  );
+        const snapshotValue = Number(totals[snapshotKey]) || 0;
+        return {
+          ...activity,
+          value: formatSnapshotValue(snapshotValue),
+        };
+      })
+    );
 
-  const markAwardedToday = useCallback(
-    (categoryKey, dayInfo) => {
-      rewardStateRef.current[getRewardKey(categoryKey)] = dayInfo.dateKey;
-    },
-    [getRewardKey]
-  );
+    setLongTermActivities((previous) =>
+      previous.map((activity) => {
+        const snapshotKey = TITLE_TO_SNAPSHOT_KEY[activity.title];
+        if (!snapshotKey || !(snapshotKey in totals)) {
+          return activity;
+        }
 
+        const snapshotValue = Number(totals[snapshotKey]) || 0;
+        return {
+          ...activity,
+          value: formatSnapshotValue(snapshotValue),
+        };
+      })
+    );
+  }, []);
+
+  const applySnapshotToWeeklyImpact = useCallback((snapshot) => {
+    setWeeklyImpact((previous) =>
+      computeWeeklyImpactFromSnapshot(snapshot, previous)
+    );
+  }, []);
+
+  const applyBaselineToWeeklyImpact = useCallback((baselineValue) => {
+    if (baselineValue == null || Number.isNaN(Number(baselineValue))) {
+      return;
+    }
+
+    const numericBaseline = Math.max(Number(baselineValue), 0);
+
+    setWeeklyImpact((previous) => {
+      const total = clampToStep(
+        (previous?.trend ?? []).reduce(
+          (sum, point) => sum + (point.value ?? 0),
+          0
+        )
+      );
+      const saved = clampToStep(Math.max(numericBaseline - total, 0));
+
+      return {
+        ...(previous ?? {}),
+        baseline: numericBaseline,
+        saved,
+      };
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!user?.eco_id) return;
+
+    let isActive = true;
+
+    const loadSnapshots = async () => {
+      try {
+        const snapshot = await fetchWeeklySnapshot(user.eco_id);
+        if (!isActive) return;
+
+        applySnapshotToWeeklyImpact(snapshot);
+      } catch (error) {
+        logger.error("[TrackingContext] Failed to fetch weekly snapshot:", error);
+      }
+
+      try {
+        const daily = await fetchDailySnapshot(user.eco_id);
+        if (!isActive) return;
+
+        applyDailySnapshotToActivities(daily?.totals_kg ?? {});
+      } catch (error) {
+        logger.error("[TrackingContext] Failed to fetch daily snapshot:", error);
+      }
+
+      try {
+        const baseline = await fetchUserBaseline(user.eco_id);
+        if (!isActive) return;
+
+        applyBaselineToWeeklyImpact(baseline?.user_baseline_weekly);
+      } catch (error) {
+        logger.error("[TrackingContext] Failed to fetch user baseline:", error);
+      }
+    };
+
+    loadSnapshots();
+
+    return () => {
+      isActive = false;
+    };
+  }, [
+    applyBaselineToWeeklyImpact,
+    applyDailySnapshotToActivities,
+    applySnapshotToWeeklyImpact,
+    user?.eco_id,
+  ]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadMappingSafely = async () => {
+      try {
+        const mapping = await loadRewardsMapping(user?.eco_id);
+        if (isMounted && mapping) {
+          setRewardMapping(mapping);
+        }
+      } catch (error) {
+        logger.warn("[TrackingContext] Unable to load rewards mapping:", error);
+      }
+    };
+
+    loadMappingSafely();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.eco_id]);
+
+  const refreshWeeklyImpact = useCallback(async () => {
+    if (!user?.eco_id) {
+      return null;
+    }
+
+    try {
+      const snapshot = await fetchWeeklySnapshot(user.eco_id);
+      applySnapshotToWeeklyImpact(snapshot);
+      return snapshot;
+    } catch (error) {
+      logger.error("[TrackingContext] Unable to refresh weekly snapshot:", error);
+      throw error;
+    }
+  }, [applySnapshotToWeeklyImpact, user?.eco_id]);
+
+  const refreshBaseline = useCallback(async () => {
+    if (!user?.eco_id) {
+      return null;
+    }
+
+    try {
+      const baseline = await fetchUserBaseline(user.eco_id);
+      applyBaselineToWeeklyImpact(baseline?.user_baseline_weekly);
+      return baseline;
+    } catch (error) {
+      logger.error("[TrackingContext] Unable to refresh user baseline:", error);
+      throw error;
+    }
+  }, [applyBaselineToWeeklyImpact, user?.eco_id]);
+
+  const refreshDailySnapshot = useCallback(async () => {
+    if (!user?.eco_id) {
+      return null;
+    }
+
+    try {
+      const snapshot = await fetchDailySnapshot(user.eco_id);
+      applyDailySnapshotToActivities(snapshot?.totals_kg ?? {});
+      return snapshot;
+    } catch (error) {
+      logger.error("[TrackingContext] Unable to refresh daily snapshot:", error);
+      throw error;
+    }
+  }, [applyDailySnapshotToActivities, user?.eco_id]);
 
 const applyImpactToTrend = useCallback((impact, dayInfo) => {
   let dayTotal = 0;
@@ -312,6 +570,7 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
         trend: updatedTrend,
         total,
         saved,
+        emitted: total,
       };
     });
 
@@ -319,33 +578,52 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
   }, []);
 
   const ensureWeekData = useCallback((dayInfo) => {
-    let templateCreated = false;
+    let initialized = false;
 
     setWeeklyImpact((previous) => {
-      if (previous.trend.some((point) => point.dateKey === dayInfo.dateKey)) {
+      const trend = Array.isArray(previous?.trend) ? previous.trend : [];
+      const hasDay = trend.some((point) => point.dateKey === dayInfo.dateKey);
+
+      if (hasDay) {
         return previous;
       }
 
-      templateCreated = true;
-      const template = buildWeekTemplate();
+      initialized = true;
 
-     return {
-       ...previous,
-       previous: previous.total,
-       trend: template,
-       total: 0,
-        saved: clampToStep(Math.max(previous.baseline - 0, 0)),
-     };
+      const sortedValues = trend
+        .slice()
+        .sort((a, b) => (a.dateKey ?? "").localeCompare(b.dateKey ?? ""))
+        .map((point) => Number(point.value ?? 0));
+
+      const extendedValues = [
+        ...sortedValues.slice(-6),
+        0, // Seed today with zero before updates
+      ];
+
+      const updatedTrend = buildRollingTrendFromValues(extendedValues);
+      const total = clampToStep(
+        updatedTrend.reduce((sum, point) => sum + (point.value ?? 0), 0)
+      );
+      const baseline = previous?.baseline ?? baseWeeklyImpact.baseline ?? 0;
+      const saved = clampToStep(Math.max(baseline - total, 0));
+
+      return {
+        ...previous,
+        previous: previous?.total ?? 0,
+        trend: updatedTrend,
+        total,
+        saved,
+        emitted: total,
+      };
     });
 
-    if (templateCreated) {
+    if (initialized) {
       Object.keys(categoryDayRef.current).forEach((key) => {
         categoryDayRef.current[key] = null;
         categoryTotalsRef.current[key] = 0;
       });
       shoppingSpendRef.current = 0;
       shoppingSpendDayRef.current = null;
-      rewardStateRef.current = {};
     }
   }, []);
 
@@ -417,10 +695,28 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
         logger.info(`[TrackingContext] Successfully submitted ${activityName} activity`);
       } catch (error) {
         logger.error(`[TrackingContext] Failed to submit ${activityName} activity:`, error);
-        // Don't throw - allow local state to update even if API fails
+        return;
+      }
+
+      try {
+        await refreshWeeklyImpact();
+      } catch (error) {
+        // Already logged inside refreshWeeklyImpact; keep UI usable even if refresh fails.
+      }
+
+      try {
+        await refreshDailySnapshot();
+      } catch (error) {
+        // Already logged inside refreshDailySnapshot; do not block user flow.
+      }
+
+      try {
+        await refreshBaseline();
+      } catch (error) {
+        // Already logged inside refreshBaseline.
       }
     },
-    [user?.eco_id]
+    [refreshBaseline, refreshDailySnapshot, refreshWeeklyImpact, user?.eco_id]
   );
 
   const logTransportActivity = useCallback(
@@ -465,17 +761,40 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
 
       let pointsAwarded = 0;
       let awarded = false;
+      let awardError = false;
 
-      if (!hasAwardedToday(CATEGORY_KEYS.transport, dayInfo)) {
-        await addCarbonPoints(REWARD_POINTS.transport);
-        markAwardedToday(CATEGORY_KEYS.transport, dayInfo);
-        logAnalyticsEvent("points_awarded", {
-          category: "transport",
-          points: REWARD_POINTS.transport,
-          dateLocal: getAnalyticsTimestamp(),
-        });
-        pointsAwarded = REWARD_POINTS.transport;
-        awarded = true;
+      try {
+        const rewardCategory = REWARD_DB_KEYS.transport;
+        const canAward = await rewardsCanAwardToday(
+          rewardCategory,
+          dayInfo.dateKey
+        );
+
+        if (canAward) {
+          const pointsValue = await getRewardPoints(
+            rewardCategory,
+            REWARD_ACTIONS.daily,
+            { ecoId: user?.eco_id }
+          );
+
+          if (pointsValue > 0) {
+            await addCarbonPoints(pointsValue);
+            await rewardsMarkAwardedToday(rewardCategory, dayInfo.dateKey);
+            logAnalyticsEvent("points_awarded", {
+              category: rewardCategory,
+              points: pointsValue,
+              dateLocal: getAnalyticsTimestamp(),
+            });
+            pointsAwarded = pointsValue;
+            awarded = true;
+          }
+        }
+      } catch (error) {
+        awardError = true;
+        logger.error(
+          "[TrackingContext] Unable to award transport points:",
+          error
+        );
       }
 
       // Submit to backend API
@@ -489,9 +808,16 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
       });
       await submitActivityToBackend("transport", apiItems);
 
-      return { points: pointsAwarded, awarded };
+      return { points: pointsAwarded, awarded, awardError };
     },
-    [addCarbonPoints, applyImpactToTrend, ensureDailyReset, ensureWeekData, hasAwardedToday, markAwardedToday, submitActivityToBackend]
+    [
+      addCarbonPoints,
+      applyImpactToTrend,
+      ensureDailyReset,
+      ensureWeekData,
+      submitActivityToBackend,
+      user?.eco_id,
+    ]
   );
 
   const logMealActivity = useCallback(
@@ -537,17 +863,40 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
 
       let pointsAwarded = 0;
       let awarded = false;
+      let awardError = false;
 
-      if (!hasAwardedToday(CATEGORY_KEYS.meals, dayInfo)) {
-        await addCarbonPoints(REWARD_POINTS.meals);
-        markAwardedToday(CATEGORY_KEYS.meals, dayInfo);
-        logAnalyticsEvent("points_awarded", {
-          category: "meals",
-          points: REWARD_POINTS.meals,
-          dateLocal: getAnalyticsTimestamp(),
-        });
-        pointsAwarded = REWARD_POINTS.meals;
-        awarded = true;
+      try {
+        const rewardCategory = REWARD_DB_KEYS.meals;
+        const canAward = await rewardsCanAwardToday(
+          rewardCategory,
+          dayInfo.dateKey
+        );
+
+        if (canAward) {
+          const pointsValue = await getRewardPoints(
+            rewardCategory,
+            REWARD_ACTIONS.daily,
+            { ecoId: user?.eco_id }
+          );
+
+          if (pointsValue > 0) {
+            await addCarbonPoints(pointsValue);
+            await rewardsMarkAwardedToday(rewardCategory, dayInfo.dateKey);
+            logAnalyticsEvent("points_awarded", {
+              category: rewardCategory,
+              points: pointsValue,
+              dateLocal: getAnalyticsTimestamp(),
+            });
+            pointsAwarded = pointsValue;
+            awarded = true;
+          }
+        }
+      } catch (error) {
+        awardError = true;
+        logger.error(
+          "[TrackingContext] Unable to award meal points:",
+          error
+        );
       }
 
       // Submit to backend API (diet activity expects number of days as value)
@@ -555,9 +904,16 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
         [dietType]: 1, // Log 1 meal entry (use dietType ID, not display label)
       });
 
-      return { points: pointsAwarded, awarded };
+      return { points: pointsAwarded, awarded, awardError };
     },
-    [addCarbonPoints, applyImpactToTrend, ensureDailyReset, ensureWeekData, hasAwardedToday, markAwardedToday, submitActivityToBackend]
+    [
+      addCarbonPoints,
+      applyImpactToTrend,
+      ensureDailyReset,
+      ensureWeekData,
+      submitActivityToBackend,
+      user?.eco_id,
+    ]
   );
 
   const logShoppingActivity = useCallback(
@@ -601,17 +957,40 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
 
       let pointsAwarded = 0;
       let awarded = false;
+      let awardError = false;
 
-      if (!hasAwardedToday(CATEGORY_KEYS.shopping, dayInfo)) {
-        await addCarbonPoints(REWARD_POINTS.shopping);
-        markAwardedToday(CATEGORY_KEYS.shopping, dayInfo);
-        logAnalyticsEvent("points_awarded", {
-          category: "shopping",
-          points: REWARD_POINTS.shopping,
-          dateLocal: getAnalyticsTimestamp(),
-        });
-        pointsAwarded = REWARD_POINTS.shopping;
-        awarded = true;
+      try {
+        const rewardCategory = REWARD_DB_KEYS.shopping;
+        const canAward = await rewardsCanAwardToday(
+          rewardCategory,
+          dayInfo.dateKey
+        );
+
+        if (canAward) {
+          const pointsValue = await getRewardPoints(
+            rewardCategory,
+            REWARD_ACTIONS.daily,
+            { ecoId: user?.eco_id }
+          );
+
+          if (pointsValue > 0) {
+            await addCarbonPoints(pointsValue);
+            await rewardsMarkAwardedToday(rewardCategory, dayInfo.dateKey);
+            logAnalyticsEvent("points_awarded", {
+              category: rewardCategory,
+              points: pointsValue,
+              dateLocal: getAnalyticsTimestamp(),
+            });
+            pointsAwarded = pointsValue;
+            awarded = true;
+          }
+        }
+      } catch (error) {
+        awardError = true;
+        logger.error(
+          "[TrackingContext] Unable to award shopping points:",
+          error
+        );
       }
 
       // Submit to backend API (shopping expects category title: price range string)
@@ -634,12 +1013,19 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
       });
       await submitActivityToBackend("shopping", apiItems);
 
-      return { points: pointsAwarded, awarded };
+      return { points: pointsAwarded, awarded, awardError };
     },
-    [addCarbonPoints, applyImpactToTrend, ensureDailyReset, ensureWeekData, hasAwardedToday, markAwardedToday, updateLongTermActivity, submitActivityToBackend]
+    [
+      addCarbonPoints,
+      applyImpactToTrend,
+      ensureDailyReset,
+      ensureWeekData,
+      updateLongTermActivity,
+      submitActivityToBackend,
+      user?.eco_id,
+    ]
   );
 
-  const energyRewardMonthRef = useRef(null);
 
   const logEnergyActivity = useCallback(
     async ({ electricityValue = 0, gasValue = 0 }) => {
@@ -673,19 +1059,42 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
 
       let pointsAwarded = 0;
       let awarded = false;
+      let awardError = false;
 
       const { monthKey } = getMonthInfo();
 
-      if (energyRewardMonthRef.current !== monthKey) {
-        await addCarbonPoints(REWARD_POINTS.energy);
-        energyRewardMonthRef.current = monthKey;
-        logAnalyticsEvent("points_awarded", {
-          category: "energy",
-          points: REWARD_POINTS.energy,
-          dateLocal: getAnalyticsTimestamp(),
-        });
-        pointsAwarded = REWARD_POINTS.energy;
-        awarded = true;
+      try {
+        const rewardCategory = REWARD_DB_KEYS.energy;
+        const canAward = await rewardsCanAwardThisMonth(
+          rewardCategory,
+          monthKey
+        );
+
+        if (canAward) {
+          const pointsValue = await getRewardPoints(
+            rewardCategory,
+            REWARD_ACTIONS.monthly,
+            { ecoId: user?.eco_id }
+          );
+
+          if (pointsValue > 0) {
+            await addCarbonPoints(pointsValue);
+            await rewardsMarkAwardedThisMonth(rewardCategory, monthKey);
+            logAnalyticsEvent("points_awarded", {
+              category: rewardCategory,
+              points: pointsValue,
+              dateLocal: getAnalyticsTimestamp(),
+            });
+            pointsAwarded = pointsValue;
+            awarded = true;
+          }
+        }
+      } catch (error) {
+        awardError = true;
+        logger.error(
+          "[TrackingContext] Unable to award energy points:",
+          error
+        );
       }
 
       // Submit to backend API (energy expects bill amounts)
@@ -698,9 +1107,27 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
       }
       await submitActivityToBackend("energy", apiItems);
 
-      return { points: pointsAwarded, awarded, monthKey };
+      return { points: pointsAwarded, awarded, monthKey, awardError };
     },
-    [addCarbonPoints, updateLongTermActivity, submitActivityToBackend]
+    [addCarbonPoints, updateLongTermActivity, submitActivityToBackend, user?.eco_id]
+  );
+
+  const rewardPointsSummary = useMemo(
+    () => ({
+      transport:
+        rewardMapping.transport?.[REWARD_ACTIONS.daily] ??
+        DEFAULT_REWARD_MAPPING.transport.daily_log,
+      meals:
+        rewardMapping.diet?.[REWARD_ACTIONS.daily] ??
+        DEFAULT_REWARD_MAPPING.diet.daily_log,
+      shopping:
+        rewardMapping.shopping?.[REWARD_ACTIONS.daily] ??
+        DEFAULT_REWARD_MAPPING.shopping.daily_log,
+      energy:
+        rewardMapping.energy?.[REWARD_ACTIONS.monthly] ??
+        DEFAULT_REWARD_MAPPING.energy.monthly_log,
+    }),
+    [rewardMapping]
   );
 
   const value = useMemo(
@@ -713,7 +1140,9 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
       logShoppingActivity,
       logEnergyActivity,
       energyRecord,
-      rewardPoints: REWARD_POINTS,
+      rewardPoints: rewardPointsSummary,
+      refreshWeeklyImpact,
+      refreshBaseline,
     }),
     [
       weeklyImpact,
@@ -724,6 +1153,9 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
       logShoppingActivity,
       logEnergyActivity,
       energyRecord,
+      rewardPointsSummary,
+      refreshWeeklyImpact,
+      refreshBaseline,
     ]
   );
 

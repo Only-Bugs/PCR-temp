@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Text, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import Svg, {
@@ -39,6 +39,9 @@ const POINT_GUTTER_RIGHT = 24;
 const GRID_LINE_COUNT = 4;
 const AXIS_LABEL_WIDTH = 60;
 const TOOLTIP_HEIGHT = 52;
+const MAX_PLOT_VALUE = 100;
+
+const clamp = (value, min, max) => Math.max(min, Math.min(value, max));
 
 const formatNumber = (value) => {
   const abs = Math.abs(value);
@@ -84,7 +87,8 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
 
     return days.map((d) => {
       const key = iso(d);
-      const value = byDay[key];
+      const rawValue = byDay[key];
+      const value = Number.isFinite(rawValue) ? Number(rawValue) : 0;
       const isMissing = value == null;
       const isToday = key === todayKey;
 
@@ -93,23 +97,40 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
         dateKey: key,
         label: formatShortWeekday(d),
         axisLabel: formatAxisLabel(d),
-        value: isMissing ? 0 : value,
+        value: isMissing ? 0 : Math.max(value, 0),
         isMissing,
         isToday,
       };
     });
   }, [start, end, todayKey, weeklyTrend]);
 
-  const hasPositiveData = series.some((point) => point.value > 0);
   const baselinePerDay = series.length ? baseline / 7 : 0; // Keep 7-day baseline logic
 
+  const scaledSeries = useMemo(
+    () =>
+      series.map((point) => ({
+        ...point,
+        plotValue: Math.min(
+          Math.max(point.value ?? 0, 0),
+          MAX_PLOT_VALUE
+        ),
+      })),
+    [series]
+  );
+
+  const hasPositiveData = scaledSeries.some((point) => (point.value ?? 0) > 0);
+
   const safeMax = useMemo(() => {
-    const values = series.map((point) => point.value ?? 0);
+    const values = scaledSeries.map((point) => point.plotValue ?? 0);
     const maxValue = values.length ? Math.max(...values) : 0;
-    const rawMax = Math.max(maxValue, baselinePerDay);
+    const cappedBaseline = Math.min(
+      Math.max(baselinePerDay, 0),
+      MAX_PLOT_VALUE
+    );
+    const rawMax = Math.max(maxValue, cappedBaseline);
     const padded = rawMax * 1.15;
     return padded > 0 ? padded : 1;
-  }, [baselinePerDay, series]);
+  }, [baselinePerDay, scaledSeries]);
 
   const plotWidth = useMemo(() => {
     const leftBound = CHART_HORIZONTAL_PADDING + POINT_GUTTER_LEFT;
@@ -127,22 +148,43 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
     const leftBound = CHART_HORIZONTAL_PADDING + POINT_GUTTER_LEFT;
     const step = series.length > 1 ? plotWidth / (series.length - 1) : 0;
 
-    return series.map((point, index) => {
-      const value = point.value ?? 0;
+    return scaledSeries.map((point, index) => {
+      const value = point.plotValue ?? 0;
       const normalized = Math.min(value / safeMax, 1);
       const y = CHART_VERTICAL_PADDING + (1 - normalized) * plotHeight;
       const offset = series.length > 1 ? step * index : plotWidth / 2;
 
       return {
         ...point,
+        value: point.value ?? 0,
+        plotValue: value,
         x: leftBound + offset,
         y,
         normalized,
       };
     });
-  }, [plotHeight, plotWidth, safeMax, series]);
+  }, [plotHeight, plotWidth, safeMax, scaledSeries, series.length]);
 
   const [activePoint, setActivePoint] = useState(null);
+  const lastTapRef = useRef({ time: 0, key: null });
+
+  const handlePointPress = useCallback(
+    (point) => {
+      const now = Date.now();
+      const isSamePoint = lastTapRef.current.key === point.dateKey;
+      const isDoubleTap = isSamePoint && now - lastTapRef.current.time < 300;
+
+      if (isDoubleTap) {
+        setActivePoint(null);
+        lastTapRef.current = { time: 0, key: null };
+        return;
+      }
+
+      lastTapRef.current = { time: now, key: point.dateKey };
+      setActivePoint(point);
+    },
+    []
+  );
 
   useEffect(() => {
     if (chartPoints.length === 0) {
@@ -166,6 +208,8 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
     }
 
     const smoothing = 0.22;
+    const minY = CHART_VERTICAL_PADDING;
+    const maxY = CHART_HEIGHT - CHART_VERTICAL_PADDING;
 
     const buildCommand = (point, index, points) => {
       if (index === 0) {
@@ -177,9 +221,17 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
       const next = points[index + 1] ?? point;
 
       const cp1x = previous.x + (point.x - prevPrev.x) * smoothing;
-      const cp1y = previous.y + (point.y - prevPrev.y) * smoothing;
+      const cp1y = clamp(
+        previous.y + (point.y - prevPrev.y) * smoothing,
+        minY,
+        maxY
+      );
       const cp2x = point.x - (next.x - previous.x) * smoothing;
-      const cp2y = point.y - (next.y - previous.y) * smoothing;
+      const cp2y = clamp(
+        point.y - (next.y - previous.y) * smoothing,
+        minY,
+        maxY
+      );
 
       return `C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${point.x} ${point.y}`;
     };
@@ -206,7 +258,11 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
       return null;
     }
 
-    const normalized = baselinePerDay / safeMax;
+    const cappedBaseline = Math.min(
+      Math.max(baselinePerDay, 0),
+      MAX_PLOT_VALUE
+    );
+    const normalized = cappedBaseline / safeMax;
     return CHART_VERTICAL_PADDING + (1 - normalized) * plotHeight;
   }, [baselinePerDay, plotHeight, plotWidth, safeMax]);
 
@@ -452,7 +508,7 @@ const ImpactChart = ({ weeklyTrend = [], baseline = 0, total = 0 }) => {
                 return (
                   <G
                     key={`point-${point.dateKey}`}
-                    onPressIn={() => setActivePoint(point)}
+                    onPressIn={() => handlePointPress(point)}
                     accessible
                     accessibilityLabel={`${formatLongDate(point.date)}, ${formatNumber(
                       point.value
