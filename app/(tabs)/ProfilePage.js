@@ -2,7 +2,6 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 
-import CTAButton from "../../components/CTAButton";
 import PageHeader from "../../components/PageHeader";
 import AvatarCard from "../../components/persona/AvatarCard";
 import MonthlySnapshot from "../../components/profile/MonthlySnapshot";
@@ -21,7 +20,6 @@ import { avatar } from "../../services/profileData";
  * - Carbon score card
  * - Avatar progress
  * - Monthly emissions snapshot (API + context + AsyncStorage)
- * - Rewards navigation
  */
 const ProfilePage = () => {
   const { user, getMonthlySnapshot, setMonthlySnapshot } = useUser();
@@ -88,11 +86,6 @@ const ProfilePage = () => {
         {/* Monthly Snapshot */}
         {snapshotData && <MonthlySnapshot data={snapshotData} />}
 
-        {/* Rewards */}
-        <CTAButton
-          label="View My Rewards"
-          onPress={() => router.push("RewardsPage")}
-        />
       </ScrollView>
     </View>
   );
