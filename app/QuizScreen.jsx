@@ -71,7 +71,8 @@ const QuizScreen = () => {
 
     const processQueue = async () => {
       try {
-        const results = await flushQuizAwardQueue();
+        // Use clearOnError to skip corrupted queue items and continue processing
+        const results = await flushQuizAwardQueue({ clearOnError: true });
         if (!results.length) return;
 
         let latestBalance = null;
