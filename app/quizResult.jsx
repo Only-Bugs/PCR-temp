@@ -29,7 +29,19 @@ const QuizResultScreen = () => {
     ? Math.min(Math.max(Math.round(Number(params.percentage)), 0), 100)
     : 0;
 
-  const pointsEarned = params.points ? Number(params.points) : null;
+  const asNumber = (value) => {
+    if (value === undefined || value === null || value === "") {
+      return null;
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const awardedPointsRaw = asNumber(params.awardedPoints);
+  const awardedPoints = Math.max(0, awardedPointsRaw ?? 0);
+  const newBalance = asNumber(params.newBalance);
+  const awardPending = params.awardPending === "1";
+  const quizTitle = params.title ? String(params.title) : null;
   const quizData = params.quizData;
 
   const isPassing = percent >= 60;
@@ -136,9 +148,23 @@ const QuizResultScreen = () => {
           </View>
 
           <Text style={styles.title}>Quiz Completed</Text>
+          {quizTitle ? (
+            <Text style={styles.quizTitle}>{quizTitle}</Text>
+          ) : null}
           <Text style={styles.subtitle}>
-            {correct} / {total} correct
+            You scored {correct} / {total}.
           </Text>
+          <Text style={styles.pointsHeadline}>
+            You earned {awardedPoints} {awardedPoints === 1 ? "point" : "points"} 🎉
+          </Text>
+          {awardPending ? (
+            <Text style={styles.syncNotice}>
+              Points will be synced when you're online.
+            </Text>
+          ) : null}
+          {newBalance !== null ? (
+            <Text style={styles.balanceText}>New balance: {newBalance}</Text>
+          ) : null}
           <View style={styles.statRow}>
             <View style={styles.statBlock}>
               <Text style={styles.statLabel}>Correct</Text>
@@ -152,12 +178,6 @@ const QuizResultScreen = () => {
           </View>
           <Text style={styles.feedback}>{feedbackText}</Text>
         </Animated.View>
-
-        {pointsEarned ? (
-          <Animated.View style={[styles.pointsPill, { opacity: contentAnim }]}>
-            <Text style={styles.pointsText}>Earned +{pointsEarned} Eco Points</Text>
-          </Animated.View>
-        ) : null}
 
         <Animated.View style={[styles.buttonWrapper, { opacity: contentAnim }]}
         >
@@ -248,10 +268,35 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     textAlign: "center",
   },
+  quizTitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 8,
+    textAlign: "center",
+  },
   subtitle: {
     fontSize: 16,
     fontWeight: "600",
     color: "#455A64",
+    marginTop: 6,
+    textAlign: "center",
+  },
+  pointsHeadline: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.eco.green[600],
+    marginTop: 8,
+    textAlign: "center",
+  },
+  syncNotice: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginTop: 6,
+    textAlign: "center",
+  },
+  balanceText: {
+    fontSize: 14,
+    color: colors.textPrimary,
     marginTop: 6,
     textAlign: "center",
   },
@@ -288,18 +333,6 @@ const styles = StyleSheet.create({
     height: 32,
     backgroundColor: "rgba(15, 23, 42, 0.08)",
     marginHorizontal: 12,
-  },
-  pointsPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: "#E8F5E9",
-    marginBottom: 20,
-  },
-  pointsText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#2E7D32",
   },
   buttonWrapper: {
     width: "85%",

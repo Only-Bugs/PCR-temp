@@ -1,7 +1,8 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Easing,
   FlatList,
@@ -13,12 +14,29 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useUser } from "../context/UserContext";
+import { awardQuizPoints, flushQuizAwardQueue } from "../services/apis/quizAPI";
+import StorageService from "../services/storage";
 import colors from "../theme/colors";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+const resolveQuizId = (quiz) =>
+  quiz?.quiz_id ||
+  quiz?.quizId ||
+  quiz?.topic_id ||
+  quiz?.topicId ||
+  quiz?.title ||
+  quiz?.topic_name ||
+  null;
 
 const QuizScreen = () => {
   const { quiz } = useLocalSearchParams();
   const parsedQuiz = JSON.parse(quiz);
   const router = useRouter();
+  const resolvedQuizId = useMemo(() => resolveQuizId(parsedQuiz), [quiz]);
+  const quizParams = useMemo(() => JSON.stringify(parsedQuiz), [quiz]);
+  const { user, setCarbonPoints, addCarbonPoints } = useUser();
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -26,12 +44,17 @@ const QuizScreen = () => {
   const [answers, setAnswers] = useState([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [isSubmittingResult, setIsSubmittingResult] = useState(false);
+  const [cooldownBlocked, setCooldownBlocked] = useState(false);
 
   const totalQuestions = parsedQuiz.questions.length;
   const question = parsedQuiz.questions[currentIndex];
   const isLastQuestion = currentIndex === totalQuestions - 1;
 
   const progressAnim = useRef(new Animated.Value(0)).current;
+  const attemptTimestampRef = useRef(new Date().toISOString());
+  const idempotencyKeyRef = useRef(null);
+  const cooldownAlertShownRef = useRef(false);
 
   useEffect(() => {
     const ratio = totalQuestions === 0 ? 0 : (currentIndex + 1) / totalQuestions;
@@ -43,13 +66,94 @@ const QuizScreen = () => {
     }).start();
   }, [currentIndex, totalQuestions, progressAnim]);
 
+  useEffect(() => {
+    if (!user?.eco_id) return;
+
+    const processQueue = async () => {
+      try {
+        const results = await flushQuizAwardQueue();
+        if (!results.length) return;
+
+        let latestBalance = null;
+        let totalAwarded = 0;
+        results.forEach((item) => {
+          if (typeof item.newBalance === "number") {
+            latestBalance = item.newBalance;
+          }
+          if (typeof item.awardedPoints === "number") {
+            totalAwarded += item.awardedPoints;
+          }
+        });
+
+        if (latestBalance !== null) {
+          await setCarbonPoints(latestBalance);
+        } else if (totalAwarded > 0) {
+          await addCarbonPoints(totalAwarded);
+        }
+      } catch (err) {
+        console.error("[QuizScreen] Unable to flush quiz award queue:", err);
+      }
+    };
+
+    processQueue();
+  }, [addCarbonPoints, setCarbonPoints, user?.eco_id]);
+
+  useEffect(() => {
+    if (!resolvedQuizId) return;
+    let isMounted = true;
+
+    const verifyCooldown = async () => {
+      try {
+        const timestamp = await StorageService.getQuizCompletionTimestamp(
+          resolvedQuizId
+        );
+        if (!isMounted) return;
+
+        if (timestamp) {
+          const expiresAt = timestamp + DAY_MS;
+          if (expiresAt > Date.now()) {
+            setCooldownBlocked(true);
+            if (!cooldownAlertShownRef.current) {
+              cooldownAlertShownRef.current = true;
+              Alert.alert(
+                "Quiz Cooling Down",
+                "You've already completed this quiz today. Please come back tomorrow!",
+                [
+                  {
+                    text: "OK",
+                    onPress: () => router.replace("/LearningPage"),
+                  },
+                ],
+                { cancelable: false }
+              );
+            }
+            return;
+          }
+          await StorageService.clearQuizCompletionTimestamp(resolvedQuizId);
+        }
+
+        if (!isMounted) return;
+        setCooldownBlocked(false);
+        cooldownAlertShownRef.current = false;
+      } catch (err) {
+        console.error("[QuizScreen] Failed to verify quiz cooldown:", err);
+      }
+    };
+
+    verifyCooldown();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [resolvedQuizId, router]);
+
   const handleSelectOption = (option) => {
-    if (hasSubmitted) return;
+    if (hasSubmitted || cooldownBlocked) return;
     setSelectedOption(option);
   };
 
   const submitCurrentAnswer = () => {
-    if (!selectedOption || hasSubmitted) return;
+    if (!selectedOption || hasSubmitted || cooldownBlocked) return;
     setHasSubmitted(true);
     setShowExplanation(true);
     setAnswers((prev) => [
@@ -61,24 +165,87 @@ const QuizScreen = () => {
     ]);
   };
 
-  const goToResults = () => {
+  const goToResults = async () => {
+    if (isSubmittingResult) return;
+
     const correctCount = answers.filter((a) => a.isCorrect).length;
     const total = parsedQuiz.questions.length;
-    const percentage = Math.round((correctCount / total) * 100);
+    const percentage =
+      total === 0 ? 0 : Math.round((correctCount / total) * 100);
+    const baseAward = Math.max(0, Math.min(correctCount, total));
 
-    router.push({
-      pathname: "/quizResult",
-      params: {
-        score: correctCount,
-        total,
-        percentage,
-        title: parsedQuiz.topic_name,
-        quizData: JSON.stringify(parsedQuiz),
-      },
-    });
+    let awardedPoints = baseAward;
+    let newBalance = null;
+    let awardPending = false;
+
+    setIsSubmittingResult(true);
+    try {
+      const ecoId = user?.eco_id;
+      if (ecoId && resolvedQuizId) {
+        if (!idempotencyKeyRef.current) {
+          idempotencyKeyRef.current = `${resolvedQuizId}:${ecoId}:${attemptTimestampRef.current}`;
+        }
+
+        const result = await awardQuizPoints({
+          ecoId,
+          quizId: resolvedQuizId,
+          correct: correctCount,
+          total,
+          idempotencyKey: idempotencyKeyRef.current,
+        });
+
+        awardedPoints =
+          typeof result.awardedPoints === "number"
+            ? result.awardedPoints
+            : baseAward;
+
+        if (typeof result.newBalance === "number") {
+          newBalance = result.newBalance;
+          await setCarbonPoints(result.newBalance);
+        } else if (
+          typeof result.awardedPoints === "number" &&
+          result.awardedPoints > 0
+        ) {
+          await addCarbonPoints(result.awardedPoints);
+        }
+      }
+    } catch (err) {
+      console.error("[QuizScreen] Failed to award quiz points:", err);
+      awardedPoints =
+        typeof err?.awardedPoints === "number" ? err.awardedPoints : baseAward;
+      awardPending = err?.wasQueued === true;
+    } finally {
+      setIsSubmittingResult(false);
+      if (resolvedQuizId) {
+        StorageService.setQuizCompletionTimestamp(resolvedQuizId).catch((err) =>
+          console.error(
+            "[QuizScreen] Failed to store quiz completion timestamp:",
+            err
+          )
+        );
+      }
+      router.push({
+        pathname: "/quizResult",
+        params: {
+          score: correctCount.toString(),
+          total: total.toString(),
+          percentage: percentage.toString(),
+          title: parsedQuiz.topic_name,
+          quizData: quizParams,
+          awardedPoints: awardedPoints.toString(),
+          newBalance:
+            newBalance !== null && newBalance !== undefined
+              ? String(newBalance)
+              : "",
+          awardPending: awardPending ? "1" : "0",
+        },
+      });
+    }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (isSubmittingResult || cooldownBlocked) return;
+
     if (!hasSubmitted) {
       submitCurrentAnswer();
       return;
@@ -90,7 +257,7 @@ const QuizScreen = () => {
       setShowExplanation(false);
       setHasSubmitted(false);
     } else {
-      goToResults();
+      await goToResults();
     }
   };
 
@@ -130,7 +297,8 @@ const QuizScreen = () => {
         style={optionStyle}
         onPress={() => handleSelectOption(item)}
         activeOpacity={0.92}
-        disabled={hasAnswered}
+        disabled={hasAnswered || cooldownBlocked}
+        accessibilityState={{ disabled: hasAnswered || cooldownBlocked }}
       >
         <Text style={optionTextStyle}>{item.quiz_option_text}</Text>
       </TouchableOpacity>
@@ -141,8 +309,13 @@ const QuizScreen = () => {
     inputRange: [0, 1],
     outputRange: ["0%", "100%"],
   });
-  const canProceed = hasSubmitted || !!selectedOption;
-  const buttonLabel = hasSubmitted
+  const canProceed =
+    (hasSubmitted || !!selectedOption) && !isSubmittingResult && !cooldownBlocked;
+  const buttonLabel = cooldownBlocked
+    ? "Come Back Tomorrow"
+    : isSubmittingResult
+    ? "Finishing..."
+    : hasSubmitted
     ? isLastQuestion
       ? "View Results"
       : "Next Question"
@@ -160,6 +333,7 @@ const QuizScreen = () => {
           </Pressable>
           <Text style={styles.headerTitle}>{parsedQuiz.topic_name}</Text>
         </View>
+        <Text style={styles.headerHint}>Earn 1 point per correct answer.</Text>
 
         <View style={styles.progressContainer} accessibilityRole="progressbar">
           <View style={styles.progressTrack}>
@@ -312,7 +486,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 12,
   },
   headerTitle: {
     fontSize: 20,
@@ -320,6 +494,11 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginLeft: 12,
     flex: 1,
+  },
+  headerHint: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginBottom: 20,
   },
   progressContainer: {
     marginBottom: 24,
