@@ -186,6 +186,18 @@ const FeaturedChallengeCard = ({ onActivateChallenge, activeCount }) => {
           )
         }
       />
+
+      {/* Instructional hints */}
+      <View style={styles.swipeHints}>
+        <View style={styles.hintLeft}>
+          <MaterialIcons name="arrow-back" size={20} color="#EF4444" />
+          <Text style={styles.hintText}>Swipe left to skip</Text>
+        </View>
+        <View style={styles.hintRight}>
+          <Text style={styles.hintText}>Swipe right to accept</Text>
+          <MaterialIcons name="arrow-forward" size={20} color="#22C55E" />
+        </View>
+      </View>
     </View>
   );
 };
