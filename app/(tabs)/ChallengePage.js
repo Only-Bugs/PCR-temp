@@ -1,13 +1,11 @@
 import logger from "../../utils/logger";
 // app/(tabs)/ChallengePage.js
-import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import ChallengeCard from "../../components/challenges/ChallengeCard";
 import ChallengeDetailsModal from "../../components/challenges/ChallengeDetailsModal";
 import FeaturedChallengeCard from "../../components/challenges/FeaturedChallengeCard";
-import CTAButton from "../../components/CTAButton";
 import PageHeader from "../../components/PageHeader";
 import { useUser } from "../../context/UserContext";
 import {
@@ -35,7 +33,6 @@ const ChallengePage = () => {
   const [activeChallenges, setActiveChallenges] = useState([]);
   const [hasCompletedAny, setHasCompletedAny] = useState(false);
   const { user, updateUser } = useUser();
-  const router = useRouter();
 
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -222,12 +219,6 @@ const ChallengePage = () => {
 
         <View style={styles.section}>{/* <EncouragementBanner /> */}</View>
 
-        <View style={styles.section}>
-          <CTAButton
-            label="View My Rewards"
-            onPress={() => router.push("RewardsPage")}
-          />
-        </View>
       </ScrollView>
 
       <ChallengeDetailsModal

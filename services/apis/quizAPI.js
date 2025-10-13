@@ -59,8 +59,9 @@ export const fetchQuizByIndex = async (index = 0, ecoId, options) => {
 
 // ---------- Quiz Points Awarding ----------
 
-const DEFAULT_QUIZ_AWARD_ENDPOINT =
-  "https://ayrnx5os0c.execute-api.ap-southeast-2.amazonaws.com/dev/quiz";
+// Note: Quiz awards are handled client-side only
+// Points are calculated locally and updated via UserContext
+// No backend endpoint exists for quiz point awards
 
 const calculateAwardedPoints = (correct, total) => {
   const safeCorrect = Math.max(0, Number.isFinite(correct) ? correct : 0);
@@ -68,51 +69,26 @@ const calculateAwardedPoints = (correct, total) => {
   return Math.max(0, Math.min(safeCorrect, safeTotal));
 };
 
-const parseAwardResponse = async (response) => {
-  const text = await response.text();
-  let data = {};
-  if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch (err) {
-      console.warn("[quizAPI] awardQuizPoints invalid JSON response:", err);
-    }
-  }
-  if (!response.ok) {
-    const message = data?.message || "Failed to award quiz points";
-    const error = new Error(message);
-    error.response = response;
-    error.data = data;
-    throw error;
-  }
+const postQuizAward = async (payload) => {
+  const { ecoId, awardedPoints, idempotencyKey } = payload;
+
+  console.log("[postQuizAward] Processing quiz award:", {
+    ecoId,
+    awardedPoints,
+    idempotencyKey,
+  });
+
+  // Quiz points are awarded client-side only
+  // The QuizScreen component will handle updating the user's carbon points
+  // via UserContext (addCarbonPoints or setCarbonPoints)
+
+  console.log("[postQuizAward] Success: Quiz award processed (client-side only)");
+
   return {
-    awardedPoints:
-      typeof data.awardedPoints === "number" ? data.awardedPoints : undefined,
-    newBalance:
-      typeof data.newBalance === "number" ? data.newBalance : undefined,
-    reason: data.reason,
+    awardedPoints,
+    newBalance: undefined, // Will be calculated by UserContext
+    reason: "quiz_completion",
   };
-};
-
-const postQuizAward = async (
-  payload,
-  endpoint = DEFAULT_QUIZ_AWARD_ENDPOINT
-) => {
-  const res = await authorizedFetch(
-    endpoint,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Idempotency-Key": payload.idempotencyKey,
-      },
-      body: JSON.stringify(payload),
-    },
-    { ecoId: payload.ecoId }
-  );
-
-  const parsed = await parseAwardResponse(res);
-  return parsed;
 };
 
 /**
@@ -124,7 +100,6 @@ export const awardQuizPoints = async ({
   quizId,
   correct,
   total,
-  endpoint = DEFAULT_QUIZ_AWARD_ENDPOINT,
   idempotencyKey,
 }) => {
   if (!ecoId || !quizId) {
@@ -150,7 +125,7 @@ export const awardQuizPoints = async ({
   };
 
   try {
-    const result = await postQuizAward(payload, endpoint);
+    const result = await postQuizAward(payload);
     return {
       awardedPoints: result.awardedPoints ?? awardedPoints,
       newBalance: result.newBalance,
@@ -158,7 +133,7 @@ export const awardQuizPoints = async ({
       idempotencyKey: key,
     };
   } catch (err) {
-    await StorageService.enqueueQuizAward({ ...payload, endpoint });
+    await StorageService.enqueueQuizAward(payload);
     const error = new Error(err?.message || "Failed to award quiz points");
     error.cause = err;
     error.awardedPoints = awardedPoints;
@@ -169,20 +144,42 @@ export const awardQuizPoints = async ({
 };
 
 /**
+ * Clears the entire quiz award queue.
+ * Use this to remove corrupted or outdated queued items.
+ */
+export const clearQuizAwardQueue = async () => {
+  try {
+    await StorageService.setQuizAwardQueue([]);
+    console.log("[clearQuizAwardQueue] Queue cleared successfully");
+    return true;
+  } catch (err) {
+    console.error("[clearQuizAwardQueue] Failed to clear queue:", err);
+    return false;
+  }
+};
+
+/**
  * Flush any queued quiz award requests (e.g., when back online).
  * Returns an array of results for successfully processed payloads.
  */
-export const flushQuizAwardQueue = async ({
-  endpoint = DEFAULT_QUIZ_AWARD_ENDPOINT,
-} = {}) => {
+export const flushQuizAwardQueue = async ({ clearOnError = false } = {}) => {
   const queue = await StorageService.getQuizAwardQueue();
-  if (!queue.length) return [];
+  if (!queue.length) {
+    console.log("[flushQuizAwardQueue] Queue is empty");
+    return [];
+  }
+
+  console.log(`[flushQuizAwardQueue] Processing ${queue.length} queued items`);
 
   const processed = [];
+  const failed = [];
+
   for (const payload of queue) {
-    const targetEndpoint = payload.endpoint || endpoint;
+    console.log("[flushQuizAwardQueue] Processing payload:", payload.idempotencyKey);
+    console.log("[flushQuizAwardQueue] Payload data:", JSON.stringify(payload, null, 2));
+
     try {
-      const result = await postQuizAward(payload, targetEndpoint);
+      const result = await postQuizAward(payload);
       await StorageService.removeQuizAward(payload.idempotencyKey);
       processed.push({
         payload,
@@ -190,15 +187,27 @@ export const flushQuizAwardQueue = async ({
         newBalance: result.newBalance,
         reason: result.reason,
       });
+      console.log("[flushQuizAwardQueue] Successfully processed:", payload.idempotencyKey);
     } catch (err) {
       console.error(
         "[quizAPI] flushQuizAwardQueue failed for payload:",
         payload.idempotencyKey,
         err?.message || err
       );
+      failed.push({ payload, error: err?.message });
+
+      // If clearOnError is true, remove the failed item and continue
+      if (clearOnError) {
+        console.log("[flushQuizAwardQueue] Removing failed item from queue:", payload.idempotencyKey);
+        await StorageService.removeQuizAward(payload.idempotencyKey);
+        continue;
+      }
+
+      // Otherwise, stop processing on first error
       break;
     }
   }
 
+  console.log(`[flushQuizAwardQueue] Completed: ${processed.length} succeeded, ${failed.length} failed out of ${queue.length} items`);
   return processed;
 };
