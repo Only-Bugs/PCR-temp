@@ -1,6 +1,5 @@
 // import { LinearGradient } from "expo-linear-gradient";
 import { Text, View } from "react-native";
-import colors from "../../../theme/colors";
 import styles from "./styles";
 
 import CarbonPersona from "../CarbonPersona";
@@ -11,7 +10,7 @@ import CarbonPersona from "../CarbonPersona";
  * Displays the persona animation inside a circular gradient with status text and a star badge.
  *
  * @param {object} props
- * @param {"leaf"|"sapling"|"tree"} props.stage - Persona stage.
+ * @param {"seed"|"leaf"|"sapling"|"youngPlant"|"tree"|"matureTree"|"finalStage"} props.stage - Persona stage.
  * @param {string} props.status - Persona status text.
  * @returns {JSX.Element}
  */
@@ -28,7 +27,6 @@ const AvatarCircle = ({ stage, status }) => {
         <Text style={styles.statusText}>{status}</Text>
       </View>
       {/* </LinearGradient> */}
-
     </View>
   );
 };
