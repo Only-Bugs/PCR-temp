@@ -179,6 +179,9 @@ const ChallengePage = () => {
       >
         <View style={styles.headerSpacing}>
           <PageHeader title="Challenges" />
+          <Text style={styles.pageSubtitle}>
+            Pick actions to build lasting habits and earn extra points.
+          </Text>
         </View>
 
         <View style={styles.featuredWrapper}>
@@ -239,6 +242,11 @@ const styles = StyleSheet.create({
   },
   headerSpacing: {
     marginBottom: layout.sectionSpacing,
+  },
+  pageSubtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    color: colors.textSecondary,
   },
   featuredWrapper: {
     height: 300,

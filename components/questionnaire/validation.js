@@ -12,10 +12,10 @@ export const validateNumber = (value) => {
 /**
  * Validates an integer input value (stepper).
  * @param {any} value - Input value to validate
- * @param {number} [min=1] - Minimum allowed value
+ * @param {number} [min=0] - Minimum allowed value
  * @returns {boolean} True if value is an integer >= min
  */
-export const validateInteger = (value, min = 1) => {
+export const validateInteger = (value, min = 0) => {
   if (value === null || value === undefined || value === "") return false;
   const numeric = Number(value);
   return Number.isInteger(numeric) && numeric >= min;
@@ -52,14 +52,15 @@ export const validateSelectEnum = (value) => {
  * General-purpose validation dispatcher.
  * @param {string} inputType - Input type string ("number", "number_int", "bool", "enum_range", "select_enum")
  * @param {any} value - Value to validate
+ * @param {{ min?: number }} [options] - Additional validation options
  * @returns {boolean} True if value passes validation for the input type
  */
-export const validateInput = (inputType, value) => {
+export const validateInput = (inputType, value, options = {}) => {
   switch (inputType) {
     case "number":
       return validateNumber(value);
     case "number_int":
-      return validateInteger(value);
+      return validateInteger(value, options.min);
     case "bool":
       return validateBoolean(value);
     case "enum_range":

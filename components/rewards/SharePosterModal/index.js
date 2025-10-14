@@ -77,12 +77,6 @@ const SharePosterModal = ({
         UTI: "public.png",
       });
 
-      Toast.show({
-        type: "success",
-        text1: "Poster shared successfully!",
-        position: "bottom",
-      });
-
       // Close modal after successful share
       setTimeout(() => {
         onClose();

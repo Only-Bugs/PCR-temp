@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
-  Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -65,8 +66,10 @@ const LogMealActivity = () => {
   const [selectedDiet, setSelectedDiet] = useState(null);
   const [spending, setSpending] = useState('');
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSave = async () => {
+    if (submitting) return;
     const issues = {};
 
     if (!selectedDiet) {
@@ -83,6 +86,7 @@ const LogMealActivity = () => {
       return;
     }
 
+    setSubmitting(true);
     try {
       const result = await logMealActivity({
         dietType: selectedDiet.id,
@@ -128,7 +132,13 @@ const LogMealActivity = () => {
       });
     } catch (error) {
       console.error('[LogMealActivity] Failed to record meal activity:', error);
-      Alert.alert('Unable to save', 'Something went wrong while saving your meal activity. Please try again.');
+      showFeedbackToast({
+        variant: 'error',
+        title: 'Unable to save',
+        message: "We couldn't save your meal activity. Please try again.",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -137,76 +147,95 @@ const LogMealActivity = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Log Meal Activity</Text>
-      </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.formContainer}>
-          <Text style={styles.sectionTitle}>Select Diet Type</Text>
-          <Text style={styles.sectionSubtitle}>
-            Required • Choose the best match for today
-          </Text>
-
-          <View style={styles.optionList}>
-            {DIET_OPTIONS.map((option) => {
-              const isActive = selectedDiet?.id === option.id;
-              return (
-                <TouchableOpacity
-                  key={option.id}
-                  style={[styles.optionCard, isActive && styles.optionCardActive]}
-                  onPress={() => {
-                    setSelectedDiet(option);
-                    setErrors((prev) => ({ ...prev, diet: undefined }));
-                  }}
-                >
-                  <View style={[styles.optionIcon, { backgroundColor: `${option.icon.color}1A` }]}> 
-                    <MaterialIcons name={option.icon.name} size={22} color={option.icon.color} />
-                  </View>
-                  <View style={styles.optionCopy}>
-                    <Text style={styles.optionTitle}>{option.title}</Text>
-                    <Text style={styles.optionDescription}>{option.description}</Text>
-                  </View>
-                  <View style={[styles.radioOuter, isActive && styles.radioOuterActive]}>
-                    {isActive && <View style={styles.radioInner} />}
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-          {errors.diet ? <Text style={styles.errorText}>{errors.diet}</Text> : null}
-
-          <Text style={[styles.sectionTitle, styles.sectionSpacing]}>Meal Spending</Text>
-          <Text style={styles.sectionSubtitle}>Required • How much did you spend on food today?</Text>
-          <View style={styles.spendingInputWrapper}>
-            <Text style={styles.currencyPrefix}>$</Text>
-            <TextInput
-              value={spending}
-              onChangeText={(text) => {
-                setSpending(sanitizeCurrency(text));
-                setErrors((prev) => ({ ...prev, spending: undefined }));
-              }}
-              placeholder="0.00"
-              placeholderTextColor={colors.textSecondary}
-              keyboardType="decimal-pad"
-              style={styles.spendingInput}
-            />
-          </View>
-          {errors.spending ? <Text style={styles.errorText}>{errors.spending}</Text> : null}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+    >
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Log Meal Activity</Text>
         </View>
-      </ScrollView>
 
-      <View style={styles.actions}>
-        <CTAButton label="Save Activity" onPress={handleSave} />
-        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-          <Text style={styles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
+        <ScrollView
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.formContainer}>
+            <Text style={styles.sectionTitle}>Select Diet Type</Text>
+            <Text style={styles.sectionSubtitle}>
+              Required • Choose the best match for today
+            </Text>
+
+            <View style={styles.optionList}>
+              {DIET_OPTIONS.map((option) => {
+                const isActive = selectedDiet?.id === option.id;
+                return (
+                  <TouchableOpacity
+                    key={option.id}
+                    style={[styles.optionCard, isActive && styles.optionCardActive]}
+                    onPress={() => {
+                      setSelectedDiet(option);
+                      setErrors((prev) => ({ ...prev, diet: undefined }));
+                    }}
+                  >
+                    <View style={[styles.optionIcon, { backgroundColor: `${option.icon.color}1A` }]}>
+                      <MaterialIcons name={option.icon.name} size={22} color={option.icon.color} />
+                    </View>
+                    <View style={styles.optionCopy}>
+                      <Text style={styles.optionTitle}>{option.title}</Text>
+                      <Text style={styles.optionDescription}>{option.description}</Text>
+                    </View>
+                    <View style={[styles.radioOuter, isActive && styles.radioOuterActive]}>
+                      {isActive && <View style={styles.radioInner} />}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            {errors.diet ? <Text style={styles.errorText}>{errors.diet}</Text> : null}
+
+            <Text style={[styles.sectionTitle, styles.sectionSpacing]}>Meal Spending</Text>
+            <Text style={styles.sectionSubtitle}>Required • How much did you spend on food today?</Text>
+            <View style={styles.spendingInputWrapper}>
+              <Text style={styles.currencyPrefix}>$</Text>
+              <TextInput
+                value={spending}
+                onChangeText={(text) => {
+                  setSpending(sanitizeCurrency(text));
+                  setErrors((prev) => ({ ...prev, spending: undefined }));
+                }}
+                placeholder="0.00"
+                placeholderTextColor={colors.textSecondary}
+                keyboardType="decimal-pad"
+                style={styles.spendingInput}
+              />
+            </View>
+            {errors.spending ? <Text style={styles.errorText}>{errors.spending}</Text> : null}
+          </View>
+        </ScrollView>
+
+        <View style={styles.actions}>
+          <CTAButton
+            label="Save Activity"
+            onPress={handleSave}
+            loading={submitting}
+            disabled={submitting}
+          />
+          <TouchableOpacity
+            style={[styles.cancelButton, submitting && styles.cancelButtonDisabled]}
+            onPress={handleCancel}
+            disabled={submitting}
+          >
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -350,6 +379,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 12,
+  },
+  cancelButtonDisabled: {
+    opacity: 0.5,
   },
   cancelText: {
     fontSize: 16,

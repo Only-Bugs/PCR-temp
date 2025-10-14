@@ -12,6 +12,26 @@ import {
 import colors from "../../../theme/colors";
 import styles from "./styles";
 
+const normalizeToUpper = (option) => {
+  if (typeof option !== "string") return option;
+  return option.toUpperCase();
+};
+
+const getDisplayLabel = (option, optionDetails) => {
+  if (typeof option !== "string") return option;
+  const normalizedKey = option.toLowerCase();
+  const detail =
+    optionDetails?.[option] ??
+    (typeof optionDetails?.[normalizedKey] === "string"
+      ? optionDetails[normalizedKey]
+      : undefined);
+  const label = normalizeToUpper(option);
+  if (!detail) return label;
+  const detailLabel =
+    typeof detail === "string" ? detail.toUpperCase() : String(detail).toUpperCase();
+  return `${label} (${detailLabel})`;
+};
+
 /**
  * @component SelectEnumInput
  * @description Dropdown selector for select_enum questions with instant close and bounce animation.
@@ -20,8 +40,15 @@ import styles from "./styles";
  * @param {string} props.value - Current selected value
  * @param {Function} props.onChange - Callback when a value is selected
  * @param {string[]} props.options - List of available options
+ * @param {Record<string, string>} [props.optionDetails] - Optional map of option
+ * descriptions keyed by option value (case-insensitive).
  */
-const SelectEnumInput = ({ value, onChange, options = [] }) => {
+const SelectEnumInput = ({
+  value,
+  onChange,
+  options = [],
+  optionDetails,
+}) => {
   const [visible, setVisible] = useState(false);
   const scaleY = useRef(new Animated.Value(0)).current;
 
@@ -60,7 +87,9 @@ const SelectEnumInput = ({ value, onChange, options = [] }) => {
         style={styles.selectBox}
         onPress={() => setVisible(true)}
       >
-        <Text style={styles.selectBoxText}>{value || "Select an option"}</Text>
+        <Text style={styles.selectBoxText}>
+          {value ? getDisplayLabel(value, optionDetails) : "Select an option"}
+        </Text>
         <MaterialIcons
           name="arrow-drop-down"
           size={24}
@@ -98,7 +127,7 @@ const SelectEnumInput = ({ value, onChange, options = [] }) => {
                           selected && styles.dropdownOptionTextSelected,
                         ]}
                       >
-                        {item}
+                        {getDisplayLabel(item, optionDetails)}
                       </Text>
                       {selected && (
                         <MaterialIcons

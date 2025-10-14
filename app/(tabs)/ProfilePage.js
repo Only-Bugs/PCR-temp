@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import PageHeader from "../../components/PageHeader";
 import AvatarCard from "../../components/persona/AvatarCard";
@@ -66,6 +66,9 @@ const ProfilePage = () => {
             onSettingsPress={() => router.push("/SettingsPage")}
             showSettings
           />
+          <Text style={styles.pageSubtitle}>
+            Track your impact and personalised progress all in one spot.
+          </Text>
         </View>
 
         {/* Growth Journey Card */}
@@ -104,6 +107,11 @@ const styles = StyleSheet.create({
   },
   headerSpacing: {
     marginBottom: layout.sectionSpacing,
+  },
+  pageSubtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    color: colors.textSecondary,
   },
 });
 

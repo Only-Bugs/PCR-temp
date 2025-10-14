@@ -88,14 +88,6 @@ const QuizResultScreen = () => {
     outputRange: [circumference, 0],
   });
 
-  const handleRetry = () => {
-    if (quizData) {
-      router.replace({ pathname: "/QuizScreen", params: { quiz: quizData } });
-    } else {
-      router.back();
-    }
-  };
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -179,7 +171,8 @@ const QuizResultScreen = () => {
           <Text style={styles.feedback}>{feedbackText}</Text>
         </Animated.View>
 
-        <Animated.View style={[styles.buttonWrapper, { opacity: contentAnim }]}
+        <Animated.View
+          style={[styles.buttonWrapper, styles.buttonWrapperLast, { opacity: contentAnim }]}
         >
           <Pressable
             accessibilityRole="button"
@@ -187,24 +180,9 @@ const QuizResultScreen = () => {
               styles.primaryButton,
               pressed && styles.primaryButtonPressed,
             ]}
-            onPress={handleRetry}
-          >
-            <Text style={styles.primaryLabel}>Retry Quiz</Text>
-          </Pressable>
-        </Animated.View>
-
-        <Animated.View
-          style={[styles.buttonWrapper, styles.buttonWrapperLast, { opacity: contentAnim }]}
-        >
-          <Pressable
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.secondaryButton,
-              pressed && styles.secondaryButtonPressed,
-            ]}
             onPress={() => router.push("/LearningPage")}
           >
-            <Text style={styles.secondaryLabel}>Back to Home</Text>
+            <Text style={styles.primaryLabel}>Back to Home</Text>
           </Pressable>
         </Animated.View>
       </View>
@@ -360,22 +338,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: colors.neutral.white,
-  },
-  secondaryButton: {
-    width: "100%",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-    paddingVertical: 16,
-    alignItems: "center",
-  },
-  secondaryButtonPressed: {
-    backgroundColor: "rgba(15,23,42,0.04)",
-  },
-  secondaryLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#0F172A",
   },
 });
 

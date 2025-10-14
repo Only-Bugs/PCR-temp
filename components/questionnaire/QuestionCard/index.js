@@ -31,6 +31,50 @@ const questionIconMap = {
   default: { name: "help-outline", bg: colors.neutral.gray600 },
 };
 
+const TRANSPORT_OPTION_DETAILS = {
+  none: "0 trips per week",
+  never: "0 trips per week",
+  rarely: "Less than once per week",
+  occasional: "1-2 trips per week",
+  occasionally: "1-2 trips per week",
+  weekly: "Once per week",
+  regular: "3-4 trips per week",
+  regularly: "3-4 trips per week",
+  heavy: "5+ trips per week",
+  daily: "5+ trips per week",
+  "daily commute": "5+ trips per week",
+};
+
+const normalizeQuestionCode = (question) =>
+  question?.question_code ? String(question.question_code).toUpperCase() : "";
+
+const isPublicTransportQuestion = (question) => {
+  if (!question) return false;
+  const code = normalizeQuestionCode(question);
+  const text = (question.text_en || question.text || "")
+    .toString()
+    .toLowerCase();
+  return (
+    code.includes("TRANSPORT") ||
+    ["Q9", "TRANSPORT_USAGE", "PUBLIC_TRANSPORT_FREQUENCY"].includes(code) ||
+    question.question_id === 9 ||
+    text.includes("public transport")
+  );
+};
+
+const isHouseholdSizeQuestion = (question) => {
+  if (!question) return false;
+  const code = normalizeQuestionCode(question);
+  const text = (question.text_en || question.text || "")
+    .toString()
+    .toLowerCase();
+  return (
+    ["Q2", "HOUSEHOLD_SIZE"].includes(code) ||
+    question.question_id === 2 ||
+    text.includes("how many people live in your household")
+  );
+};
+
 /**
  * @component QuestionCard
  * @param {Object} props - Component props
@@ -40,26 +84,45 @@ const questionIconMap = {
  * @returns {JSX.Element}
  */
 const QuestionCard = ({ question, value, setValue }) => {
-  const renderInput = () => {
-    switch (question.input_type) {
-      case "number":
-        return (
+  if (!question) {
+    return null;
+  }
+
+	  const transportQuestion = isPublicTransportQuestion(question);
+	  const optionDetails = transportQuestion ? TRANSPORT_OPTION_DETAILS : undefined;
+	  const baseHint =
+	    typeof question.question_hint === "string"
+	      ? question.question_hint.trim()
+      : "";
+  const transportDefinitions = transportQuestion && !baseHint
+    ? "Occasional = 1-2 trips per week. Regular = 3-4 trips per week. Heavy = 5+ trips per week."
+    : "";
+	  const hintText = [baseHint, transportDefinitions].filter(Boolean).join(" ");
+	  const integerMin = isHouseholdSizeQuestion(question) ? 1 : 0;
+
+	  const renderInput = () => {
+	    switch (question.input_type) {
+	      case "number":
+	        return (
           <NumberInput
             value={value}
             onChange={setValue}
-            placeholder="A$ 0.00"
-          />
-        );
-      case "number_int":
-        return <StepperInput value={value} onChange={setValue} min={0} />;
-      case "bool":
-        return <BoolInput value={value} onChange={setValue} />;
+	            placeholder="A$ 0.00"
+	          />
+	        );
+	      case "number_int":
+	        return (
+	          <StepperInput value={value} onChange={setValue} min={integerMin} />
+	        );
+	      case "bool":
+	        return <BoolInput value={value} onChange={setValue} />;
       case "enum_range":
         return (
           <EnumRangeInput
             value={value}
             onChange={setValue}
             options={question.options}
+            optionDetails={optionDetails}
           />
         );
       case "select_enum":
@@ -68,6 +131,7 @@ const QuestionCard = ({ question, value, setValue }) => {
             value={value}
             onChange={setValue}
             options={question.options}
+            optionDetails={optionDetails}
           />
         );
       default:
@@ -93,7 +157,7 @@ const QuestionCard = ({ question, value, setValue }) => {
 
       {renderInput()}
 
-      {question.question_hint && (
+      {hintText && (
         <View style={styles.hintRow}>
           <MaterialIcons
             name="info"
@@ -101,7 +165,7 @@ const QuestionCard = ({ question, value, setValue }) => {
             color={colors.eco.blue}
             style={{ marginTop: 2 }}
           />
-          <Text style={styles.hintText}>{question.question_hint}</Text>
+          <Text style={styles.hintText}>{hintText}</Text>
         </View>
       )}
     </View>

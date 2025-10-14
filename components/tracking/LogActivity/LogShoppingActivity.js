@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import {
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -43,8 +45,10 @@ const LogShoppingActivity = () => {
   const router = useRouter();
   const { logShoppingActivity } = useTracking();
 
+  const [expandedSection, setExpandedSection] = useState(SHOPPING_SECTIONS[0]?.id ?? null);
   const [selectedOptions, setSelectedOptions] = useState({});
   const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSelect = (sectionId, option) => {
     setSelectedOptions((previous) => ({
@@ -52,9 +56,15 @@ const LogShoppingActivity = () => {
       [sectionId]: option,
     }));
     setError(null);
+    setExpandedSection(sectionId);
+  };
+
+  const toggleSection = (sectionId) => {
+    setExpandedSection((previous) => (previous === sectionId ? null : sectionId));
   };
 
   const handleSave = async () => {
+    if (submitting) return;
     const entries = Object.keys(selectedOptions).map((sectionId) => selectedOptions[sectionId]);
 
     if (!entries.length) {
@@ -62,6 +72,7 @@ const LogShoppingActivity = () => {
       return;
     }
 
+    setSubmitting(true);
     try {
       const result = await logShoppingActivity({ entries });
       const pointsEarned = result?.points ?? 0;
@@ -69,6 +80,7 @@ const LogShoppingActivity = () => {
       const awardError = result?.awardError;
 
       setSelectedOptions({});
+      setError(null);
 
       if (awardError) {
         showFeedbackToast({
@@ -100,6 +112,13 @@ const LogShoppingActivity = () => {
       });
     } catch (error) {
       console.error('[LogShoppingActivity] Failed to record shopping activity:', error);
+      showFeedbackToast({
+        variant: 'error',
+        title: 'Unable to save',
+        message: "We couldn't save your shopping activity. Please try again.",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -108,64 +127,109 @@ const LogShoppingActivity = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Shopping Activity</Text>
-      </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.formContainer}>
-          {SHOPPING_SECTIONS.map((section) => {
-            const selected = selectedOptions[section.id];
-            return (
-              <View key={section.id} style={styles.sectionCard}>
-                <View style={styles.sectionHeader}>
-                  <View style={styles.sectionIconWrapper}>
-                    <MaterialIcons
-                      name={section.icon}
-                      size={20}
-                      color={colors.textPrimary}
-                    />
-                  </View>
-                  <Text style={styles.sectionTitle}>{section.title}</Text>
-                </View>
-
-                {section.options.map((option) => {
-                  const isActive = selected?.id === option.id;
-                  return (
-                    <TouchableOpacity
-                      key={option.id}
-                      style={[styles.optionCard, isActive && styles.optionCardActive]}
-                      onPress={() => handleSelect(section.id, { ...option, sectionId: section.id })}
-                    >
-                      <View>
-                        <Text style={styles.optionTitle}>{option.label}</Text>
-                        <Text style={styles.optionHelper}>{option.helper}</Text>
-                      </View>
-                      <View style={[styles.radioOuter, isActive && styles.radioOuterActive]}>
-                        {isActive && <View style={styles.radioInner} />}
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            );
-          })}
-
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+    >
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Shopping Activity</Text>
         </View>
-      </ScrollView>
 
-      <View style={styles.actions}>
-        <CTAButton label="Save Activity" onPress={handleSave} />
-        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-          <Text style={styles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
+        <ScrollView
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.formContainer}>
+            {SHOPPING_SECTIONS.map((section) => {
+              const selected = selectedOptions[section.id];
+              const isExpanded = expandedSection === section.id;
+              return (
+                <View key={section.id} style={styles.sectionCard}>
+                  <TouchableOpacity
+                    style={styles.sectionHeader}
+                    onPress={() => toggleSection(section.id)}
+                    activeOpacity={0.8}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${isExpanded ? 'Collapse' : 'Expand'} ${section.title}`}
+                    accessibilityHint="Toggles the spending options for this category"
+                  >
+                    <View style={styles.sectionHeaderContent}>
+                      <View style={styles.sectionIconWrapper}>
+                        <MaterialIcons
+                          name={section.icon}
+                          size={20}
+                          color={colors.textPrimary}
+                        />
+                      </View>
+                      <View style={styles.sectionTitleGroup}>
+                        <Text style={styles.sectionTitle}>{section.title}</Text>
+                        {selected ? (
+                          <Text style={styles.sectionSelected}>
+                            {selected.label}
+                          </Text>
+                        ) : null}
+                      </View>
+                    </View>
+                    <MaterialIcons
+                      name={isExpanded ? 'expand-less' : 'expand-more'}
+                      size={24}
+                      color={colors.textSecondary}
+                    />
+                  </TouchableOpacity>
+
+                  {isExpanded && (
+                    <View style={styles.sectionOptions}>
+                      {section.options.map((option) => {
+                        const isActive = selected?.id === option.id;
+                        return (
+                          <TouchableOpacity
+                            key={option.id}
+                            style={[styles.optionCard, isActive && styles.optionCardActive]}
+                            onPress={() => handleSelect(section.id, { ...option, sectionId: section.id })}
+                          >
+                            <View>
+                              <Text style={styles.optionTitle}>{option.label}</Text>
+                              <Text style={styles.optionHelper}>{option.helper}</Text>
+                            </View>
+                            <View style={[styles.radioOuter, isActive && styles.radioOuterActive]}>
+                              {isActive && <View style={styles.radioInner} />}
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          </View>
+        </ScrollView>
+
+        <View style={styles.actions}>
+          <CTAButton
+            label="Save Activity"
+            onPress={handleSave}
+            loading={submitting}
+            disabled={submitting}
+          />
+          <TouchableOpacity
+            style={[styles.cancelButton, submitting && styles.cancelButtonDisabled]}
+            onPress={handleCancel}
+            disabled={submitting}
+          >
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -209,7 +273,13 @@ const styles = StyleSheet.create({
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    justifyContent: 'space-between',
+  },
+  sectionHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 8,
   },
   sectionIconWrapper: {
     width: 32,
@@ -220,10 +290,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 10,
   },
+  sectionTitleGroup: {
+    flex: 1,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.textPrimary,
+  },
+  sectionSelected: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  sectionOptions: {
+    marginTop: 12,
   },
   optionCard: {
     flexDirection: 'row',
@@ -283,6 +364,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 12,
+  },
+  cancelButtonDisabled: {
+    opacity: 0.5,
   },
   cancelText: {
     fontSize: 16,

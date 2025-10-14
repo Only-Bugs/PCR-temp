@@ -1,11 +1,29 @@
+import { useEffect, useRef } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import styles from "./styles";
 
-const StepperInput = ({ value = 1, onChange, min = 1 }) => {
-  const numericValue = Number(value) || 1;
+const StepperInput = ({ value, onChange, min = 1 }) => {
+  const fallback = Number.isFinite(Number(min)) ? Number(min) : 0;
+  const hasValue = value !== null && value !== undefined && value !== "";
+  const parsedValue = Number(value);
+  const numericValue =
+    hasValue && Number.isFinite(parsedValue) ? parsedValue : fallback;
+  const isDecrementDisabled = numericValue <= fallback;
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    if (!hasValue && typeof onChangeRef.current === "function") {
+      onChangeRef.current(fallback);
+    }
+  }, [fallback, hasValue]);
 
   const decrease = () => {
-    if (numericValue > min) onChange(numericValue - 1);
+    if (isDecrementDisabled) return;
+    onChange(numericValue - 1);
   };
 
   const increase = () => {
@@ -17,15 +35,15 @@ const StepperInput = ({ value = 1, onChange, min = 1 }) => {
       <TouchableOpacity
         style={[
           styles.stepperButton,
-          numericValue <= min && styles.stepperButtonDisabled,
+          isDecrementDisabled && styles.stepperButtonDisabled,
         ]}
         onPress={decrease}
-        disabled={numericValue <= min}
+        disabled={isDecrementDisabled}
       >
         <Text
           style={[
             styles.stepperButtonText,
-            numericValue <= min && styles.stepperButtonTextDisabled,
+            isDecrementDisabled && styles.stepperButtonTextDisabled,
           ]}
         >
           -

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -34,6 +36,7 @@ const LogEnergyActivity = () => {
   const [electricity, setElectricity] = useState('');
   const [gas, setGas] = useState('');
   const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (energyRecord) {
@@ -47,6 +50,7 @@ const LogEnergyActivity = () => {
   }, [energyRecord]);
 
   const handleSave = async () => {
+    if (submitting) return;
     const electricityValue = parseFloat(electricity) || 0;
     const gasValue = parseFloat(gas) || 0;
 
@@ -55,11 +59,13 @@ const LogEnergyActivity = () => {
       return;
     }
 
+    setSubmitting(true);
     try {
       const result = await logEnergyActivity({ electricityValue, gasValue });
       const pointsEarned = result?.points ?? 0;
       const awarded = result?.awarded ?? pointsEarned > 0;
       const awardError = result?.awardError;
+      setError(null);
 
       if (awardError) {
         showFeedbackToast({
@@ -91,6 +97,13 @@ const LogEnergyActivity = () => {
       });
     } catch (error) {
       console.error('[LogEnergyActivity] Failed to record energy activity:', error);
+      showFeedbackToast({
+        variant: 'error',
+        title: 'Unable to save',
+        message: "We couldn't save your energy activity. Please try again.",
+      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -99,95 +112,114 @@ const LogEnergyActivity = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={24} color={colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Energy Activity</Text>
-      </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.formContainer}>
-          <View style={styles.noteCard}>
-            <MaterialIcons
-              name="info"
-              size={18}
-              color={colors.eco.blue}
-              style={styles.noteIcon}
-            />
-            <Text style={styles.noteText}>{ENERGY_NOTE}</Text>
-          </View>
-
-          <View style={styles.energySection}>
-            <View style={styles.energyHeader}>
-              <MaterialIcons
-                name="bolt"
-                size={22}
-                color={colors.eco.green[600]}
-                style={styles.energyIcon}
-              />
-              <View>
-                <Text style={styles.energyTitle}>Electricity Bill</Text>
-                <Text style={styles.energySubtitle}>Monthly electricity bill</Text>
-              </View>
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.currencyPrefix}>$</Text>
-              <TextInput
-                value={electricity}
-                onChangeText={(text) => {
-                  setElectricity(sanitizeCurrency(text));
-                  setError(null);
-                }}
-                placeholder="e.g., 120"
-                placeholderTextColor={colors.textSecondary}
-                keyboardType="decimal-pad"
-                style={styles.input}
-              />
-            </View>
-          </View>
-
-          <View style={styles.energySection}>
-            <View style={styles.energyHeader}>
-              <MaterialIcons
-                name="local-fire-department"
-                size={22}
-                color="#ef4444"
-                style={styles.energyIcon}
-              />
-              <View>
-                <Text style={styles.energyTitle}>Gas Bill</Text>
-                <Text style={styles.energySubtitle}>Monthly gas bill</Text>
-              </View>
-            </View>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.currencyPrefix}>$</Text>
-              <TextInput
-                value={gas}
-                onChangeText={(text) => {
-                  setGas(sanitizeCurrency(text));
-                  setError(null);
-                }}
-                placeholder="e.g., 80"
-                placeholderTextColor={colors.textSecondary}
-                keyboardType="decimal-pad"
-                style={styles.input}
-              />
-            </View>
-          </View>
-
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+    >
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleCancel} style={styles.backButton}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Energy Activity</Text>
         </View>
-      </ScrollView>
 
-      <View style={styles.actions}>
-        <CTAButton label="Save Activity" onPress={handleSave} />
-        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-          <Text style={styles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
+        <ScrollView
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.formContainer}>
+            <View style={styles.noteCard}>
+              <MaterialIcons
+                name="info"
+                size={18}
+                color={colors.eco.blue}
+                style={styles.noteIcon}
+              />
+              <Text style={styles.noteText}>{ENERGY_NOTE}</Text>
+            </View>
+
+            <View style={styles.energySection}>
+              <View style={styles.energyHeader}>
+                <MaterialIcons
+                  name="bolt"
+                  size={22}
+                  color={colors.eco.green[600]}
+                  style={styles.energyIcon}
+                />
+                <View>
+                  <Text style={styles.energyTitle}>Electricity Bill</Text>
+                  <Text style={styles.energySubtitle}>Monthly electricity bill</Text>
+                </View>
+              </View>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.currencyPrefix}>$</Text>
+                <TextInput
+                  value={electricity}
+                  onChangeText={(text) => {
+                    setElectricity(sanitizeCurrency(text));
+                    setError(null);
+                  }}
+                  placeholder="e.g., 120"
+                  placeholderTextColor={colors.textSecondary}
+                  keyboardType="decimal-pad"
+                  style={styles.input}
+                />
+              </View>
+            </View>
+
+            <View style={styles.energySection}>
+              <View style={styles.energyHeader}>
+                <MaterialIcons
+                  name="local-fire-department"
+                  size={22}
+                  color="#ef4444"
+                  style={styles.energyIcon}
+                />
+                <View>
+                  <Text style={styles.energyTitle}>Gas Bill</Text>
+                  <Text style={styles.energySubtitle}>Monthly gas bill</Text>
+                </View>
+              </View>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.currencyPrefix}>$</Text>
+                <TextInput
+                  value={gas}
+                  onChangeText={(text) => {
+                    setGas(sanitizeCurrency(text));
+                    setError(null);
+                  }}
+                  placeholder="e.g., 80"
+                  placeholderTextColor={colors.textSecondary}
+                  keyboardType="decimal-pad"
+                  style={styles.input}
+                />
+              </View>
+            </View>
+
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          </View>
+        </ScrollView>
+
+        <View style={styles.actions}>
+          <CTAButton
+            label="Save Activity"
+            onPress={handleSave}
+            loading={submitting}
+            disabled={submitting}
+          />
+          <TouchableOpacity
+            style={[styles.cancelButton, submitting && styles.cancelButtonDisabled]}
+            onPress={handleCancel}
+            disabled={submitting}
+          >
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -301,6 +333,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 12,
+  },
+  cancelButtonDisabled: {
+    opacity: 0.5,
   },
   cancelText: {
     fontSize: 16,

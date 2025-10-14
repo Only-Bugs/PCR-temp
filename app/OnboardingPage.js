@@ -22,6 +22,46 @@ import {
 import colors from "../theme/colors";
 import { hapticError, hapticSuccess } from "../utils/haptics";
 
+const HOUSEHOLD_SIZE_CODES = ["Q2", "HOUSEHOLD_SIZE"];
+const TRANSPORT_CODES = [
+  "Q9",
+  "TRANSPORT_USAGE",
+  "PUBLIC_TRANSPORT_FREQUENCY",
+  "PUBLIC_TRANSPORT",
+];
+
+const getIntegerMinimum = (question) => {
+  if (!question) return 0;
+  if (typeof question.minimum_value === "number") {
+    return Number(question.minimum_value);
+  }
+  if (question.question_code) {
+    const code = String(question.question_code).toUpperCase();
+    if (HOUSEHOLD_SIZE_CODES.includes(code)) {
+      return 1;
+    }
+  }
+  if (question.question_id === 2) {
+    return 1;
+  }
+  return 0;
+};
+
+const isTransportQuestion = (question) => {
+  if (!question) return false;
+  const code = question.question_code
+    ? String(question.question_code).toUpperCase()
+    : "";
+  const text = (question.text_en || question.text || "")
+    .toString()
+    .toLowerCase();
+  return (
+    TRANSPORT_CODES.includes(code) ||
+    code.includes("TRANSPORT") ||
+    text.includes("public transport")
+  );
+};
+
 const OnboardingPage = () => {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -64,7 +104,17 @@ const OnboardingPage = () => {
   const isAnswerValid = () => {
     if (!currentQuestion) return false;
     const value = answers[currentQuestion.question_id];
-    return validateInput(currentQuestion.input_type, value);
+    const validationOptions =
+      currentQuestion.input_type === "number_int"
+        ? { min: getIntegerMinimum(currentQuestion) }
+        : currentQuestion.input_type === "enum_range" && isTransportQuestion(currentQuestion)
+        ? {}
+        : undefined;
+    return validateInput(
+      currentQuestion.input_type,
+      value,
+      validationOptions
+    );
   };
 
   const handleNext = async () => {
