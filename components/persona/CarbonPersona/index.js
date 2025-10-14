@@ -17,13 +17,13 @@ import { StyleSheet, View } from "react-native";
  */
 const CarbonPersona = ({ stage }) => {
   const animationMap = {
-    seed: require("../../../assets/animations/seed.json"),
-    leaf: require("../../../assets/animations/leaf.json"),
-    sapling: require("../../../assets/animations/sapling.json"),
-    youngPlant: require("../../../assets/animations/young-plant.json"),
-    tree: require("../../../assets/animations/tree.json"),
-    matureTree: require("../../../assets/animations/mature-tree.json"),
-    finalStage: require("../../../assets/animations/final-stage.json"),
+    seed: require("../../../assets/animations/01.json"),
+    leaf: require("../../../assets/animations/02.json"),
+    sapling: require("../../../assets/animations/03.json"),
+    youngPlant: require("../../../assets/animations/04.json"),
+    tree: require("../../../assets/animations/05.json"),
+    matureTree: require("../../../assets/animations/05.json"),
+    finalStage: require("../../../assets/animations/05.json"),
   };
 
   const animationSource = animationMap[stage] || animationMap.seed;

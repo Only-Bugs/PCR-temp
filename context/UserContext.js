@@ -25,11 +25,11 @@ const UserContext = createContext(null);
  */
 const derivePersonaStage = (carbonPoints) => {
   if (!carbonPoints || carbonPoints <= 99) return "seed";
-  if (carbonPoints <= 249) return "leaf";
-  if (carbonPoints <= 499) return "sapling";
-  if (carbonPoints <= 749) return "youngPlant";
-  if (carbonPoints <= 999) return "tree";
-  if (carbonPoints <= 1999) return "matureTree";
+  if (carbonPoints <= 199) return "leaf";
+  if (carbonPoints <= 299) return "sapling";
+  if (carbonPoints <= 399) return "youngPlant";
+  if (carbonPoints <= 499) return "tree";
+  if (carbonPoints <= 599) return "matureTree";
   return "finalStage";
 };
 
