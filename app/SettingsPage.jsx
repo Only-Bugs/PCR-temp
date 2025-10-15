@@ -135,7 +135,7 @@ const SettingsPage = () => {
       {/* Privacy & Security */}
       <SettingsCard
         title="Privacy & Security"
-        subtitle="Control your data and security settings"
+        subtitle="View Verde Privacy Policy"
         icon={<SettingsIcon name="shield-checkmark" bgColor={colors.info} />}
         rightContent={<Text style={styles.arrow}>›</Text>}
         onPress={() => setPrivacyVisible(true)}
