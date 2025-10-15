@@ -331,10 +331,12 @@ const getMonthInfo = () => {
 export const TrackingProvider = ({ children }) => {
   const { user, addCarbonPoints } = useUser();
 
-  const [weeklyImpact, setWeeklyImpact] = useState(() => {
+  const buildInitialWeeklyImpact = useCallback(() => {
     const baseline = baseWeeklyImpact.baseline ?? 0;
     const template = mergeTrendWithTemplate(baseWeeklyImpact.trend);
-    const total = clampToStep(template.reduce((sum, point) => sum + (point.value ?? 0), 0));
+    const total = clampToStep(
+      template.reduce((sum, point) => sum + (point.value ?? 0), 0)
+    );
     const saved = clampToStep(Math.max(baseline - total, 0));
 
     return {
@@ -345,14 +347,21 @@ export const TrackingProvider = ({ children }) => {
       total,
       saved,
     };
-  });
+  }, []);
+
+  const buildInitialActivities = useCallback(
+    (source) => (source ?? []).map((activity) => ({ ...activity })),
+    []
+  );
+
+  const [weeklyImpact, setWeeklyImpact] = useState(buildInitialWeeklyImpact);
 
   const [todaysActivities, setTodaysActivities] = useState(() =>
-    (baseTodaysActivities ?? []).map((activity) => ({ ...activity }))
+    buildInitialActivities(baseTodaysActivities)
   );
 
   const [longTermActivities, setLongTermActivities] = useState(() =>
-    (baseLongTermActivities ?? []).map((activity) => ({ ...activity }))
+    buildInitialActivities(baseLongTermActivities)
   );
 
   const categoryTotalsRef = useRef({
@@ -373,6 +382,28 @@ export const TrackingProvider = ({ children }) => {
   const [rewardMapping, setRewardMapping] = useState({
     ...DEFAULT_REWARD_MAPPING,
   });
+
+  useEffect(() => {
+    // Reset tracking state whenever a different user signs in
+    setWeeklyImpact(buildInitialWeeklyImpact());
+    setTodaysActivities(buildInitialActivities(baseTodaysActivities));
+    setLongTermActivities(buildInitialActivities(baseLongTermActivities));
+
+    categoryTotalsRef.current = {
+      [CATEGORY_KEYS.transport]: 0,
+      [CATEGORY_KEYS.meals]: 0,
+      [CATEGORY_KEYS.shopping]: 0,
+    };
+    categoryDayRef.current = {
+      [CATEGORY_KEYS.transport]: null,
+      [CATEGORY_KEYS.meals]: null,
+      [CATEGORY_KEYS.shopping]: null,
+    };
+    shoppingSpendRef.current = 0;
+    shoppingSpendDayRef.current = null;
+    setEnergyRecord(null);
+    setRewardMapping({ ...DEFAULT_REWARD_MAPPING });
+  }, [buildInitialActivities, buildInitialWeeklyImpact, user?.eco_id]);
 
   const applyDailySnapshotToActivities = useCallback((totals = {}) => {
     setTodaysActivities((previous) =>

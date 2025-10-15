@@ -40,8 +40,9 @@ const base = StyleSheet.create({
 const carbon = StyleSheet.create({
   card: {
     borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    marginBottom: 12,
     backgroundColor: colors.neutral.white,
     shadowColor: "#000",
     shadowOpacity: 0.05,
@@ -59,38 +60,84 @@ const carbon = StyleSheet.create({
     fontWeight: "700",
     color: colors.textPrimary,
   },
-  shareIcon: {
-    padding: 4,
+  shareChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: "rgba(34, 197, 94, 0.12)",
+  },
+  shareText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.eco.green[600],
+    marginLeft: 6,
   },
   mainRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 6,
   },
-  left: { flex: 1, justifyContent: "center" },
-  right: { justifyContent: "center", alignItems: "center" },
+  pointsContainer: {
+    flex: 1,
+  },
   value: { fontSize: 34, fontWeight: "700", color: colors.textPrimary },
-  percentText: { fontSize: 13, fontWeight: "600", color: colors.textSecondary },
-  stageRow: {
-    marginTop: 12,
+  pointsLabel: {
+    marginTop: 4,
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  avatarColumn: {
     alignItems: "center",
   },
-  levelText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.eco.purple,
+  stageBadge: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: colors.neutral.white,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+    marginBottom: 6,
   },
-  levelSubtitle: {
+  stageBadgeText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
+  stageDetails: {
+    alignItems: "center",
+    marginTop: 8,
+  },
+  stageSubtitle: {
     fontSize: 13,
     color: colors.textSecondary,
-    marginTop: 4,
     textAlign: "center",
   },
-  progressMessage: {
-    marginTop: 16,
-    fontSize: 15,
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    marginTop: 8,
+    borderRadius: 12,
+    backgroundColor: colors.neutral.gray50,
+  },
+  infoIcon: { marginRight: 8 },
+  infoText: {
+    flex: 1,
+    fontSize: 12.5,
+    lineHeight: 17,
     color: colors.textSecondary,
+  },
+  progressMessage: {
+    marginTop: 6,
+    fontSize: 14,
+    fontWeight: "700",
+    color: colors.textPrimary,
     textAlign: "center",
   },
 });

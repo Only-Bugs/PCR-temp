@@ -12,25 +12,22 @@ const UserContext = createContext(null);
 /**
  * Derives persona stage from carbon points based on levelTiers.
  * Maps 7 animation stages to the tier system:
- * - seed: Seedling (0-99)
- * - leaf: Sprout (100-249)
- * - sapling: Young Sapling (250-499)
- * - youngPlant: Eco Warrior (500-749)
- * - tree: Forest Guardian (750-999)
- * - matureTree: Blooming Grove (1000-1999)
- * - finalStage: Earth Ally+ (2000+)
+ * Maps broader carbon point bands to the five persona animation stages.
+ * - seed: 0-99 pts (Seedling)
+ * - leaf: 100-249 pts (Sprout)
+ * - sapling: 250-499 pts (Young Sapling)
+ * - youngPlant: 500-749 pts (Eco Warrior)
+ * - matureTree: 750+ pts (Forest Guardian and beyond)
  *
  * @param {number} carbonPoints - Current user carbon points.
  * @returns {"seed"|"leaf"|"sapling"|"youngPlant"|"tree"|"matureTree"|"finalStage"} Persona stage string.
  */
 const derivePersonaStage = (carbonPoints) => {
   if (!carbonPoints || carbonPoints <= 99) return "seed";
-  if (carbonPoints <= 199) return "leaf";
-  if (carbonPoints <= 299) return "sapling";
-  if (carbonPoints <= 399) return "youngPlant";
-  if (carbonPoints <= 499) return "tree";
-  if (carbonPoints <= 599) return "matureTree";
-  return "finalStage";
+  if (carbonPoints <= 249) return "leaf";
+  if (carbonPoints <= 499) return "sapling";
+  if (carbonPoints <= 749) return "youngPlant";
+  return "matureTree";
 };
 
 /**

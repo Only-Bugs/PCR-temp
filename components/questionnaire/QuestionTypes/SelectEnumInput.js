@@ -12,9 +12,26 @@ import {
 import colors from "../../../theme/colors";
 import styles from "./styles";
 
-const normalizeToUpper = (option) => {
+const isAllCaps = (value) =>
+  typeof value === "string" && value === value.toUpperCase();
+
+const isAllLowerCase = (value) =>
+  typeof value === "string" && value === value.toLowerCase();
+
+const capitalizeFirstLetter = (value) => {
+  if (!value) return value;
+  const lowerValue = value.toLowerCase();
+  return lowerValue.charAt(0).toUpperCase() + lowerValue.slice(1);
+};
+
+const formatOptionLabel = (option) => {
   if (typeof option !== "string") return option;
-  return option.toUpperCase();
+  const trimmed = option.trim();
+  if (!trimmed) return trimmed;
+  if (isAllCaps(trimmed) || isAllLowerCase(trimmed)) {
+    return capitalizeFirstLetter(trimmed);
+  }
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
 };
 
 const getDisplayLabel = (option, optionDetails) => {
@@ -25,10 +42,10 @@ const getDisplayLabel = (option, optionDetails) => {
     (typeof optionDetails?.[normalizedKey] === "string"
       ? optionDetails[normalizedKey]
       : undefined);
-  const label = normalizeToUpper(option);
+  const label = formatOptionLabel(option);
   if (!detail) return label;
   const detailLabel =
-    typeof detail === "string" ? detail.toUpperCase() : String(detail).toUpperCase();
+    typeof detail === "string" ? detail : String(detail);
   return `${label} (${detailLabel})`;
 };
 

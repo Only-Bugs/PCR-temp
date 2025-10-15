@@ -87,7 +87,10 @@ const OnboardingPage = () => {
   }, []);
 
   const activeQuestions = questions.filter((q) => {
-    if (q.question_code === "Q4A" || q.question_code === "Q4B") {
+    const code = q.question_code
+      ? String(q.question_code).toUpperCase()
+      : "";
+    if (code === "Q4A" || code === "Q4B") {
       const drives = answers[4];
       if (drives === false) return false;
     }
@@ -212,14 +215,29 @@ const OnboardingPage = () => {
     const current = currentQuestion;
 
     if (current) {
+      const currentCode = current.question_code
+        ? String(current.question_code).toUpperCase()
+        : "";
       setAnswers((prev) => {
         const updated = { ...prev };
 
-        if (current.question_code === "Q4") {
+        if (currentCode === "Q4") {
           updated[current.question_id] = false;
-          const q4 = questions.find((q) => q.question_code === "Q4");
-          const q4A = questions.find((q) => q.question_code === "Q4A");
-          const q4B = questions.find((q) => q.question_code === "Q4B");
+          const q4 = questions.find(
+            (q) =>
+              q.question_code &&
+              String(q.question_code).toUpperCase() === "Q4"
+          );
+          const q4A = questions.find(
+            (q) =>
+              q.question_code &&
+              String(q.question_code).toUpperCase() === "Q4A"
+          );
+          const q4B = questions.find(
+            (q) =>
+              q.question_code &&
+              String(q.question_code).toUpperCase() === "Q4B"
+          );
           if (q4) updated[q4.question_id] = q4.default_option;
           if (q4A) updated[q4A.question_id] = q4A.default_option;
           if (q4B) updated[q4B.question_id] = q4B.default_option;

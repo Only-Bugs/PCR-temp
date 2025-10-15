@@ -12,7 +12,7 @@ import { StyleSheet, View } from "react-native";
  * Displays Lottie animation for the current persona stage.
  *
  * @param {object} props
- * @param {"seed"|"leaf"|"sapling"|"young-plant"|"tree"|"mature-tree"|"final-stage"} props.stage - Persona stage.
+ * @param {"seed"|"leaf"|"sapling"|"youngPlant"|"matureTree"} props.stage - Persona stage.
  * @returns {JSX.Element}
  */
 const CarbonPersona = ({ stage }) => {
@@ -21,21 +21,14 @@ const CarbonPersona = ({ stage }) => {
     leaf: require("../../../assets/animations/02.json"),
     sapling: require("../../../assets/animations/03.json"),
     youngPlant: require("../../../assets/animations/04.json"),
-    tree: require("../../../assets/animations/05.json"),
     matureTree: require("../../../assets/animations/05.json"),
-    finalStage: require("../../../assets/animations/05.json"),
   };
 
   const animationSource = animationMap[stage] || animationMap.seed;
 
   return (
     <View style={styles.wrapper}>
-      <LottieView
-        source={animationSource}
-        autoPlay
-        loop
-        style={styles.animation}
-      />
+      <LottieView source={animationSource} autoPlay loop style={styles.animation} />
     </View>
   );
 };

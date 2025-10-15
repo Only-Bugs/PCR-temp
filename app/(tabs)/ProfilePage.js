@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     paddingBottom: layout.blockSpacing,
   },
   headerSpacing: {
-    marginBottom: layout.sectionSpacing,
+    marginBottom: layout.cardSpacing,
   },
   pageSubtitle: {
     marginTop: 4,
