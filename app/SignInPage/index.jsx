@@ -87,7 +87,6 @@ const SignInPage = () => {
               color={styles.infoIconColor.color}
             />
           </TouchableOpacity>
-
           <View style={styles.iconWrapper}>
             <AppIcon size={32} />
           </View>
@@ -96,7 +95,6 @@ const SignInPage = () => {
           <Text style={styles.subtitle}>
             Enter your Eco ID to access your account
           </Text>
-
           <AuthCard
             label="Your Eco ID"
             value={ecoId}
@@ -105,15 +103,12 @@ const SignInPage = () => {
             helper="Your Eco ID was generated after completing the questionnaire."
             icon="key-outline"
           />
-
           {error && <Text style={styles.error}>{error}</Text>}
-
           <CTAButton
             label={loading ? "Signing In..." : "Sign In"}
             onPress={handleSignIn}
             disabled={loading}
           />
-
           <TouchableOpacity
             activeOpacity={0.6}
             onPress={() =>

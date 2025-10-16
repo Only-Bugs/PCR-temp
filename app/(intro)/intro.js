@@ -24,20 +24,27 @@ const { width, height } = Dimensions.get("window");
 const SLIDES = [
   {
     id: "1",
+    title: "Hey you!!!!! Yes you.",
+    description:
+      "Are you a young professional or just worried about the environment?",
+    image: require("../../assets/intro/tracking(2).svg"),
+  },
+  {
+    id: "2",
     title: "Track Your Impact",
     description:
       "Monitor your carbon footprint and see how your daily choices make a difference.",
     image: require("../../assets/intro/tracking(2).svg"),
   },
   {
-    id: "2",
+    id: "3",
     title: "Take Challenges",
     description:
       "Join eco-friendly challenges and earn points while making the planet greener.",
     image: require("../../assets/intro/challenges.svg"),
   },
   {
-    id: "3",
+    id: "4",
     title: "Learn & Grow",
     description:
       "Discover sustainable tips and grow your eco-persona from leaf to tree.",
@@ -116,10 +123,7 @@ export default function IntroPage() {
       {/* Skip button */}
       {!isLastSlide && (
         <TouchableOpacity
-          style={[
-            styles.skipButton,
-            { top: skipTopOffset },
-          ]}
+          style={[styles.skipButton, { top: skipTopOffset }]}
           onPress={handleSkip}
         >
           <Text style={styles.skipText}>Skip</Text>
