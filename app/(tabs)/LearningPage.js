@@ -661,7 +661,14 @@ const LearningPage = () => {
       ]}
       keyExtractor={(_, index) => `learning-section-${index}`}
       renderItem={({ item }) => item}
-      ListHeaderComponent={<PageHeader title="Learning Hub" />}
+      ListHeaderComponent={
+        <View style={styles.listHeader}>
+          <PageHeader title="Learning Hub" />
+          <Text style={styles.pageSubtitle}>
+            Discover tips, guides, and quizzes to inspire your next eco move.
+          </Text>
+        </View>
+      }
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
     />
@@ -669,6 +676,9 @@ const LearningPage = () => {
 };
 
 const styles = StyleSheet.create({
+  listHeader: {
+    marginBottom: layout.sectionSpacing,
+  },
   container: {
     paddingHorizontal: layout.screenPadding,
     paddingTop: layout.screenPadding,
@@ -697,6 +707,11 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     maxWidth: 320,
     lineHeight: 20,
+  },
+  pageSubtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    color: colors.textSecondary,
   },
   sectionDividerInset: {
     height: 1,

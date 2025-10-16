@@ -32,6 +32,7 @@ const CarbonCard = ({ data }) => {
   const pointsIntoCurrentRing = points % POINTS_PER_RING;
   const pointsToNextMilestone =
     pointsIntoCurrentRing === 0 ? 0 : POINTS_PER_RING - pointsIntoCurrentRing;
+  const nextStage = pointsToNextMilestone === 0 ? stage : stage + 1;
 
   // 估算碳减排（占位公式）
   const co2SavedKg = Number((points / 18).toFixed(1));
@@ -42,7 +43,7 @@ const CarbonCard = ({ data }) => {
         <Text style={styles.carbon.title}>{data.title}</Text>
 
         <TouchableOpacity
-          style={styles.carbon.shareIcon}
+          style={styles.carbon.shareChip}
           onPress={() => setShowShareModal(true)}
           activeOpacity={0.7}
           accessibilityRole="button"
@@ -53,6 +54,7 @@ const CarbonCard = ({ data }) => {
             size={22}
             color={colors.eco.green[600]}
           />
+          <Text style={styles.carbon.shareText}>Share</Text>
         </TouchableOpacity>
       </View>
 
@@ -63,33 +65,43 @@ const CarbonCard = ({ data }) => {
           <Text style={styles.carbon.pointsLabel}>Carbon Points</Text>
         </View>
 
-        <TreeRingProgress
-          points={points}
-          size={120}
-          strokeWidth={10}
-          maxPerRing={POINTS_PER_RING}
-        >
-          <View style={styles.carbon.stageBadge}>
-            <Text style={styles.carbon.stageBadgeText}>Stage {stage}</Text>
-          </View>
-        </TreeRingProgress>
+        <View style={styles.carbon.avatarColumn}>
+          <TreeRingProgress
+            points={points}
+            size={120}
+            strokeWidth={10}
+            maxPerRing={POINTS_PER_RING}
+          >
+            <View style={styles.carbon.stageBadge}>
+              <Text style={styles.carbon.stageBadgeText}>Stage {stage}</Text>
+            </View>
+          </TreeRingProgress>
+        </View>
       </View>
 
-      <View style={styles.carbon.stageRow}>
-        <Text style={styles.carbon.levelText}>
-          {data.level?.text || levelTier.name}
-        </Text>
-        <Text style={styles.carbon.levelSubtitle}>
+      <View style={styles.carbon.stageDetails}>
+        <Text style={styles.carbon.stageSubtitle}>
           Stage {stage} · {levelTier.min}–
           {levelTier.max === Infinity ? "∞" : levelTier.max} pts
         </Text>
+        <Text style={styles.carbon.progressMessage}>
+          {pointsToNextMilestone > 0
+            ? `Only ${pointsToNextMilestone} pts left for Stage ${nextStage}.`
+            : "Stage unlocked! Keep up the momentum with your next action."}
+        </Text>
       </View>
 
-      <Text style={styles.carbon.progressMessage}>
-        {pointsToNextMilestone > 0
-          ? `Earn ${pointsToNextMilestone} pts more to unlock next stage!`
-          : "Stage unlocked! Keep up the momentum."}
-      </Text>
+      <View style={styles.carbon.infoRow}>
+        <Ionicons
+          name="leaf-outline"
+          size={18}
+          color={colors.eco.green[600]}
+          style={styles.carbon.infoIcon}
+        />
+        <Text style={styles.carbon.infoText}>
+          Earn points by finishing challenges and keeping up with your daily tracking mission.
+        </Text>
+      </View>
 
       {/* Share Poster Modal */}
       <SharePosterModal

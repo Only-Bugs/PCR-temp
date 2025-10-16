@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -13,10 +13,6 @@ import { showFeedbackToast, showRewardToast } from '../../../utils/toast';
 const LogTransportActivity = () => {
     const router = useRouter();
     const { logTransportActivity } = useTracking();
-    const [expandedSections, setExpandedSections] = useState({});
-
-    const [selectedTransports, setSelectedTransports] = useState({});
-    const [validationErrors, setValidationErrors] = useState({});
 
     // Ordered transport categories to match design (removed standalone Electric car)
     const transportCategories = [
@@ -77,11 +73,13 @@ const LogTransportActivity = () => {
         }
     ];
 
+    const [expandedSection, setExpandedSection] = useState(transportCategories[0]?.id ?? null);
+    const [selectedTransports, setSelectedTransports] = useState({});
+    const [validationErrors, setValidationErrors] = useState({});
+    const [submitting, setSubmitting] = useState(false);
+
     const toggleSection = (sectionId) => {
-        setExpandedSections(prev => ({
-            ...prev,
-            [sectionId]: !prev[sectionId]
-        }));
+        setExpandedSection((prev) => (prev === sectionId ? null : sectionId));
     };
 
     const updateTransportDistance = (transportId, distance) => {
@@ -123,6 +121,7 @@ const LogTransportActivity = () => {
     };
 
     const saveActivity = async () => {
+        if (submitting) return;
         const validation = validateInputs();
 
         if (validation.hasErrors) {
@@ -136,9 +135,11 @@ const LogTransportActivity = () => {
             return;
         }
 
+        setSubmitting(true);
         try {
             const result = await logTransportActivity(selectedTransports);
             setSelectedTransports({});
+            setValidationErrors({});
 
             const pointsEarned = result?.points ?? 0;
             const awarded = result?.awarded ?? pointsEarned > 0;
@@ -179,13 +180,15 @@ const LogTransportActivity = () => {
                 title: 'Unable to save',
                 message: "We couldn't save your transport activity. Please try again.",
             });
+        } finally {
+            setSubmitting(false);
         }
     };
 
     const renderTransportOption = (category, isSubcategory = false) => {
-        const isExpanded = expandedSections[category.id];
-        const hasSubcategories = category.subcategories && category.subcategories.length > 0;
-        const hasError = validationErrors[category.id];
+        const isExpanded = !isSubcategory && expandedSection === category.id;
+        const hasSubcategories = Array.isArray(category.subcategories) && category.subcategories.length > 0;
+        const hasError = isSubcategory ? validationErrors[category.id] : null;
 
         return (
             <View key={category.id}>
@@ -223,20 +226,22 @@ const LogTransportActivity = () => {
                     {/* Distance input for subcategories (actual transport modes) */}
                     {isSubcategory ? (
                         <View style={styles.distanceInputSection}>
-                            <TextInput
+                            <View
                                 style={[
-                                    styles.inlineDistanceInput,
-                                    hasError && styles.inputError
+                                    styles.distanceInputContainer,
+                                    hasError && styles.distanceInputError
                                 ]}
-                                placeholder="km"
-                                placeholderTextColor={colors.textSecondary}
-                                value={selectedTransports[category.id] || ''}
-                                onChangeText={(text) => updateTransportDistance(category.id, text)}
-                                keyboardType="numeric"
-                            />
-                            {category.zeroEmission ? (
-                                <Text style={styles.zeroEmissionNote}>0 kg CO₂</Text>
-                            ) : null}
+                            >
+                                <TextInput
+                                    style={styles.distanceInputField}
+                                    placeholder="0"
+                                    placeholderTextColor={colors.textSecondary}
+                                    value={selectedTransports[category.id] || ''}
+                                    onChangeText={(text) => updateTransportDistance(category.id, text)}
+                                    keyboardType="numeric"
+                                />
+                                <Text style={styles.distanceUnit}>km</Text>
+                            </View>
                         </View>
                     ) : (
                         hasSubcategories && (
@@ -255,6 +260,20 @@ const LogTransportActivity = () => {
                 )}
 
                 {hasSubcategories && isExpanded && (
+                    <View style={styles.sectionHintRow}>
+                        <MaterialIcons
+                            name="info-outline"
+                            size={16}
+                            color={colors.textSecondary}
+                            style={styles.sectionHintIcon}
+                        />
+                        <Text style={styles.sectionHintText}>
+                            Enter distance in kilometres (numbers only).
+                        </Text>
+                    </View>
+                )}
+
+                {hasSubcategories && isExpanded && (
                     <View style={styles.subcategoriesContainer}>
                         {category.subcategories.map(subcategory =>
                             renderTransportOption(subcategory, true)
@@ -264,57 +283,71 @@ const LogTransportActivity = () => {
             </View>
         );
     };
-
-
-
     return (
-        <View style={styles.container}>
-            <View style={styles.headerSpacing}>
-                <PageHeader title="Log Transport Activity" showBack />
-            </View>
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+        >
+            <View style={styles.container}>
+                <View style={styles.headerSpacing}>
+                    <PageHeader
+                        title="Log Transport Activity"
+                        showBack
+                        onBackPress={() => router.replace('/(tabs)/TrackingPage')}
+                    />
+                </View>
 
-            <ScrollView
-                style={styles.content}
-                contentContainerStyle={{ paddingBottom: layout.blockSpacing }}
-                showsVerticalScrollIndicator={false}
-            >
-                <View style={styles.formContainer}>
-                    <Text style={styles.sectionTitle}>Transport Trip</Text>
+                <ScrollView
+                    style={styles.content}
+                    contentContainerStyle={{ paddingBottom: layout.blockSpacing }}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <View style={styles.formContainer}>
+                        <Text style={styles.sectionTitle}>Transport Trip</Text>
 
-                    <View style={styles.selectContainer}>
-                        <Text style={styles.selectLabel}>
-                            Select Transport Mode <Text style={styles.required}>*</Text>
-                        </Text>
+                        <View style={styles.selectContainer}>
+                            <Text style={styles.selectLabel}>
+                                Select Transport Mode <Text style={styles.required}>*</Text>
+                            </Text>
 
-                        {/* Transport Options - Always Visible */}
-                        <View style={styles.transportList}>
-                            {transportCategories.map(category =>
-                                renderTransportOption(category)
-                            )}
+                            {/* Transport Options - Always Visible */}
+                            <View style={styles.transportList}>
+                                {transportCategories.map(category =>
+                                    renderTransportOption(category)
+                                )}
+                            </View>
                         </View>
                     </View>
-                </View>
-            </ScrollView>
+                </ScrollView>
 
-            {/* Action Buttons */}
-            <View style={styles.actionButtons}>
-                <CTAButton
-                    label="Save Activity"
-                    onPress={saveActivity}
-                    style={styles.saveButton}
-                />
-                <TouchableOpacity
-                    style={styles.cancelButton}
-                    accessibilityRole='button'
-                    accessibilityLabel='Cancel logging transport activity'
-                    accessibilityHint='Returns to the tracking tab without saving'
-                    hitSlop={layout.hitSlop}
-                    onPress={() => router.back()}
-                >
-                    <Text style={styles.cancelText}>Cancel</Text>
-                </TouchableOpacity>
+                {/* Action Buttons */}
+                <View style={styles.actionButtons}>
+                    <CTAButton
+                        label="Save Activity"
+                        onPress={saveActivity}
+                        style={styles.saveButton}
+                        loading={submitting}
+                        disabled={submitting}
+                    />
+                    <TouchableOpacity
+                        style={[styles.cancelButton, submitting && styles.cancelButtonDisabled]}
+                        accessibilityRole='button'
+                        accessibilityLabel='Cancel logging transport activity'
+                        accessibilityHint='Closes the transport log without saving'
+                        hitSlop={layout.hitSlop}
+                        onPress={() => {
+                            if (submitting) return;
+                            router.back();
+                        }}
+                        disabled={submitting}
+                    >
+                        <Text style={styles.cancelText}>Cancel</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-        </View>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -367,7 +400,7 @@ const styles = StyleSheet.create({
     },
     subcategoryOption: {
         paddingLeft: layout.cardSpacing * 2,
-        backgroundColor: colors.neutral.gray50,
+        backgroundColor: colors.neutral.white,
     },
     selectedOption: {
         backgroundColor: colors.eco.green[50],
@@ -395,33 +428,63 @@ const styles = StyleSheet.create({
     },
     distanceInputSection: {
         marginLeft: 12,
-        alignItems: 'center',
+        alignItems: 'flex-end',
     },
-    inlineDistanceInput: {
-        backgroundColor: colors.neutral.gray50,
+    distanceInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.neutral.white,
         borderRadius: 8,
+        borderWidth: 1,
+        borderColor: colors.neutral.gray200,
         paddingHorizontal: 12,
-        paddingVertical: 8,
+        paddingVertical: 6,
+        minWidth: 96,
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 1,
+    },
+    distanceInputField: {
+        flex: 1,
         fontSize: 14,
         color: colors.textPrimary,
-        width: 80,
         textAlign: 'center',
+        paddingVertical: 0,
     },
-    zeroEmissionNote: {
-        fontSize: 12,
-        color: colors.success,
-        marginTop: 6,
+    distanceUnit: {
+        fontSize: 13,
+        color: colors.textSecondary,
+        marginLeft: 4,
     },
-    inputError: {
+    distanceInputError: {
         borderColor: colors.error,
-        borderWidth: 1,
     },
     errorText: {
         fontSize: 12,
         color: colors.error,
-        marginLeft: 44,
+        marginLeft: layout.cardSpacing * 2,
         marginTop: 4,
         marginBottom: 8,
+    },
+    sectionHintRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.neutral.gray50,
+        marginHorizontal: layout.cardSpacing,
+        marginTop: 12,
+        paddingHorizontal: layout.cardSpacing,
+        paddingVertical: 8,
+        borderRadius: 10,
+    },
+    sectionHintIcon: {
+        marginRight: 8,
+    },
+    sectionHintText: {
+        flex: 1,
+        fontSize: 12,
+        color: colors.textSecondary,
     },
     subcategoriesContainer: {
         backgroundColor: colors.neutral.white,
@@ -440,6 +503,9 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         paddingVertical: layout.cardSpacing,
         alignItems: 'center',
+    },
+    cancelButtonDisabled: {
+        opacity: 0.5,
     },
     cancelText: {
         fontSize: 16,

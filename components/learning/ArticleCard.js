@@ -201,12 +201,15 @@ const ArticleCardComponent = ({ item, expanded, onToggle, badgeLabel, showThumb 
               </View>
             ) : null}
             <Pressable
-              onPress={handleOpenSource}
-              accessibilityRole="link"
-              accessibilityHint="Opens in browser"
+              onPress={(event) => {
+                event?.stopPropagation?.();
+                handleToggle();
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={`${isExpanded ? 'Collapse' : 'Expand'} article ${item.title}`}
               hitSlop={layout.hitSlop}
             >
-              <Text style={styles.title} numberOfLines={2}>
+              <Text style={styles.title} numberOfLines={isExpanded ? undefined : 2}>
                 {item.title}
               </Text>
             </Pressable>
@@ -266,7 +269,7 @@ const ArticleCardComponent = ({ item, expanded, onToggle, badgeLabel, showThumb 
           <Text style={styles.detailMeta}>
             {(item.author || 'Unknown author') + ' • ' + formattedDate + ` • ${item.reading_time_minutes} min`}
           </Text>
-          <Text style={styles.detailTip}>Tap the link or title to read the full article.</Text>
+          <Text style={styles.detailTip}>Tap the link below to read the full article.</Text>
           {domain ? (
             <Pressable
               onPress={handleOpenSource}

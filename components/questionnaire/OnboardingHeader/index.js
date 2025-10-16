@@ -1,5 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Text, TouchableOpacity, View } from "react-native";
+import colors from "../../../theme/colors";
 import OnboardingProgressBar from "../OnboardingProgressBar";
 import styles from "./styles";
 
@@ -21,21 +22,56 @@ const OnboardingHeader = ({
   onBack,
   onSkip,
 }) => {
+  const safeTotalSteps = Math.max(Number(totalSteps) || 0, 1);
+  const clampedCurrentStep = Math.min(
+    Math.max(Number(currentStep) || 1, 1),
+    safeTotalSteps
+  );
+  const effectiveCompletedSteps = Math.max(
+    Math.min(Number(completedSteps) || 0, safeTotalSteps),
+    0
+  );
+  const displayStep = clampedCurrentStep || effectiveCompletedSteps || 1;
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={onBack}>
-        <MaterialIcons name="arrow-back" size={24} color="black" />
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.skipButton} onPress={onSkip}>
-        <Text style={styles.skipText}>Skip</Text>
-      </TouchableOpacity>
+      <View style={styles.sideSlot}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={onBack}
+          activeOpacity={0.8}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <MaterialIcons
+            name="arrow-back"
+            size={22}
+            color={colors.textPrimary}
+          />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.progressContainer}>
-        <OnboardingProgressBar progress={completedSteps / totalSteps} />
+        <OnboardingProgressBar progress={displayStep / safeTotalSteps} />
         <Text style={styles.stepText}>
-          {completedSteps}/{totalSteps} completed
+          {displayStep}/{totalSteps} completed
         </Text>
+      </View>
+
+      <View style={[styles.sideSlot, styles.rightSlot]}>
+        <TouchableOpacity
+          style={styles.skipButton}
+          onPress={onSkip}
+          activeOpacity={0.85}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Text style={styles.skipText}>Skip</Text>
+          <MaterialIcons
+            name="chevron-right"
+            size={18}
+            color={colors.eco.green[600]}
+            style={styles.skipIcon}
+          />
+        </TouchableOpacity>
       </View>
     </View>
   );

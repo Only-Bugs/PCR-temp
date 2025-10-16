@@ -22,6 +22,46 @@ import {
 import colors from "../theme/colors";
 import { hapticError, hapticSuccess } from "../utils/haptics";
 
+const HOUSEHOLD_SIZE_CODES = ["Q2", "HOUSEHOLD_SIZE"];
+const TRANSPORT_CODES = [
+  "Q9",
+  "TRANSPORT_USAGE",
+  "PUBLIC_TRANSPORT_FREQUENCY",
+  "PUBLIC_TRANSPORT",
+];
+
+const getIntegerMinimum = (question) => {
+  if (!question) return 0;
+  if (typeof question.minimum_value === "number") {
+    return Number(question.minimum_value);
+  }
+  if (question.question_code) {
+    const code = String(question.question_code).toUpperCase();
+    if (HOUSEHOLD_SIZE_CODES.includes(code)) {
+      return 1;
+    }
+  }
+  if (question.question_id === 2) {
+    return 1;
+  }
+  return 0;
+};
+
+const isTransportQuestion = (question) => {
+  if (!question) return false;
+  const code = question.question_code
+    ? String(question.question_code).toUpperCase()
+    : "";
+  const text = (question.text_en || question.text || "")
+    .toString()
+    .toLowerCase();
+  return (
+    TRANSPORT_CODES.includes(code) ||
+    code.includes("TRANSPORT") ||
+    text.includes("public transport")
+  );
+};
+
 const OnboardingPage = () => {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -47,7 +87,10 @@ const OnboardingPage = () => {
   }, []);
 
   const activeQuestions = questions.filter((q) => {
-    if (q.question_code === "Q4A" || q.question_code === "Q4B") {
+    const code = q.question_code
+      ? String(q.question_code).toUpperCase()
+      : "";
+    if (code === "Q4A" || code === "Q4B") {
       const drives = answers[4];
       if (drives === false) return false;
     }
@@ -64,7 +107,17 @@ const OnboardingPage = () => {
   const isAnswerValid = () => {
     if (!currentQuestion) return false;
     const value = answers[currentQuestion.question_id];
-    return validateInput(currentQuestion.input_type, value);
+    const validationOptions =
+      currentQuestion.input_type === "number_int"
+        ? { min: getIntegerMinimum(currentQuestion) }
+        : currentQuestion.input_type === "enum_range" && isTransportQuestion(currentQuestion)
+        ? {}
+        : undefined;
+    return validateInput(
+      currentQuestion.input_type,
+      value,
+      validationOptions
+    );
   };
 
   const handleNext = async () => {
@@ -162,14 +215,29 @@ const OnboardingPage = () => {
     const current = currentQuestion;
 
     if (current) {
+      const currentCode = current.question_code
+        ? String(current.question_code).toUpperCase()
+        : "";
       setAnswers((prev) => {
         const updated = { ...prev };
 
-        if (current.question_code === "Q4") {
+        if (currentCode === "Q4") {
           updated[current.question_id] = false;
-          const q4 = questions.find((q) => q.question_code === "Q4");
-          const q4A = questions.find((q) => q.question_code === "Q4A");
-          const q4B = questions.find((q) => q.question_code === "Q4B");
+          const q4 = questions.find(
+            (q) =>
+              q.question_code &&
+              String(q.question_code).toUpperCase() === "Q4"
+          );
+          const q4A = questions.find(
+            (q) =>
+              q.question_code &&
+              String(q.question_code).toUpperCase() === "Q4A"
+          );
+          const q4B = questions.find(
+            (q) =>
+              q.question_code &&
+              String(q.question_code).toUpperCase() === "Q4B"
+          );
           if (q4) updated[q4.question_id] = q4.default_option;
           if (q4A) updated[q4A.question_id] = q4A.default_option;
           if (q4B) updated[q4B.question_id] = q4B.default_option;

@@ -25,44 +25,31 @@ const AvatarCard = () => {
     },
     leaf: {
       status: "Sprouting",
-      title: "Your First Leaf",
-      message: "Every journey begins with a single step. Keep going!",
+      title: "Fresh Sprout",
+      message: "Your first shoots are appearing. Keep the momentum going!",
     },
     sapling: {
       status: "Growing Strong",
-      title: "Your Green Guardian",
+      title: "Young Sapling",
       message:
         "Great job! Your sapling is thriving. Stay consistent with your actions.",
     },
     youngPlant: {
       status: "Rising Up",
-      title: "Young Plant Power",
+      title: "Eco Warrior",
       message:
-        "Your efforts are blooming! Keep nurturing your eco-friendly habits.",
-    },
-    tree: {
-      status: "Eco Warrior",
-      title: "Your Flourishing Tree",
-      message:
-        "Amazing! Your tree is fully grown, showing the impact of your sustainable choices.",
+        "Your canopy is taking shape. Keep nurturing those eco-friendly habits.",
     },
     matureTree: {
-      status: "Nature's Guardian",
-      title: "Mature Forest Guardian",
-      message:
-        "Extraordinary! Your mature tree stands tall. You're a true environmental champion.",
-    },
-    finalStage: {
       status: "Climate Legend",
-      title: "Planet Protector",
+      title: "Forest Guardian",
       message:
-        "You've reached the ultimate stage! Your impact is transforming the world. Thank you, Climate Champion!",
+        "You've reached the forest canopy. Your impact is transforming the world. Thank you for leading the change!",
     },
   };
 
   const stage = user?.personaStage || "seed";
-  const { status, title, message } = personaMap[stage];
-
+  const { status, title, message } = personaMap[stage] || personaMap.seed;
   return (
     <LinearGradient
       colors={[colors.eco.green[50], colors.eco.green[100]]}

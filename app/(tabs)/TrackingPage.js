@@ -36,6 +36,9 @@ const TrackingPage = () => {
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.headerSpacing}>
           <PageHeader title="Tracking" />
+          <Text style={styles.pageSubtitle}>
+            Log activities and watch your weekly carbon impact change.
+          </Text>
         </View>
 
         <ImpactChart
@@ -88,6 +91,16 @@ const styles = StyleSheet.create({
   },
   headerSpacing: {
     marginBottom: layout.sectionSpacing,
+  },
+  pageSubtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  pageSubtitle: {
+    marginTop: 4,
+    fontSize: 14,
+    color: colors.textSecondary,
   },
   sectionHeading: {
     fontSize: 16,
