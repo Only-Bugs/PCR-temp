@@ -798,7 +798,8 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
         const rewardCategory = REWARD_DB_KEYS.transport;
         const canAward = await rewardsCanAwardToday(
           rewardCategory,
-          dayInfo.dateKey
+          dayInfo.dateKey,
+          user?.eco_id
         );
 
         if (canAward) {
@@ -810,7 +811,11 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
 
           if (pointsValue > 0) {
             await addCarbonPoints(pointsValue);
-            await rewardsMarkAwardedToday(rewardCategory, dayInfo.dateKey);
+            await rewardsMarkAwardedToday(
+              rewardCategory,
+              dayInfo.dateKey,
+              user?.eco_id
+            );
             logAnalyticsEvent("points_awarded", {
               category: rewardCategory,
               points: pointsValue,
@@ -900,7 +905,8 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
         const rewardCategory = REWARD_DB_KEYS.meals;
         const canAward = await rewardsCanAwardToday(
           rewardCategory,
-          dayInfo.dateKey
+          dayInfo.dateKey,
+          user?.eco_id
         );
 
         if (canAward) {
@@ -912,7 +918,11 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
 
           if (pointsValue > 0) {
             await addCarbonPoints(pointsValue);
-            await rewardsMarkAwardedToday(rewardCategory, dayInfo.dateKey);
+            await rewardsMarkAwardedToday(
+              rewardCategory,
+              dayInfo.dateKey,
+              user?.eco_id
+            );
             logAnalyticsEvent("points_awarded", {
               category: rewardCategory,
               points: pointsValue,
@@ -994,7 +1004,8 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
         const rewardCategory = REWARD_DB_KEYS.shopping;
         const canAward = await rewardsCanAwardToday(
           rewardCategory,
-          dayInfo.dateKey
+          dayInfo.dateKey,
+          user?.eco_id
         );
 
         if (canAward) {
@@ -1006,7 +1017,11 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
 
           if (pointsValue > 0) {
             await addCarbonPoints(pointsValue);
-            await rewardsMarkAwardedToday(rewardCategory, dayInfo.dateKey);
+            await rewardsMarkAwardedToday(
+              rewardCategory,
+              dayInfo.dateKey,
+              user?.eco_id
+            );
             logAnalyticsEvent("points_awarded", {
               category: rewardCategory,
               points: pointsValue,
@@ -1098,7 +1113,8 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
         const rewardCategory = REWARD_DB_KEYS.energy;
         const canAward = await rewardsCanAwardThisMonth(
           rewardCategory,
-          monthKey
+          monthKey,
+          user?.eco_id
         );
 
         if (canAward) {
@@ -1110,7 +1126,11 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
 
           if (pointsValue > 0) {
             await addCarbonPoints(pointsValue);
-            await rewardsMarkAwardedThisMonth(rewardCategory, monthKey);
+            await rewardsMarkAwardedThisMonth(
+              rewardCategory,
+              monthKey,
+              user?.eco_id
+            );
             logAnalyticsEvent("points_awarded", {
               category: rewardCategory,
               points: pointsValue,

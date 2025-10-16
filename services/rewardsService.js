@@ -15,6 +15,12 @@ const STORAGE_KEYS = {
   monthly: "rewards:lastAwardedMonthly",
 };
 
+const DEFAULT_USER_KEY = "__default__";
+const makeUserKey = (ecoId) =>
+  ecoId && String(ecoId).trim().length > 0
+    ? `user:${String(ecoId)}`
+    : DEFAULT_USER_KEY;
+
 let inMemoryMapping = null;
 let inflightPromise = null;
 let dailyCache = null;
@@ -38,14 +44,64 @@ const writeJSON = async (key, value) => {
   }
 };
 
+const normalizeAwardCache = (cache) => {
+  const base =
+    cache && typeof cache === "object" && !Array.isArray(cache) ? cache : {};
+  const entries = Object.entries(base);
+  const hasLegacyFormat = entries.some(([, value]) => typeof value === "string");
+
+  if (!hasLegacyFormat) {
+    const copy = {};
+    entries.forEach(([key, value]) => {
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        copy[key] = { ...value };
+      }
+    });
+    return { cache: copy, migrated: false };
+  }
+
+  const normalized = {};
+  const legacyBucket = {};
+
+  entries.forEach(([key, value]) => {
+    if (typeof value === "string") {
+      legacyBucket[key] = value;
+      return;
+    }
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      normalized[key] = { ...value };
+    }
+  });
+
+  if (Object.keys(legacyBucket).length) {
+    normalized[DEFAULT_USER_KEY] = {
+      ...(normalized[DEFAULT_USER_KEY] || {}),
+      ...legacyBucket,
+    };
+  }
+
+  return { cache: normalized, migrated: true };
+};
+
 const loadAwardCache = async (type) => {
   if (type === "daily") {
     if (dailyCache) return dailyCache;
-    dailyCache = (await readJSON(STORAGE_KEYS.daily)) || {};
+    const stored = await readJSON(STORAGE_KEYS.daily);
+    const { cache, migrated } = normalizeAwardCache(stored);
+    dailyCache = cache;
+    if (migrated) {
+      await persistAwardCache("daily", cache);
+    }
     return dailyCache;
   }
   if (monthlyCache) return monthlyCache;
-  monthlyCache = (await readJSON(STORAGE_KEYS.monthly)) || {};
+  const stored = await readJSON(STORAGE_KEYS.monthly);
+  const { cache, migrated } = normalizeAwardCache(stored);
+  monthlyCache = cache;
+  if (migrated) {
+    await persistAwardCache("monthly", cache);
+  }
   return monthlyCache;
 };
 
@@ -131,29 +187,73 @@ export const getRewardPoints = async (category, action, options = {}) => {
   return mapping?.[categoryKey]?.[actionKey] ?? 0;
 };
 
-export const canAwardToday = async (category, dateKey) => {
+export const canAwardToday = async (category, dateKey, ecoId) => {
   const cache = await loadAwardCache("daily");
-  const key = String(category || "").toLowerCase();
-  return cache[key] !== dateKey;
+  const categoryKey = String(category || "").toLowerCase();
+  const userKey = makeUserKey(ecoId);
+  const userCache = cache[userKey];
+
+  if (userCache && userCache[categoryKey] === dateKey) {
+    return false;
+  }
+
+  // Allow awarding when no user-specific record exists (legacy global records are ignored).
+  return true;
 };
 
-export const markAwardedToday = async (category, dateKey) => {
+export const markAwardedToday = async (category, dateKey, ecoId) => {
   const cache = await loadAwardCache("daily");
-  const key = String(category || "").toLowerCase();
-  cache[key] = dateKey;
+  const categoryKey = String(category || "").toLowerCase();
+  const userKey = makeUserKey(ecoId);
+
+  if (!cache[userKey]) {
+    cache[userKey] = {};
+  }
+
+  cache[userKey][categoryKey] = dateKey;
+
+  if (ecoId && cache[DEFAULT_USER_KEY]) {
+    delete cache[DEFAULT_USER_KEY][categoryKey];
+    if (Object.keys(cache[DEFAULT_USER_KEY]).length === 0) {
+      delete cache[DEFAULT_USER_KEY];
+    }
+  }
+
   await persistAwardCache("daily", cache);
 };
 
-export const canAwardThisMonth = async (category, monthKey) => {
+export const canAwardThisMonth = async (category, monthKey, ecoId) => {
   const cache = await loadAwardCache("monthly");
-  const key = String(category || "").toLowerCase();
-  return cache[key] !== monthKey;
+  const categoryKey = String(category || "").toLowerCase();
+  const userKey = makeUserKey(ecoId);
+  const userCache = cache[userKey];
+
+  if (userCache && userCache[categoryKey] === monthKey) {
+    return false;
+  }
+
+  // Allow awarding when no user-specific record exists (legacy global records are ignored).
+  return true;
 };
 
-export const markAwardedThisMonth = async (category, monthKey) => {
+export const markAwardedThisMonth = async (category, monthKey, ecoId) => {
   const cache = await loadAwardCache("monthly");
-  const key = String(category || "").toLowerCase();
-  cache[key] = monthKey;
+  const categoryKey = String(category || "").toLowerCase();
+  const userKey = makeUserKey(ecoId);
+
+  if (!cache[userKey]) {
+    cache[userKey] = {};
+  }
+
+  cache[userKey][categoryKey] = monthKey;
+
+  if (ecoId && cache[DEFAULT_USER_KEY]) {
+    delete cache[DEFAULT_USER_KEY][categoryKey];
+    if (Object.keys(cache[DEFAULT_USER_KEY]).length === 0) {
+      delete cache[DEFAULT_USER_KEY];
+    }
+  }
+
   await persistAwardCache("monthly", cache);
 };
 
