@@ -349,7 +349,7 @@ const LogTransportActivity = () => {
                         hitSlop={layout.hitSlop}
                         onPress={() => {
                             if (submitting) return;
-                            router.back();
+                            router.replace('/(tabs)/TrackingPage');
                         }}
                         disabled={submitting}
                     >
