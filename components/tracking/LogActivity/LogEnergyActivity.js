@@ -20,6 +20,16 @@ import { showFeedbackToast, showRewardToast } from '../../../utils/toast';
 const ENERGY_NOTE =
   'Energy records reflect long-term consumption patterns. Their carbon footprint is applied to your overall progress, not the daily chart.';
 
+const KEYBOARD_BEHAVIOR = Platform.select({
+  ios: 'padding',
+  android: 'height',
+});
+
+const KEYBOARD_VERTICAL_OFFSET = Platform.select({
+  ios: 80,
+  android: 32,
+});
+
 const sanitizeCurrency = (value) => {
   const cleaned = value.replace(/[^0-9.]/g, '');
   const [whole, fractional] = cleaned.split('.');
@@ -114,8 +124,8 @@ const LogEnergyActivity = () => {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+      behavior={KEYBOARD_BEHAVIOR}
+      keyboardVerticalOffset={KEYBOARD_VERTICAL_OFFSET}
     >
       <View style={styles.container}>
         <View style={styles.header}>
@@ -127,6 +137,7 @@ const LogEnergyActivity = () => {
 
         <ScrollView
           style={styles.content}
+          contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -245,6 +256,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  contentContainer: {
+    paddingBottom: 160,
   },
   formContainer: {
     backgroundColor: colors.eco.green[50],

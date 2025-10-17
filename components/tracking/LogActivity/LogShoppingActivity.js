@@ -41,6 +41,16 @@ const SHOPPING_SECTIONS = [
   },
 ];
 
+const KEYBOARD_BEHAVIOR = Platform.select({
+  ios: 'padding',
+  android: 'height',
+});
+
+const KEYBOARD_VERTICAL_OFFSET = Platform.select({
+  ios: 80,
+  android: 32,
+});
+
 const LogShoppingActivity = () => {
   const router = useRouter();
   const { logShoppingActivity } = useTracking();
@@ -129,8 +139,8 @@ const LogShoppingActivity = () => {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+      behavior={KEYBOARD_BEHAVIOR}
+      keyboardVerticalOffset={KEYBOARD_VERTICAL_OFFSET}
     >
       <View style={styles.container}>
         <View style={styles.header}>
@@ -142,6 +152,7 @@ const LogShoppingActivity = () => {
 
         <ScrollView
           style={styles.content}
+          contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -255,6 +266,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  contentContainer: {
+    paddingBottom: 160,
   },
   formContainer: {
     backgroundColor: colors.eco.green[50],
