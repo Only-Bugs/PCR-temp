@@ -10,6 +10,16 @@ import colors from '../../../theme/colors';
 import layout from '../../../theme/layout';
 import { showFeedbackToast, showRewardToast } from '../../../utils/toast';
 
+const KEYBOARD_BEHAVIOR = Platform.select({
+    ios: 'padding',
+    android: 'height',
+});
+
+const KEYBOARD_VERTICAL_OFFSET = Platform.select({
+    ios: 80,
+    android: 32,
+});
+
 const LogTransportActivity = () => {
     const router = useRouter();
     const { logTransportActivity } = useTracking();
@@ -286,8 +296,8 @@ const LogTransportActivity = () => {
     return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+            behavior={KEYBOARD_BEHAVIOR}
+            keyboardVerticalOffset={KEYBOARD_VERTICAL_OFFSET}
         >
             <View style={styles.container}>
                 <View style={styles.headerSpacing}>
@@ -300,7 +310,7 @@ const LogTransportActivity = () => {
 
                 <ScrollView
                     style={styles.content}
-                    contentContainerStyle={{ paddingBottom: layout.blockSpacing }}
+                    contentContainerStyle={styles.contentContainer}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
                 >
@@ -339,7 +349,7 @@ const LogTransportActivity = () => {
                         hitSlop={layout.hitSlop}
                         onPress={() => {
                             if (submitting) return;
-                            router.back();
+                            router.replace('/(tabs)/TrackingPage');
                         }}
                         disabled={submitting}
                     >
@@ -359,6 +369,9 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         paddingHorizontal: layout.screenPadding,
+    },
+    contentContainer: {
+        paddingBottom: layout.blockSpacing + 120,
     },
     formContainer: {
         backgroundColor: colors.eco.green[50],
