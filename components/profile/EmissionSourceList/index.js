@@ -61,7 +61,7 @@ const EmissionSourceList = ({ data }) => {
           </View>
           <View style={styles.right}>
             {/* Progress bar */}
-            <View style={styles.barContainer}>
+            {/* <View style={styles.barContainer}>
               <View
                 style={[
                   styles.bar,
@@ -71,7 +71,7 @@ const EmissionSourceList = ({ data }) => {
                   },
                 ]}
               />
-            </View>
+            </View> */}
             {/* Display as kg CO2 */}
             <Text style={[styles.value, { color: source.color }]}>
               {source.value.toFixed(1)} kg

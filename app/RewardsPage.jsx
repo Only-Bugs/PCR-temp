@@ -46,6 +46,7 @@ const RewardsPage = () => {
         onClose={() => setShowShareModal(false)}
         points={userPoints}
         co2SavedKg={estimatedCO2Saved}
+        personaStage={user?.personaStage}
       />
     </View>
   );

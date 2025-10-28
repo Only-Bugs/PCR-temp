@@ -11,6 +11,7 @@ import { StatusBar } from "expo-status-bar";
 
 import { HapticsProvider } from "../context/HapticsContext";
 import { TrackingProvider } from "../context/TrackingContext";
+import { TrackingDataProvider } from "../context/TrackingDataContext";
 import { UserProvider } from "../context/UserContext";
 import { getSeenIntro } from "../lib/storage/firstRun";
 import colors from "../theme/colors";
@@ -73,13 +74,15 @@ export default function RootLayout() {
         />
         <UserProvider>
           <HapticsProvider>
-            <TrackingProvider>
-              <SafeAreaView style={styles.safeAreaShell} edges={EDGES}>
-                <View style={styles.container}>
-                  {ready ? <Slot /> : null}
-                </View>
-              </SafeAreaView>
-            </TrackingProvider>
+            <TrackingDataProvider>
+              <TrackingProvider>
+                <SafeAreaView style={styles.safeAreaShell} edges={EDGES}>
+                  <View style={styles.container}>
+                    {ready ? <Slot /> : null}
+                  </View>
+                </SafeAreaView>
+              </TrackingProvider>
+            </TrackingDataProvider>
           </HapticsProvider>
         </UserProvider>
       </SafeAreaProvider>

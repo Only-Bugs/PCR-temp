@@ -1,6 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Pressable, Text, View } from "react-native";
-import ProgressBar from "../../ProgressBar";
 import styles from "./styles";
 
 const ChallengeCard = ({
@@ -32,15 +31,6 @@ const ChallengeCard = ({
         <View style={styles.infoWrapper} accessible={false}>
           <MaterialIcons name="info-outline" size={22} color="#22C55E" />
         </View>
-      </View>
-
-      <View style={styles.progressSection}>
-        <ProgressBar
-          progress={completion}
-          height={6}
-          color={progressColor}
-          backgroundColor="#E5E7EB"
-        />
       </View>
     </Pressable>
   );

@@ -7,9 +7,6 @@ import colors from "../../../theme/colors";
 
 export default StyleSheet.create({
   card: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
     backgroundColor: colors.neutral.white,
     borderRadius: 12,
     padding: 16,

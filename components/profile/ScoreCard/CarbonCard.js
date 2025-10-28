@@ -34,7 +34,6 @@ const CarbonCard = ({ data }) => {
     pointsIntoCurrentRing === 0 ? 0 : POINTS_PER_RING - pointsIntoCurrentRing;
   const nextStage = pointsToNextMilestone === 0 ? stage : stage + 1;
 
-  // 估算碳减排（占位公式）
   const co2SavedKg = Number((points / 18).toFixed(1));
 
   return (
@@ -79,7 +78,7 @@ const CarbonCard = ({ data }) => {
         </View>
       </View>
 
-      <View style={styles.carbon.stageDetails}>
+      {/* <View style={styles.carbon.stageDetails}>
         <Text style={styles.carbon.stageSubtitle}>
           Stage {stage} · {levelTier.min}–
           {levelTier.max === Infinity ? "∞" : levelTier.max} pts
@@ -89,7 +88,7 @@ const CarbonCard = ({ data }) => {
             ? `Only ${pointsToNextMilestone} pts left for Stage ${nextStage}.`
             : "Stage unlocked! Keep up the momentum with your next action."}
         </Text>
-      </View>
+      </View> */}
 
       <View style={styles.carbon.infoRow}>
         <Ionicons
@@ -99,7 +98,8 @@ const CarbonCard = ({ data }) => {
           style={styles.carbon.infoIcon}
         />
         <Text style={styles.carbon.infoText}>
-          Earn points by finishing challenges and keeping up with your daily tracking mission.
+          Earn points by finishing challenges and keeping up with your daily
+          tracking mission.
         </Text>
       </View>
 
@@ -112,6 +112,7 @@ const CarbonCard = ({ data }) => {
         badgeName={data.level?.text || levelTier.name}
         username={user?.name || "Verde User"}
         dateRangeLabel="this month"
+        personaStage={user?.personaStage}
       />
     </View>
   );

@@ -17,7 +17,7 @@ export default StyleSheet.create({
     marginLeft: 8,
     fontSize: 14,
     fontWeight: "500",
-    color: colors.textPrimary,
+    color: colors.textSecondary,
   },
   right: {
     flexDirection: "row",

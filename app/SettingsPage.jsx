@@ -4,7 +4,7 @@ import * as Clipboard from "expo-clipboard";
 import Constants from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   StyleSheet,
@@ -18,11 +18,15 @@ import LogoutModal from "../components/settings/LogoutModal";
 import SettingsCard from "../components/settings/SettingsCard";
 import SettingsIcon from "../components/settings/SettingsIcon";
 import PrivacyPolicyModal from "../components/settings/PrivacyPolicyModal";
+import DevSettingsModal from "../components/settings/DevSettingsModal";
 import UserInfoCard from "../components/settings/UserInfoCard";
 import { useHaptics } from "../context/HapticsContext";
 import { useUser } from "../context/UserContext";
 import StorageService from "../services/storage";
 import colors from "../theme/colors";
+import { showFeedbackToast } from "../utils/toast";
+
+const MORE_SETTINGS_TAPS_REQUIRED = 4;
 
 const SettingsPage = () => {
   const version = Constants.expoConfig?.version || "1.0.0";
@@ -31,12 +35,25 @@ const SettingsPage = () => {
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [email, setEmail] = useState("");
   const [privacyVisible, setPrivacyVisible] = useState(false);
+  const [devModalVisible, setDevModalVisible] = useState(false);
+  const [showMoreSettings, setShowMoreSettings] = useState(false);
+  const [moreSettingsUnlocked, setMoreSettingsUnlocked] = useState(false);
+  const [userInfoTapCount, setUserInfoTapCount] = useState(0);
+  const [carbonPointsInput, setCarbonPointsInput] = useState("");
   const router = useRouter();
   const { enabled, toggleHaptics } = useHaptics();
-  const { user, resetUser, updateUser } = useUser();
+  const { user, resetUser, updateUser, setCarbonPoints } = useUser();
 
   // Debug toggle
   // const [showDebug, setShowDebug] = useState(false);
+
+  useEffect(() => {
+    if (user?.carbonPoints != null) {
+      setCarbonPointsInput(String(user.carbonPoints));
+    } else {
+      setCarbonPointsInput("");
+    }
+  }, [user?.carbonPoints]);
 
   const cyclePersonaStage = async () => {
     if (!user) return;
@@ -75,7 +92,6 @@ const SettingsPage = () => {
   const handleLogout = async () => {
     try {
       await resetUser();
-
       router.replace("/");
     } catch (err) {
 
@@ -85,6 +101,57 @@ const SettingsPage = () => {
   const handleCloseLogoutModal = () => {
     setLogoutModalVisible(false);
     setShowEmailInput(false);
+  };
+
+  const handleUserInfoPress = () => {
+    if (moreSettingsUnlocked) {
+      return;
+    }
+
+    const nextCount = userInfoTapCount + 1;
+    setUserInfoTapCount(nextCount);
+
+    if (nextCount === MORE_SETTINGS_TAPS_REQUIRED - 2) {
+      showFeedbackToast({
+        title: "Almost there",
+        message: "2 more clicks to go and you have unlocked More Settings.",
+      });
+    }
+
+    if (nextCount >= MORE_SETTINGS_TAPS_REQUIRED) {
+      setMoreSettingsUnlocked(true);
+      setShowMoreSettings(true);
+      setUserInfoTapCount(0);
+      showFeedbackToast({
+        title: "More Settings Unlocked",
+        message: "Developer settings are now available.",
+      });
+    }
+  };
+
+  const handleShowUserContext = () => {
+    if (!user) {
+      Alert.alert("User Context", "No user data available.");
+      return;
+    }
+
+    Alert.alert(
+      "User Context",
+      JSON.stringify(user, null, 2),
+      [{ text: "Close" }],
+      { cancelable: true }
+    );
+  };
+
+  const handleSaveCarbonPoints = async () => {
+    const parsed = Number(carbonPointsInput);
+    if (!Number.isFinite(parsed)) {
+      Alert.alert("Invalid Input", "Please enter a valid number.");
+      return;
+    }
+
+    await setCarbonPoints(parsed);
+    Alert.alert("Updated", "Carbon points have been updated.");
   };
 
   return (
@@ -107,7 +174,11 @@ const SettingsPage = () => {
       </View>
 
       {/* User Information Card */}
-      <UserInfoCard ecoId={user?.eco_id} onCopy={copyEcoId} />
+      <UserInfoCard
+        ecoId={user?.eco_id}
+        onCopy={copyEcoId}
+        onPress={handleUserInfoPress}
+      />
 
       {/* Haptics Toggle */}
       <SettingsCard
@@ -141,27 +212,54 @@ const SettingsPage = () => {
         onPress={() => setPrivacyVisible(true)}
       />
 
-      {/* Debug */}
-      {/* <CTAButton
-        label="Show User Context"
-        variant="outlined"
-        onPress={() => setShowDebug((prev) => !prev)}
-        style={{ marginTop: 12 }}
-      />
-
-      {showDebug && (
-        <Text style={{ color: "red", fontSize: 12, marginTop: 8 }}>
-          {JSON.stringify(user, null, 2)}
-        </Text>
+      {moreSettingsUnlocked && (
+        <SettingsCard
+          title="More Settings"
+          subtitle="Additional configuration options"
+          icon={
+            <Ionicons
+              name="options-outline"
+              size={20}
+              color={colors.textPrimary}
+            />
+          }
+          rightContent={
+            <Ionicons
+              name={showMoreSettings ? "chevron-up" : "chevron-down"}
+              size={18}
+              color={colors.textSecondary}
+            />
+          }
+          onPress={() => setShowMoreSettings((prev) => !prev)}
+        >
+          {showMoreSettings && (
+            <View style={styles.moreSettingsList}>
+              <TouchableOpacity
+                style={styles.moreSettingsItem}
+                onPress={() => setDevModalVisible(true)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.moreSettingsLeft}>
+                  <Ionicons
+                    name="construct-outline"
+                    size={18}
+                    color="#000"
+                    style={styles.moreSettingsIcon}
+                  />
+                  <Text style={styles.moreSettingsLabel}>
+                    Developer Settings
+                  </Text>
+                </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={colors.textSecondary}
+                />
+              </TouchableOpacity>
+            </View>
+          )}
+        </SettingsCard>
       )}
-
-      <CTAButton
-        label="Cycle Persona Stage"
-        variant="outlined"
-        onPress={cyclePersonaStage}
-        style={{ marginTop: 12 }}
-      /> */}
-      {/* End - Debug */}
 
       {/* Logout Button */}
       <CTAButton
@@ -188,6 +286,14 @@ const SettingsPage = () => {
       <PrivacyPolicyModal
         visible={privacyVisible}
         onClose={() => setPrivacyVisible(false)}
+      />
+      <DevSettingsModal
+        visible={devModalVisible}
+        onClose={() => setDevModalVisible(false)}
+        onShowUserContext={handleShowUserContext}
+        carbonPointsValue={carbonPointsInput}
+        onChangeCarbonPoints={setCarbonPointsInput}
+        onSaveCarbonPoints={handleSaveCarbonPoints}
       />
       <Text style={styles.versionText}>
         {`Version ${version}${buildStage ? ` (${buildStage})` : ""}`}
@@ -227,6 +333,30 @@ const styles = StyleSheet.create({
   arrow: {
     fontSize: 20,
     color: colors.textSecondary,
+  },
+  moreSettingsList: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.neutral.gray100,
+  },
+  moreSettingsItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+  },
+  moreSettingsLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  moreSettingsIcon: {
+    marginRight: 12,
+  },
+  moreSettingsLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: colors.textPrimary,
   },
   logoutBtn: {
     backgroundColor: "#DC2626",

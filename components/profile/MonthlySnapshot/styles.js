@@ -27,12 +27,12 @@ export default StyleSheet.create({
     marginLeft: 8,
     fontSize: 15,
     fontWeight: "600",
-    color: colors.textPrimary,
+    color: colors.textSecondary,
   },
   sectionTitle: {
     fontSize: 13,
     fontWeight: "600",
-    color: colors.textPrimary,
+    color: colors.textSecondary,
     marginBottom: 6,
   },
   sourceRow: {
@@ -61,15 +61,32 @@ export default StyleSheet.create({
   tipBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.infoTint,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    marginTop: 8,
     borderRadius: 12,
-    padding: 12,
-    marginTop: 10,
+    backgroundColor: colors.neutral.gray50,
   },
   tipText: {
     marginLeft: 8,
     fontSize: 13,
     color: colors.textSecondary,
     flex: 1,
+  },
+  totalSection: {
+    marginBottom: 16,
+    paddingVertical: 6,
+  },
+
+  totalLabel: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+
+  totalValue: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: colors.eco.green[500],
   },
 });

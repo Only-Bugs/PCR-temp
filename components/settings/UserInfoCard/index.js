@@ -8,15 +8,24 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Text, TouchableOpacity, View } from "react-native";
 import styles from "./styles";
 
-const UserInfoCard = ({ ecoId, onCopy }) => {
+const UserInfoCard = ({ ecoId, onCopy, onPress }) => {
   // Function to shorten Eco ID for display
   const getTruncatedId = (id) => {
     if (!id) return "No Eco ID found";
     return `${id.slice(0, 6)}...${id.slice(-4)}`; // e.g. usr_3k8m...7u8v
   };
 
+  const WrapperComponent = onPress ? TouchableOpacity : View;
+  const pressableProps = onPress
+    ? {
+        onPress,
+        activeOpacity: 0.85,
+        accessibilityRole: "button",
+      }
+    : {};
+
   return (
-    <View style={styles.card}>
+    <WrapperComponent style={styles.card} {...pressableProps}>
       {/* Header Row */}
       <View style={styles.header}>
         <LinearGradient
@@ -43,7 +52,7 @@ const UserInfoCard = ({ ecoId, onCopy }) => {
           </TouchableOpacity>
         )}
       </View>
-    </View>
+    </WrapperComponent>
   );
 };
 
