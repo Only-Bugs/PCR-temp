@@ -72,14 +72,14 @@ const CarbonCard = ({ data }) => {
             strokeWidth={10}
             maxPerRing={POINTS_PER_RING}
           >
-            <View style={styles.carbon.stageBadge}>
+            {/* <View style={styles.carbon.stageBadge}>
               <Text style={styles.carbon.stageBadgeText}>Stage {stage}</Text>
-            </View>
+            </View> */}
           </TreeRingProgress>
         </View>
       </View>
 
-      <View style={styles.carbon.stageDetails}>
+      {/* <View style={styles.carbon.stageDetails}>
         <Text style={styles.carbon.stageSubtitle}>
           Stage {stage} · {levelTier.min}–
           {levelTier.max === Infinity ? "∞" : levelTier.max} pts
@@ -89,7 +89,7 @@ const CarbonCard = ({ data }) => {
             ? `Only ${pointsToNextMilestone} pts left for Stage ${nextStage}.`
             : "Stage unlocked! Keep up the momentum with your next action."}
         </Text>
-      </View>
+      </View> */}
 
       <View style={styles.carbon.infoRow}>
         <Ionicons
@@ -99,7 +99,8 @@ const CarbonCard = ({ data }) => {
           style={styles.carbon.infoIcon}
         />
         <Text style={styles.carbon.infoText}>
-          Earn points by finishing challenges and keeping up with your daily tracking mission.
+          Earn points by finishing challenges and keeping up with your daily
+          tracking mission.
         </Text>
       </View>
 
@@ -112,6 +113,7 @@ const CarbonCard = ({ data }) => {
         badgeName={data.level?.text || levelTier.name}
         username={user?.name || "Verde User"}
         dateRangeLabel="this month"
+        personaStage={user?.personaStage}
       />
     </View>
   );

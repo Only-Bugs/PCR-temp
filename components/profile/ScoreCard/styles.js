@@ -140,6 +140,38 @@ const carbon = StyleSheet.create({
     color: colors.textPrimary,
     textAlign: "center",
   },
+  stageText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: colors.textPrimary,
+    marginTop: 6,
+  },
+
+  progressBarContainer: {
+    marginTop: 12,
+    alignItems: "center",
+  },
+
+  progressBarBackground: {
+    width: "100%",
+    height: 8,
+    backgroundColor: colors.neutral.gray50,
+    borderRadius: 6,
+    overflow: "hidden",
+  },
+
+  progressBarFill: {
+    height: "100%",
+    backgroundColor: colors.eco.green[500],
+    borderRadius: 6,
+  },
+
+  progressNote: {
+    marginTop: 6,
+    fontSize: 13,
+    color: colors.textSecondary,
+    textAlign: "center",
+  },
 });
 
 export default { base, carbon };

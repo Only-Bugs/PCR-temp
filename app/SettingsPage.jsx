@@ -4,7 +4,7 @@ import * as Clipboard from "expo-clipboard";
 import Constants from "expo-constants";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   StyleSheet,
@@ -18,6 +18,7 @@ import LogoutModal from "../components/settings/LogoutModal";
 import SettingsCard from "../components/settings/SettingsCard";
 import SettingsIcon from "../components/settings/SettingsIcon";
 import PrivacyPolicyModal from "../components/settings/PrivacyPolicyModal";
+import DevSettingsModal from "../components/settings/DevSettingsModal";
 import UserInfoCard from "../components/settings/UserInfoCard";
 import { useHaptics } from "../context/HapticsContext";
 import { useUser } from "../context/UserContext";
@@ -31,12 +32,22 @@ const SettingsPage = () => {
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [email, setEmail] = useState("");
   const [privacyVisible, setPrivacyVisible] = useState(false);
+  const [devModalVisible, setDevModalVisible] = useState(false);
+  const [carbonPointsInput, setCarbonPointsInput] = useState("");
   const router = useRouter();
   const { enabled, toggleHaptics } = useHaptics();
-  const { user, resetUser, updateUser } = useUser();
+  const { user, resetUser, updateUser, setCarbonPoints } = useUser();
 
   // Debug toggle
   // const [showDebug, setShowDebug] = useState(false);
+
+  useEffect(() => {
+    if (user?.carbonPoints != null) {
+      setCarbonPointsInput(String(user.carbonPoints));
+    } else {
+      setCarbonPointsInput("");
+    }
+  }, [user?.carbonPoints]);
 
   const cyclePersonaStage = async () => {
     if (!user) return;
@@ -75,7 +86,6 @@ const SettingsPage = () => {
   const handleLogout = async () => {
     try {
       await resetUser();
-
       router.replace("/");
     } catch (err) {
 
@@ -85,6 +95,31 @@ const SettingsPage = () => {
   const handleCloseLogoutModal = () => {
     setLogoutModalVisible(false);
     setShowEmailInput(false);
+  };
+
+  const handleShowUserContext = () => {
+    if (!user) {
+      Alert.alert("User Context", "No user data available.");
+      return;
+    }
+
+    Alert.alert(
+      "User Context",
+      JSON.stringify(user, null, 2),
+      [{ text: "Close" }],
+      { cancelable: true }
+    );
+  };
+
+  const handleSaveCarbonPoints = async () => {
+    const parsed = Number(carbonPointsInput);
+    if (!Number.isFinite(parsed)) {
+      Alert.alert("Invalid Input", "Please enter a valid number.");
+      return;
+    }
+
+    await setCarbonPoints(parsed);
+    Alert.alert("Updated", "Carbon points have been updated.");
   };
 
   return (
@@ -141,27 +176,18 @@ const SettingsPage = () => {
         onPress={() => setPrivacyVisible(true)}
       />
 
-      {/* Debug */}
-      {/* <CTAButton
-        label="Show User Context"
-        variant="outlined"
-        onPress={() => setShowDebug((prev) => !prev)}
-        style={{ marginTop: 12 }}
-      />
-
-      {showDebug && (
-        <Text style={{ color: "red", fontSize: 12, marginTop: 8 }}>
-          {JSON.stringify(user, null, 2)}
-        </Text>
-      )}
-
       <CTAButton
-        label="Cycle Persona Stage"
-        variant="outlined"
-        onPress={cyclePersonaStage}
-        style={{ marginTop: 12 }}
-      /> */}
-      {/* End - Debug */}
+        label="Dev Settings"
+        variant="outline"
+        onPress={() => setDevModalVisible(true)}
+        iconRight={
+          <Ionicons
+            name="cog-outline"
+            size={18}
+            color={colors.eco.green[600]}
+          />
+        }
+      />
 
       {/* Logout Button */}
       <CTAButton
@@ -188,6 +214,14 @@ const SettingsPage = () => {
       <PrivacyPolicyModal
         visible={privacyVisible}
         onClose={() => setPrivacyVisible(false)}
+      />
+      <DevSettingsModal
+        visible={devModalVisible}
+        onClose={() => setDevModalVisible(false)}
+        onShowUserContext={handleShowUserContext}
+        carbonPointsValue={carbonPointsInput}
+        onChangeCarbonPoints={setCarbonPointsInput}
+        onSaveCarbonPoints={handleSaveCarbonPoints}
       />
       <Text style={styles.versionText}>
         {`Version ${version}${buildStage ? ` (${buildStage})` : ""}`}

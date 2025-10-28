@@ -36,6 +36,7 @@ const SharePosterModal = ({
   badgeName = "Eco Warrior",
   username,
   dateRangeLabel = "this month",
+  personaStage,
 }) => {
   const posterRef = useRef();
   const [isSharing, setIsSharing] = useState(false);
@@ -153,6 +154,7 @@ const SharePosterModal = ({
                 badgeName={badgeName}
                 username={username}
                 dateRangeLabel={dateRangeLabel}
+                personaStage={personaStage}
               />
             </View>
           </View>

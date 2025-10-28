@@ -1,83 +1,93 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Platform, StyleSheet, Text, View } from "react-native";
+// import AppIcon from "../components/AppIcon";
+import CarbonPersona from "../components/persona/CarbonPersona";
 import colors from "../theme/colors";
 import { getLevelTier } from "../utils/levelTiers";
 
 /**
- * PosterCard component - Shareable poster for social media
- * Renders a 9:16 aspect ratio poster with user achievements
- *
- * @param {Object} props
- * @param {number} props.points - Total Verde points earned
- * @param {number} props.co2SavedKg - CO₂ saved in kg
- * @param {string} [props.badgeName] - Optional: Override badge name (defaults to level tier)
- * @param {string} [props.username] - Optional username
- * @param {string} [props.dateRangeLabel] - Optional date range (e.g., "this month")
+ * PosterCard – shareable version with branding watermark, icon backdrop,
+ * and gradient depth for social sharing.
  */
 const PosterCard = ({
   points = 1247,
   co2SavedKg = 47.3,
   badgeName,
-  username,
   dateRangeLabel = "this month",
+  personaStage,
 }) => {
-  // Get level tier based on points
   const levelTier = getLevelTier(points);
   const displayBadgeName = badgeName || levelTier.name;
+  const formattedSavings = Number(co2SavedKg).toFixed(0);
+
   return (
     <View style={styles.posterContainer}>
       <LinearGradient
-        colors={["#1DA96B", "#A8E6CF"]} // Dark green (top) → Light green (bottom)
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+        colors={["#0B7E55", "#12B46E", "#1DD580"]}
+        start={{ x: 0.1, y: 0 }}
+        end={{ x: 0.9, y: 1 }}
         style={styles.gradient}
       >
-        {/* Safe zone top */}
-        <View style={styles.safeZoneTop} />
+        {/* Top-right App Icon watermark */}
+        {/* <View style={styles.iconWrapper}>
+          <AppIcon size={36} />
+        </View> */}
 
-        {/* Brand header */}
+        {/* Vignette overlay */}
+        <View style={styles.vignette} />
+
+        {/* Decorative backdrop icons */}
+        {/* <Image
+          source={require("../../assets/icons/leaf-pattern.png")}
+          style={[styles.backdropIcon, { top: 80, left: 40, opacity: 0.08 }]}
+          resizeMode="contain"
+        />
+        <Image
+          source={require("../../assets/icons/globe-outline.png")}
+          style={[
+            styles.backdropIcon,
+            { bottom: 100, right: 60, opacity: 0.06 },
+          ]}
+          resizeMode="contain"
+        />
+        <Image
+          source={require("../../assets/icons/lightning.png")}
+          style={[
+            styles.backdropIcon,
+            { bottom: 40, left: 100, opacity: 0.05 },
+          ]}
+          resizeMode="contain"
+        /> */}
+
+        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.brandText}>Verde</Text>
           <Text style={styles.brandSubtext}>Eco Action Tracker</Text>
         </View>
 
-        {/* Main content card */}
-        <View style={styles.card}>
-          {/* Main achievement */}
-          <View style={styles.achievementSection}>
-            <Text style={styles.pointsNumber}>{points.toLocaleString()}</Text>
-            <Text style={styles.pointsLabel}>points on Verde</Text>
+        {/* Persona with glow */}
+        <View style={styles.personaWrapper}>
+          <LinearGradient
+            colors={["rgba(255,255,255,0.4)", "transparent"]}
+            style={styles.glow}
+          />
+          <View style={styles.personaCircle}>
+            <CarbonPersona stage={personaStage} />
           </View>
-
-          {/* Level name */}
-          <View style={styles.badgeSection}>
-            <View style={styles.badgeBadge}>
-              <Text style={styles.badgeIcon}>⭐</Text>
-            </View>
-            <Text style={styles.badgeName}>Level: {displayBadgeName}</Text>
-          </View>
-
-          {/* CO₂ savings */}
-          <View style={styles.co2Section}>
-            <Text style={styles.co2Text}>
-              {`${"You've saved"}`}
-              <Text style={styles.co2Number}> {co2SavedKg} kg CO₂</Text>{" "}
-              {dateRangeLabel}
-            </Text>
-          </View>
-
-          {/* Divider */}
-          {/* <View style={styles.divider} /> */}
-
-          {/* CTA footer */}
-          {/* <View style={styles.ctaSection}>
-            <Text style={styles.ctaText}>Join me on Verde</Text>
-            <Text style={styles.ctaSubtext}>Save CO₂ and earn rewards</Text>
-          </View> */}
         </View>
 
-        {/* Safe zone bottom */}
-        <View style={styles.safeZoneBottom} />
+        {/* CO₂ savings */}
+        <View style={styles.impactSection}>
+          <Text style={styles.savingsLabel}>You've saved</Text>
+          <Text style={styles.savingsValue}>{formattedSavings} kg CO₂</Text>
+          <Text style={styles.savingsContext}>This month</Text>
+        </View>
+
+        {/* Level + Points */}
+        <View style={styles.metaRow}>
+          <Text style={styles.metaText}>Level · {displayBadgeName}</Text>
+          <Text style={styles.metaText}>{points.toLocaleString()} pts</Text>
+        </View>
       </LinearGradient>
     </View>
   );
@@ -89,50 +99,79 @@ const styles = StyleSheet.create({
     aspectRatio: 9 / 16,
     maxWidth: 540,
     alignSelf: "center",
+    borderRadius: 32,
+    overflow: "hidden",
   },
   gradient: {
     flex: 1,
-    paddingHorizontal: 24,
+    paddingHorizontal: 28,
+    paddingTop: 48,
+    paddingBottom: 48,
+    justifyContent: "space-between",
   },
-  safeZoneTop: {
-    height: 60,
+  vignette: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.05)",
+    borderRadius: 32,
   },
-  safeZoneBottom: {
-    height: 60,
+  iconWrapper: {
+    position: "absolute",
+    top: 38,
+    right: 28,
+    opacity: 0.85,
+    transform: [{ scale: 1.05 }],
+    zIndex: 2,
+  },
+  backdropIcon: {
+    position: "absolute",
+    width: 120,
+    height: 120,
+    tintColor: "#fff",
   },
 
   header: {
     alignItems: "center",
-    marginBottom: 32,
+    marginTop: 4,
   },
   brandText: {
     fontSize: 36,
     fontWeight: "800",
     color: colors.neutral.white,
-    letterSpacing: 1,
-    textShadowColor: "rgba(0, 0, 0, 0.1)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
+    letterSpacing: 1.1,
   },
   brandSubtext: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: colors.neutral.white,
-    marginTop: 4,
-    opacity: 0.9,
+    fontSize: 15,
+    fontWeight: "500",
+    color: "rgba(255,255,255,0.9)",
+    marginTop: 6,
   },
 
-  // Main card
-  card: {
+  personaWrapper: {
+    alignItems: "center",
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  glow: {
+    position: "absolute",
+    width: 160,
+    height: 160,
+    borderRadius: 90,
+    top: -10,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    blurRadius: 60,
+  },
+  personaCircle: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
     backgroundColor: colors.neutral.white,
-    borderRadius: 24,
-    padding: 32,
+    alignItems: "center",
+    justifyContent: "center",
     ...Platform.select({
       ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.15,
-        shadowRadius: 16,
+        shadowColor: "#fff",
+        shadowOpacity: 0.3,
+        shadowRadius: 20,
       },
       android: {
         elevation: 8,
@@ -140,87 +179,51 @@ const styles = StyleSheet.create({
     }),
   },
 
-  // Achievement section
-  achievementSection: {
+  impactSection: {
     alignItems: "center",
-    marginBottom: 24,
+    marginTop: 16,
   },
-  pointsNumber: {
-    fontSize: 64,
+  savingsLabel: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.7)",
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
+  savingsValue: {
+    fontSize: 46,
     fontWeight: "800",
-    color: colors.poster.eco,
-    lineHeight: 72,
+    color: colors.neutral.white,
+    letterSpacing: 0.5,
+    marginTop: 6,
   },
-  pointsLabel: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.poster.text,
+  savingsContext: {
+    fontSize: 15,
+    color: "rgba(255,255,255,0.9)",
     marginTop: 4,
   },
-
-  // Badge section
-  badgeSection: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  badgeBadge: {
-    backgroundColor: colors.poster.cta,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  badgeIcon: {
-    fontSize: 28,
-  },
-  badgeName: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: colors.poster.text,
-    textAlign: "center",
+  tagline: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.8)",
+    marginTop: 10,
+    fontStyle: "italic",
   },
 
-  // CO₂ section
-  co2Section: {
+  metaRow: {
+    marginTop: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 24,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    borderWidth: 0.5,
+    borderColor: "rgba(255,255,255,0.25)",
+    borderRadius: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
-  co2Text: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: colors.poster.muted,
-    textAlign: "center",
-    lineHeight: 24,
-  },
-  co2Number: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: colors.poster.eco,
-  },
-
-  // Divider
-  divider: {
-    height: 1,
-    backgroundColor: colors.neutral.gray200,
-    marginVertical: 20,
-  },
-
-  // CTA section
-  ctaSection: {
-    alignItems: "center",
-  },
-  ctaText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: colors.poster.text,
-    marginBottom: 4,
-  },
-  ctaSubtext: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: colors.poster.muted,
+  metaText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: colors.neutral.white,
   },
 });
 

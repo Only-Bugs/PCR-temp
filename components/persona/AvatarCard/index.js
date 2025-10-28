@@ -13,7 +13,7 @@ import AvatarCircle from "../AvatarCircle";
  *
  * @returns {JSX.Element}
  */
-const AvatarCard = () => {
+const AvatarCard = ({ stage: stageOverride } = {}) => {
   const { user } = useUser();
 
   const personaMap = {
@@ -48,14 +48,15 @@ const AvatarCard = () => {
     },
   };
 
-  const stage = user?.personaStage || "seed";
-  const { status, title, message } = personaMap[stage] || personaMap.seed;
+  const resolvedStage = stageOverride || user?.personaStage || "seed";
+  const { status, title, message } =
+    personaMap[resolvedStage] || personaMap.seed;
   return (
     <LinearGradient
       colors={[colors.eco.green[50], colors.eco.green[100]]}
       style={styles.card}
     >
-      <AvatarCircle stage={stage} status={status} />
+      <AvatarCircle stage={resolvedStage} status={status} />
 
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.message}>{message}</Text>

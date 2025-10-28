@@ -23,12 +23,20 @@ const CarbonPersona = ({ stage }) => {
     youngPlant: require("../../../assets/animations/04.json"),
     matureTree: require("../../../assets/animations/05.json"),
   };
+  const test1 = require("../../../assets/animations/Clover.json");
+  const test2 = require("../../../assets/animations/tree.json");
 
   const animationSource = animationMap[stage] || animationMap.seed;
 
   return (
     <View style={styles.wrapper}>
-      <LottieView source={animationSource} autoPlay loop style={styles.animation} />
+      <LottieView
+        // source={animationSource}
+        source={test2}
+        autoPlay
+        loop
+        style={styles.animation}
+      />
     </View>
   );
 };

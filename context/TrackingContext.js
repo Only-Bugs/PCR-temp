@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { useUser } from "./UserContext";
+import { useTrackingData } from "./TrackingDataContext";
 import { logAnalyticsEvent } from "../utils/analytics";
 import {
   longTermActivities as baseLongTermActivities,
@@ -330,6 +331,12 @@ const getMonthInfo = () => {
 
 export const TrackingProvider = ({ children }) => {
   const { user, addCarbonPoints } = useUser();
+  const {
+    replaceTrend: replaceTrackingTrend,
+    recordCategoryTotals: recordTrackingCategoryTotals,
+    resetCategoryTotals: resetTrackingCategoryTotals,
+    clearAll: clearTrackingData,
+  } = useTrackingData();
 
   const buildInitialWeeklyImpact = useCallback(() => {
     const baseline = baseWeeklyImpact.baseline ?? 0;
@@ -364,6 +371,10 @@ export const TrackingProvider = ({ children }) => {
     buildInitialActivities(baseLongTermActivities)
   );
 
+  useEffect(() => {
+    replaceTrackingTrend(weeklyImpact.trend ?? []);
+  }, [weeklyImpact.trend, replaceTrackingTrend]);
+
   const categoryTotalsRef = useRef({
     [CATEGORY_KEYS.transport]: 0,
     [CATEGORY_KEYS.meals]: 0,
@@ -385,6 +396,7 @@ export const TrackingProvider = ({ children }) => {
 
   useEffect(() => {
     // Reset tracking state whenever a different user signs in
+    clearTrackingData();
     setWeeklyImpact(buildInitialWeeklyImpact());
     setTodaysActivities(buildInitialActivities(baseTodaysActivities));
     setLongTermActivities(buildInitialActivities(baseLongTermActivities));
@@ -403,7 +415,7 @@ export const TrackingProvider = ({ children }) => {
     shoppingSpendDayRef.current = null;
     setEnergyRecord(null);
     setRewardMapping({ ...DEFAULT_REWARD_MAPPING });
-  }, [buildInitialActivities, buildInitialWeeklyImpact, user?.eco_id]);
+  }, [buildInitialActivities, buildInitialWeeklyImpact, clearTrackingData, user?.eco_id]);
 
   const applyDailySnapshotToActivities = useCallback((totals = {}) => {
     setTodaysActivities((previous) =>
@@ -666,6 +678,12 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
     categoryDayRef.current[categoryKey] = dayInfo.dateKey;
     categoryTotalsRef.current[categoryKey] = 0;
 
+    resetTrackingCategoryTotals({
+      dateKey: dayInfo.dateKey,
+      label: dayInfo.label,
+      categoryKey,
+    });
+
     if (categoryKey === CATEGORY_KEYS.shopping) {
       shoppingSpendRef.current = 0;
       shoppingSpendDayRef.current = dayInfo.dateKey;
@@ -695,7 +713,7 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
         )
       );
     }
-  }, []);
+  }, [resetTrackingCategoryTotals]);
 
   const updateLongTermActivity = useCallback((title, updater) => {
     setLongTermActivities((previous) =>
@@ -790,6 +808,16 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
         })
       );
 
+      recordTrackingCategoryTotals({
+        dateKey: dayInfo.dateKey,
+        label: dayInfo.label,
+        categoryKey: CATEGORY_KEYS.transport,
+        totalImpact: categoryTotal,
+        increment: impact,
+        summary,
+        metadata: { entries },
+      });
+
       let pointsAwarded = 0;
       let awarded = false;
       let awardError = false;
@@ -851,6 +879,7 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
       applyImpactToTrend,
       ensureDailyReset,
       ensureWeekData,
+      recordTrackingCategoryTotals,
       submitActivityToBackend,
       user?.eco_id,
     ]
@@ -896,6 +925,16 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
           };
         })
       );
+
+      recordTrackingCategoryTotals({
+        dateKey: dayInfo.dateKey,
+        label: dayInfo.label,
+        categoryKey: CATEGORY_KEYS.meals,
+        totalImpact: categoryTotal,
+        increment: impact,
+        summary: description,
+        metadata: { dietType, selectedItems, spending },
+      });
 
       let pointsAwarded = 0;
       let awarded = false;
@@ -952,6 +991,7 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
       applyImpactToTrend,
       ensureDailyReset,
       ensureWeekData,
+      recordTrackingCategoryTotals,
       submitActivityToBackend,
       user?.eco_id,
     ]
@@ -990,11 +1030,23 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
       shoppingSpendRef.current = cumulativeSpend;
       shoppingSpendDayRef.current = dayInfo.dateKey;
 
+      const descriptionText = `Daily spend ${formatCurrency(cumulativeSpend)}`;
+
       updateLongTermActivity(CATEGORY_KEYS.shopping, (activity) => ({
         ...activity,
         value: categoryTotal > 0 ? formatPositive(categoryTotal) : "+0 kg CO₂",
-        description: `Daily spend ${formatCurrency(cumulativeSpend)}`,
+        description: descriptionText,
       }));
+
+      recordTrackingCategoryTotals({
+        dateKey: dayInfo.dateKey,
+        label: dayInfo.label,
+        categoryKey: CATEGORY_KEYS.shopping,
+        totalImpact: categoryTotal,
+        increment: totalImpact,
+        summary: descriptionText,
+        metadata: { entries, totalSpend: cumulativeSpend },
+      });
 
       let pointsAwarded = 0;
       let awarded = false;
@@ -1066,6 +1118,7 @@ const applyImpactToTrend = useCallback((impact, dayInfo) => {
       applyImpactToTrend,
       ensureDailyReset,
       ensureWeekData,
+      recordTrackingCategoryTotals,
       updateLongTermActivity,
       submitActivityToBackend,
       user?.eco_id,

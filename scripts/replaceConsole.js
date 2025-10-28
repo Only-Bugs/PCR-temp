@@ -4,6 +4,7 @@ import path from "path";
 
 const projectRoot = path.resolve(process.cwd());
 const excludeDir = path.join(projectRoot, "services");
+const skippedDirNames = new Set(["node_modules", ".git"]);
 
 function walkDir(dir, callback) {
   fs.readdirSync(dir).forEach((file) => {
@@ -14,6 +15,9 @@ function walkDir(dir, callback) {
     }
 
     if (fs.statSync(fullPath).isDirectory()) {
+      if (skippedDirNames.has(path.basename(fullPath))) {
+        return;
+      }
       walkDir(fullPath, callback);
     } else if (/\.(js|jsx|ts|tsx)$/.test(fullPath)) {
       callback(fullPath);

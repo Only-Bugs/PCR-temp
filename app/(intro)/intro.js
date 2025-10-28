@@ -24,7 +24,7 @@ const { width, height } = Dimensions.get("window");
 const SLIDES = [
   {
     id: "1",
-    title: "Hey you!!!!! Yes you.",
+    title: "Hey you! Yes you.",
     description:
       "Are you a young professional or just worried about the environment?",
     image: require("../../assets/intro/tracking(2).svg"),
