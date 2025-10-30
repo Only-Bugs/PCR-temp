@@ -3,443 +3,521 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Verde | Team</title>
+    <title>Verde | Meet the team</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
+    <script src="https://unpkg.com/lucide-icons@latest"></script>
     <style>
-      :root {
-        --verde: #27ae60;
-        --verde-light: #2ecc71;
-        --border: #e0e0e0;
-        --text-dark: #222;
-        --text-muted: #555;
+      html {
+        scroll-behavior: smooth;
       }
-
-      body {
-        font-family: system-ui, sans-serif;
-        background: linear-gradient(180deg, #f8f9fa 0%, #e8f8ee 100%);
-        margin: 0;
-        padding: 0;
-      }
-
-      h1 {
-        text-align: center;
-        color: var(--verde);
-        margin-bottom: 2rem;
-      }
-
-      /* --- Hero / Intro Section --- */
-      .intro {
-        width: 100%;
-
-        padding: 5rem 1.5rem 4rem;
-        border-bottom: 1.5px solid var(--border);
-      }
-
-      .intro-container {
-        max-width: 960px;
-        margin: 0 auto;
-        text-align: left;
-      }
-
-      .brand-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background: var(--verde);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 1.8rem;
-        margin-bottom: 1rem;
-      }
-
-      .intro h1 {
-        color: var(--verde);
-        font-size: 2.4rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-      }
-
-      .intro .summary {
-        color: var(--text-muted);
-        line-height: 1.6;
-        font-size: 1rem;
-        margin-bottom: 2rem;
-        max-width: 720px;
-      }
-
-      .cta-group {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        align-items: center;
-        margin-bottom: 1.5rem;
-      }
-
-      .learn-more {
-        background: transparent;
-        color: var(--verde);
-        border: 2px solid var(--verde);
-        padding: 0.7rem 1.4rem;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-
-      .learn-more:hover {
-        background: var(--verde);
-        color: white;
-        transform: scale(1.05);
-      }
-
-      .download-btn {
-        background: var(--verde);
-        color: white;
-        font-weight: 600;
-        padding: 0.8rem 1.6rem;
-        border-radius: 8px;
-        text-decoration: none;
-        transition: background 0.3s ease, transform 0.2s ease;
-      }
-
-      .download-btn:hover {
-        background: var(--verde-light);
-        transform: scale(1.05);
-      }
-
-      #intro-details {
-        margin-top: 2rem;
-        color: var(--text-muted);
-        line-height: 1.6;
-        max-height: 0;
-        overflow: hidden;
+      .fade-in {
         opacity: 0;
-        transition: all 0.4s ease;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease, transform 0.6s ease;
       }
-
-      #intro-details h2 {
-        color: var(--verde);
-        margin-top: 1.5rem;
-        font-size: 1.2rem;
-      }
-
-      #intro-details p {
-        margin-bottom: 1rem;
-      }
-
-      #intro-details:not(.hidden) {
-        max-height: 800px;
+      .fade-in.visible {
         opacity: 1;
-      }
-
-      .hidden {
-        display: block;
-        max-height: 0;
-        opacity: 0;
-      }
-
-      /* --- Team Section --- */
-      .team-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
-        gap: 1.5rem;
-        max-width: 1100px;
-        margin: 3rem auto;
-        padding: 0 1rem 3rem;
-      }
-
-      .card {
-        display: flex;
-        align-items: center;
-        background: white;
-        border: 1.5px solid var(--border);
-        border-radius: 14px;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
-        padding: 1.4rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease,
-          border-color 0.2s ease;
-      }
-
-      .card:hover {
-        transform: translateY(-5px);
-        border-color: var(--verde);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-      }
-
-      .avatar {
-        flex-shrink: 0;
-        width: 100px;
-        height: 100px;
-        border-radius: 12px;
-        background: var(--verde);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 2.5rem;
-        margin-right: 1.4rem;
-      }
-
-      .info {
-        flex: 1;
-      }
-
-      .info h2 {
-        margin: 0;
-        color: var(--text-dark);
-      }
-
-      .info h3 {
-        margin: 0.3rem 0 0.8rem;
-        font-size: 0.95rem;
-        font-weight: 500;
-        color: var(--text-muted);
-      }
-
-      .info p {
-        margin: 0.3rem 0;
-        color: var(--text-muted);
-        font-size: 0.9rem;
-        line-height: 1.5;
-      }
-
-      .socials {
-        margin-top: 0.8rem;
-      }
-
-      .socials a {
-        margin-right: 0.8rem;
-        font-size: 1.4rem;
-        text-decoration: none;
-        transition: transform 0.2s;
-      }
-
-      .socials a:hover {
-        transform: scale(1.15);
-      }
-
-      .linkedin {
-        color: #0077b5;
-      }
-      .github {
-        color: #171515;
-      }
-      .email {
-        color: #ea4335;
+        transform: translateY(0);
       }
     </style>
   </head>
 
-  <body>
-    <!-- Hero / Intro Section -->
-    <section class="intro">
-      <div class="intro-container">
-        <div class="brand-icon">
-          <i class="fa-regular fa-leaf"></i>
-        </div>
+  <body
+    class="font-sans bg-gradient-to-b from-gray-50 to-emerald-50 text-gray-800"
+  >
+    <!-- Header -->
+    <header
+      class="fixed top-0 left-0 w-full bg-white/90 backdrop-blur-md shadow-sm z-50"
+    >
+      <nav
+        class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center"
+      >
+        <h1 class="text-2xl font-bold text-emerald-600 flex items-center gap-2">
+          <i class="fa-regular fa-leaf"></i> Verde
+        </h1>
+        <ul class="hidden md:flex space-x-6 font-medium">
+          <li><a href="#hero" class="hover:text-emerald-600">Home</a></li>
+          <li>
+            <a href="#about" class="hover:text-emerald-600">About</a>
+          </li>
+          <li><a href="#team" class="hover:text-emerald-600">Team</a></li>
+        </ul>
+      </nav>
+    </header>
 
-        <h1>Verde</h1>
-        <p class="summary">
-          Verde helps urban professionals translate awareness into action —
-          tracking daily choices like transport, meals, and energy use to reveal
-          their real-world climate impact. It turns sustainability into a
-          visual, measurable experience.
+    <!-- Hero -->
+    <section
+      id="hero"
+      class="relative overflow-hidden pt-36 pb-28 text-center fade-in bg-gradient-to-br from-emerald-700 via-emerald-600 to-emerald-500 text-white"
+    >
+      <div
+        class="absolute inset-0 bg-center bg-cover opacity-70"
+        style="
+          background-image: url('assets/images/green-leaf-texture-leaf-texture-background.jpg');
+          transform: scale(1.08);
+          filter: blur(14px);
+        "
+      ></div>
+      <div
+        class="absolute inset-0 opacity-20"
+        style="
+          background-image: radial-gradient(
+            circle at top,
+            rgba(255, 255, 255, 0.4),
+            transparent 55%
+          );
+        "
+      ></div>
+      <div class="relative max-w-3xl mx-auto px-4">
+        <h2 class="text-4xl md:text-5xl font-bold mb-5">
+          Turning Awareness into Action
+        </h2>
+        <p class="text-emerald-50 mb-10 leading-relaxed">
+          Verde helps urban professionals translate awareness into measurable
+          climate impact — tracking transport, meals, and energy use to make
+          sustainability personal and engaging.
         </p>
-
-        <div class="cta-group">
-          <button class="learn-more" onclick="toggleIntro()">Learn More</button>
+        <div
+          class="flex flex-wrap items-center justify-center gap-4 text-sm sm:text-base"
+        >
+          <a
+            href="#about"
+            class="border border-white/80 text-white px-6 py-3 rounded-lg font-semibold transition-transform transition-colors duration-200 hover:bg-white/15 backdrop-blur-sm hover:border-white active:scale-95"
+            >Learn More</a
+          >
           <a
             href="https://github.com/Only-Bugs/Verde/releases"
             target="_blank"
-            class="download-btn"
+            class="bg-emerald-500 text-white px-6 py-3 rounded-lg font-semibold shadow-lg shadow-emerald-950/30 transition-transform duration-200 hover:bg-emerald-400 hover:shadow-xl active:scale-95"
+            ><i class="fa-solid fa-download mr-2"></i>Download App</a
           >
-            <i class="fa-solid fa-download"></i> Download the App
-          </a>
-        </div>
-
-        <div id="intro-details" class="hidden">
-          <h2>About Verde</h2>
-          <p>
-            Verde bridges the gap between climate intention and everyday
-            behaviour. By visualising emissions data as growth — your evolving
-            “carbon persona” — it keeps sustainability engaging through gamified
-            milestones, challenges, and community rewards.
-          </p>
-          <h2>Who It’s For</h2>
-          <p>
-            For digital-first professionals who care about the planet but crave
-            simple, beautiful tools to act consistently — Verde offers a
-            personal sustainability journey that’s measurable, social, and
-            rewarding.
-          </p>
         </div>
       </div>
     </section>
 
-    <h1>Meet the Verde Team</h1>
+    <!-- Team -->
+    <section id="team" class="py-20 bg-emerald-50 fade-in">
+      <div class="max-w-6xl mx-auto px-4 text-center">
+        <h2 class="text-3xl font-bold text-emerald-600 mb-12">
+          Meet the Verde Team
+        </h2>
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Shashank -->
+          <div
+            class="group relative overflow-hidden rounded-2xl border border-emerald-100 bg-white/90 p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-2 hover:shadow-xl hover:border-emerald-300 active:scale-[0.98] cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-emerald-50"
+            data-linkedin="https://www.linkedin.com/in/prabhakar-reddy-shashank"
+            role="link"
+            tabindex="0"
+            aria-label="Open Shashank Reddy on LinkedIn"
+          >
+            <span
+              class="absolute right-5 top-5 text-emerald-300 transition-colors duration-200 group-hover:text-emerald-500"
+              aria-hidden="true"
+            >
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </span>
+            <div class="flex items-center gap-4 mb-3">
+              <i
+                class="fa-solid fa-laptop-code text-3xl text-emerald-600 transition-colors duration-200 group-hover:text-emerald-500"
+              ></i>
+              <div>
+                <h3 class="font-bold text-lg">Shashank Reddy</h3>
+                <p class="text-sm text-gray-500">
+                  Project Lead • Systems Architect
+                </p>
+              </div>
+            </div>
+            <p class="text-gray-600 text-sm mb-3">
+              Specialising in tailored digital solutions — from idea to final
+              product. Focused on real-world systems that align with user and
+              market needs.
+            </p>
+            <p class="text-sm text-gray-500 mb-4">
+              <strong>Focus:</strong> AWS, Terraform, Docker, Kubernetes, CI/CD
+            </p>
+            <div class="flex gap-3 text-xl text-gray-500">
+              <a
+                href="https://www.linkedin.com/in/prabhakar-reddy-shashank"
+                target="_blank"
+                class="text-blue-700"
+                ><i class="fab fa-linkedin"></i
+              ></a>
+              <a
+                href="https://github.com/only-bugs"
+                target="_blank"
+                class="text-black"
+                ><i class="fab fa-github"></i
+              ></a>
+              <a href="mailto:pshashank0502@gmail.com" class="text-red-500"
+                ><i class="fa-solid fa-envelope"></i
+              ></a>
+            </div>
+          </div>
 
-    <!-- Team Grid -->
-    <div class="team-grid">
-      <!-- Shashank -->
-      <div class="card">
-        <div class="avatar"><i class="fa-solid fa-laptop-code"></i></div>
-        <div class="info">
-          <h2>Shashank Reddy</h2>
-          <h3>Project Lead • Systems Architect</h3>
-          <p>
-            Specialising in tailored digital solutions — from idea to final
-            product and ongoing maintenance. I focus on building systems that
-            align with real market needs while staying grounded in curiosity
-            about the laws of nature. I aim to make myself useful to society and
-            enjoy inspiring others along the way.
-          </p>
+          <!-- Terry -->
+          <div
+            class="group relative overflow-hidden rounded-2xl border border-emerald-100 bg-white/90 p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-2 hover:shadow-xl hover:border-emerald-300 active:scale-[0.98] cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-emerald-50"
+            data-linkedin="https://www.linkedin.com/in/chen-terry-75aaa8257/"
+            role="link"
+            tabindex="0"
+            aria-label="Open Terry Chen on LinkedIn"
+          >
+            <span
+              class="absolute right-5 top-5 text-emerald-300 transition-colors duration-200 group-hover:text-emerald-500"
+              aria-hidden="true"
+            >
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </span>
+            <div class="flex items-center gap-4 mb-3">
+              <i
+                class="fa-solid fa-puzzle-piece text-3xl text-emerald-600 transition-colors duration-200 group-hover:text-emerald-500"
+              ></i>
+              <div>
+                <h3 class="font-bold text-lg">Terry Chen</h3>
+                <p class="text-sm text-gray-500">
+                  Product & Data Lead • Verde – Carbon Persona
+                </p>
+              </div>
+            </div>
+            <p class="text-gray-600 text-sm mb-3">
+              Bridging UX with data pipelines — designing onboarding, tree-ring
+              visuals, and AWS-backed APIs with Spark/Kafka predictions.
+            </p>
+            <p class="text-sm text-gray-500 mb-4">
+              <strong>Focus:</strong> React Native, TypeScript, AWS, PySpark, R,
+              SQL
+            </p>
+            <div class="flex gap-3 text-xl text-gray-500">
+              <a
+                href="https://www.linkedin.com/in/chen-terry-75aaa8257/"
+                target="_blank"
+                class="text-blue-700"
+                ><i class="fab fa-linkedin"></i
+              ></a>
+              <a
+                href="https://github.com/TerryXBT"
+                target="_blank"
+                class="text-black"
+                ><i class="fab fa-github"></i
+              ></a>
+              <a href="mailto:tche1230@gmail.com" class="text-red-500"
+                ><i class="fa-solid fa-envelope"></i
+              ></a>
+            </div>
+          </div>
 
-          <p>
-            <strong>Current Focus:</strong> AWS, Terraform, Docker, Kubernetes,
-            and CI/CD pipeline optimisation.
-          </p>
+          <!-- Manshu -->
+          <div
+            class="group relative overflow-hidden rounded-2xl border border-emerald-100 bg-white/90 p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-2 hover:shadow-xl hover:border-emerald-300 active:scale-[0.98] cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-emerald-50"
+            data-linkedin="https://www.linkedin.com/in/manshu-hu-20401b395"
+            role="link"
+            tabindex="0"
+            aria-label="Open Manshu Hu on LinkedIn"
+          >
+            <span
+              class="absolute right-5 top-5 text-emerald-300 transition-colors duration-200 group-hover:text-emerald-500"
+              aria-hidden="true"
+            >
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </span>
+            <div class="flex items-center gap-4 mb-3">
+              <i
+                class="fa-solid fa-pen-nib text-3xl text-emerald-600 transition-colors duration-200 group-hover:text-emerald-500"
+              ></i>
+              <div>
+                <h3 class="font-bold text-lg">Manshu Hu</h3>
+                <p class="text-sm text-gray-500">
+                  UX/UI Designer • Content Specialist
+                </p>
+              </div>
+            </div>
+            <p class="text-gray-600 text-sm mb-3">
+              Crafting user journeys and visual communication. Ensures design
+              cohesion through documentation and curated content for the Verde
+              experience.
+            </p>
+            <p class="text-sm text-gray-500 mb-4">
+              <strong>Focus:</strong> Figma, Adobe XD, Miro, Canva, Vue
+            </p>
+            <div class="flex gap-3 text-xl text-gray-500">
+              <a
+                href="https://www.linkedin.com/in/manshu-hu-20401b395"
+                target="_blank"
+                class="text-blue-700"
+                ><i class="fab fa-linkedin"></i
+              ></a>
+              <a href="mailto:manshuhu99@gmail.com" class="text-red-500"
+                ><i class="fa-solid fa-envelope"></i
+              ></a>
+            </div>
+          </div>
 
-          <div class="socials">
-            <a
-              class="linkedin"
-              href="https://www.linkedin.com/in/prabhakar-reddy-shashank"
-              target="_blank"
-              ><i class="fab fa-linkedin"></i
-            ></a>
-            <a
-              class="github"
-              href="https://github.com/only-bugs"
-              target="_blank"
-              ><i class="fab fa-github"></i
-            ></a>
-            <a class="email" href="mailto:pshashank0502@gmail.com"
-              ><i class="fa-solid fa-envelope"></i
-            ></a>
+          <!-- Martin -->
+          <div
+            class="group relative overflow-hidden rounded-2xl border border-emerald-100 bg-white/90 p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-2 hover:shadow-xl hover:border-emerald-300 active:scale-[0.98] cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-emerald-50"
+            data-linkedin="https://www.linkedin.com/in/sze-ming-hui-baa202225/"
+            role="link"
+            tabindex="0"
+            aria-label="Open Sze Ming (Martin) Hui on LinkedIn"
+          >
+            <span
+              class="absolute right-5 top-5 text-emerald-300 transition-colors duration-200 group-hover:text-emerald-500"
+              aria-hidden="true"
+            >
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </span>
+            <div class="flex items-center gap-4 mb-3">
+              <i
+                class="fa-solid fa-shield-halved text-3xl text-emerald-600 transition-colors duration-200 group-hover:text-emerald-500"
+              ></i>
+              <div>
+                <h3 class="font-bold text-lg">Sze Ming (Martin) Hui</h3>
+                <p class="text-sm text-gray-500">
+                  Cybersecurity Engineer • Backend Developer
+                </p>
+              </div>
+            </div>
+            <p class="text-gray-600 text-sm mb-3">
+              Focused on building secure, scalable systems in AWS with hands-on
+              penetration testing and network resilience expertise.
+            </p>
+            <p class="text-sm text-gray-500 mb-4">
+              <strong>Focus:</strong> BurpSuite, Metasploit, Wireshark, AWS
+            </p>
+            <div class="flex gap-3 text-xl text-gray-500">
+              <a
+                href="https://www.linkedin.com/in/sze-ming-hui-baa202225/"
+                target="_blank"
+                class="text-blue-700"
+                ><i class="fab fa-linkedin"></i
+              ></a>
+              <a
+                href="https://github.com/mmh11"
+                target="_blank"
+                class="text-black"
+                ><i class="fab fa-github"></i
+              ></a>
+              <a href="mailto:huim13a@gmail.com" class="text-red-500"
+                ><i class="fa-solid fa-envelope"></i
+              ></a>
+            </div>
+          </div>
+
+          <!-- Yo-Yo -->
+          <div
+            class="group relative overflow-hidden rounded-2xl border border-emerald-100 bg-white/90 p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-2 hover:shadow-xl hover:border-emerald-300 active:scale-[0.98] cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-emerald-50"
+            data-linkedin="https://www.linkedin.com/in/chenwei-ma-7b1b44346"
+            role="link"
+            tabindex="0"
+            aria-label="Open Chenwei (Yo-Yo) Ma on LinkedIn"
+          >
+            <span
+              class="absolute right-5 top-5 text-emerald-300 transition-colors duration-200 group-hover:text-emerald-500"
+              aria-hidden="true"
+            >
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </span>
+            <div class="flex items-center gap-4 mb-3">
+              <i
+                class="fa-solid fa-compass-drafting text-3xl text-emerald-600 transition-colors duration-200 group-hover:text-emerald-500"
+              ></i>
+              <div>
+                <h3 class="font-bold text-lg">Chenwei (Yo-Yo) Ma</h3>
+                <p class="text-sm text-gray-500">
+                  UX/UI Specialist • Content Strategist
+                </p>
+              </div>
+            </div>
+            <p class="text-gray-600 text-sm mb-3">
+              Leads user-side design and market research, translating insights
+              into functional interfaces and coordinating closely with frontend
+              developers.
+            </p>
+            <p class="text-sm text-gray-500 mb-4">
+              <strong>Focus:</strong> Figma, Adobe XD, Miro, Canva
+            </p>
+            <div class="flex gap-3 text-xl text-gray-500">
+              <a
+                href="https://www.linkedin.com/in/chenwei-ma-7b1b44346"
+                target="_blank"
+                class="text-blue-700"
+                ><i class="fab fa-linkedin"></i
+              ></a>
+              <a href="mailto:machenwei0122@gmail.com" class="text-red-500"
+                ><i class="fa-solid fa-envelope"></i
+              ></a>
+            </div>
+          </div>
+
+          <!-- Harine -->
+          <div
+            class="group relative overflow-hidden rounded-2xl border border-emerald-100 bg-white/90 p-6 text-left shadow-sm transition-all duration-200 hover:-translate-y-2 hover:shadow-xl hover:border-emerald-300 active:scale-[0.98] cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-emerald-50"
+            data-linkedin="https://www.linkedin.com/in/harine-mohanram"
+            role="link"
+            tabindex="0"
+            aria-label="Open Harine Mohanram on LinkedIn"
+          >
+            <span
+              class="absolute right-5 top-5 text-emerald-300 transition-colors duration-200 group-hover:text-emerald-500"
+              aria-hidden="true"
+            >
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </span>
+            <div class="flex items-center gap-4 mb-3">
+              <i
+                class="fa-solid fa-database text-3xl text-emerald-600 transition-colors duration-200 group-hover:text-emerald-500"
+              ></i>
+              <div>
+                <h3 class="font-bold text-lg">Harine Mohanram</h3>
+                <p class="text-sm text-gray-500">
+                  Data Scientist • Analytics & Modelling
+                </p>
+              </div>
+            </div>
+            <p class="text-gray-600 text-sm mb-3">
+              Passionate about structured problem-solving and ethical data use.
+              Transforms raw data into meaningful insights through precise
+              modelling and validation.
+            </p>
+            <p class="text-sm text-gray-500 mb-4">
+              <strong>Focus:</strong> SQL, Python, PySpark, R, Analytics
+            </p>
+            <div class="flex gap-3 text-xl text-gray-500">
+              <a
+                href="https://www.linkedin.com/in/harine-mohanram"
+                target="_blank"
+                class="text-blue-700"
+                ><i class="fab fa-linkedin"></i
+              ></a>
+              <a href="mailto:harinem30@gmail.com" class="text-red-500"
+                ><i class="fa-solid fa-envelope"></i
+              ></a>
+            </div>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Terry -->
-      <div class="card">
-        <div class="avatar"><i class="fa-solid fa-puzzle-piece"></i></div>
-        <div class="info">
-          <h2>Terry Chen</h2>
-          <h3>Product & Data Lead • Verde – Carbon Persona</h3>
+    <!-- About the App -->
+    <section id="about" class="py-20 bg-white fade-in">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="relative overflow-hidden rounded-3xl shadow-xl mb-14">
+          <img
+            src="assets/images/app.jpg"
+            alt="Preview of the Verde mobile experience"
+            class="w-full h-80 md:h-[28rem] object-cover blur-[2px]"
+          />
+          <div class="absolute inset-0 bg-emerald-950/65"></div>
+          <div class="absolute inset-0 flex items-center">
+            <div class="max-w-2xl px-6 py-10 sm:px-10 text-left text-white">
+              <p
+                class="uppercase tracking-[0.35em] text-emerald-200 text-xs mb-3"
+              >
+                About the app
+              </p>
+              <h2 class="text-3xl sm:text-4xl font-bold mb-4">
+                Sustainability that feels personal and actionable
+              </h2>
+              <p class="text-sm sm:text-base text-emerald-100 leading-relaxed">
+                Verde translates everyday choices into an evolving carbon
+                persona, giving you a vivid snapshot of your progress. Stay
+                motivated with timely nudges, shared challenges, and insights
+                that fit comfortably into a busy routine.
+              </p>
+            </div>
+          </div>
+        </div>
 
-          <p>
-            Specialising in human-centred interaction design and data-driven
-            sustainability apps. I bridge UX with data pipelines—owning
-            onboarding and tree-ring visuals while building AWS-backed APIs and
-            Spark/Kafka streaming predictions. I care about clear, ethical
-            product decisions and measurable impact.
+        <div class="text-center mb-12">
+          <h3 class="text-3xl font-bold text-emerald-600 mb-4">Key Features</h3>
+          <p class="text-gray-600 max-w-2xl mx-auto">
+            Verde combines playful visuals with practical metrics so you can see
+            the difference every ride, meal, and habit makes — and celebrate the
+            wins along the way.
           </p>
+        </div>
 
-          <p>
-            <strong>Current Focus:</strong> React Native/Expo, TypeScript,
-            Figma, AWS, PySpark ML, R, SQL
-          </p>
-
-          <div class="socials">
-            <a
-              class="linkedin"
-              href="https://www.linkedin.com/in/chen-terry-75aaa8257/"
-              target="_blank"
-              ><i class="fab fa-linkedin"></i
-            ></a>
-            <a class="github" href="https://github.com/TerryXBT" target="_blank"
-              ><i class="fab fa-github"></i
-            ></a>
-            <a class="email" href="mailto:tche1230@gmail.com"
-              ><i class="fa-solid fa-envelope"></i
-            ></a>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div
+            class="group relative rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-2 hover:border-emerald-300 hover:shadow-xl active:scale-[0.98]"
+          >
+            <i
+              class="fa-solid fa-seedling mb-4 text-3xl text-emerald-600 transition-all duration-200 group-hover:scale-110 group-hover:text-emerald-500"
+            ></i>
+            <h4 class="font-semibold text-lg mb-2">
+              Personalised Carbon Persona
+            </h4>
+            <p class="text-gray-600 text-sm">
+              Watch your tree-ring persona grow with every sustainable action,
+              turning impact into a story you can share.
+            </p>
+          </div>
+          <div
+            class="group relative rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-2 hover:border-emerald-300 hover:shadow-xl active:scale-[0.98]"
+          >
+            <i
+              class="fa-solid fa-chart-line mb-4 text-3xl text-emerald-600 transition-all duration-200 group-hover:scale-110 group-hover:text-emerald-500"
+            ></i>
+            <h4 class="font-semibold text-lg mb-2">Actionable Insights</h4>
+            <p class="text-gray-600 text-sm">
+              Receive tailored recommendations that align with how you commute,
+              eat, and live — no guilt trips, just smart nudges.
+            </p>
+          </div>
+          <div
+            class="group relative rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-2 hover:border-emerald-300 hover:shadow-xl active:scale-[0.98]"
+          >
+            <i
+              class="fa-solid fa-users mb-4 text-3xl text-emerald-600 transition-all duration-200 group-hover:scale-110 group-hover:text-emerald-500"
+            ></i>
+            <h4 class="font-semibold text-lg mb-2">Community Challenges</h4>
+            <p class="text-gray-600 text-sm">
+              Join collaborative missions and monthly challenges to keep the
+              whole community inspired and accountable.
+            </p>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Manshu -->
-      <div class="card">
-        <div class="avatar"><i class="fa-solid fa-pen-nib"></i></div>
-        <div class="info">
-          <h2>Manshu Hu</h2>
-          <h3>UX/UI Designer • Content Specialist</h3>
-
-          <p>
-            I work on UX/UI design and documentation for the Verde team, shaping
-            smooth user journeys and cohesive visual communication. I also
-            handle content curation and design assets to keep our product
-            visually consistent and engaging.
-          </p>
-
-          <p>
-            <strong>Current Focus:</strong> Figma, Adobe XD, Miro, Canva, Google
-            Workspace, Vue.
-          </p>
-
-          <div class="socials">
-            <a
-              class="linkedin"
-              href="https://www.linkedin.com/in/manshu-hu-20401b395"
-              target="_blank"
-              ><i class="fab fa-linkedin"></i
-            ></a>
-            <a class="email" href="mailto:manshuhu99@gmail.com"
-              ><i class="fa-solid fa-envelope"></i
-            ></a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Martin -->
-      <div class="card">
-        <div class="avatar"><i class="fa-solid fa-shield-halved"></i></div>
-        <div class="info">
-          <h2>Sze Ming (Martin) Hui</h2>
-          <h3>Cybersecurity Engineer • Backend Developer</h3>
-
-          <p>
-            Specialising in security planning, penetration testing, and
-            infrastructure design within AWS cloud environments. I focus on
-            building secure, scalable systems and bring hands-on experience with
-            AWS services, pentesting tools, and backend development.
-          </p>
-
-          <p>
-            <strong>Current Focus:</strong> Frida, BurpSuite, Metasploit, MobSF,
-            Wireshark, GNS3, AWS Services.
-          </p>
-
-          <div class="socials">
-            <a
-              class="linkedin"
-              href="https://www.linkedin.com/in/sze-ming-hui-baa202225/"
-              target="_blank"
-              ><i class="fab fa-linkedin"></i
-            ></a>
-            <a class="github" href="https://github.com/mmh11" target="_blank"
-              ><i class="fab fa-github"></i
-            ></a>
-            <a class="email" href="mailto:huim13a@gmail.com"
-              ><i class="fa-solid fa-envelope"></i
-            ></a>
-          </div>
-        </div>
-      </div>
-    </div>
+    <footer class="text-center py-6 bg-emerald-600 text-white text-sm">
+      Built with ❤️ from Team Verde
+    </footer>
 
     <script>
-      function toggleIntro() {
-        const details = document.getElementById("intro-details");
-        const btn = document.querySelector(".learn-more");
-        details.classList.toggle("hidden");
-        btn.textContent = details.classList.contains("hidden")
-          ? "Learn More"
-          : "Show Less";
-      }
+      const fadeEls = document.querySelectorAll(".fade-in");
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) e.target.classList.add("visible");
+          });
+        },
+        { threshold: 0.2 }
+      );
+      fadeEls.forEach((el) => obs.observe(el));
+
+      const teamCards = document.querySelectorAll("[data-linkedin]");
+      teamCards.forEach((card) => {
+        const link = card.dataset.linkedin;
+        if (!link) return;
+
+        const openLinkedIn = () => window.open(link, "_blank", "noopener");
+
+        card.addEventListener("click", (event) => {
+          if (event.target.closest("a")) return;
+          openLinkedIn();
+        });
+        card.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openLinkedIn();
+          }
+        });
+      });
     </script>
   </body>
 </html>
