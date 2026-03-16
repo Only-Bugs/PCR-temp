@@ -1,5 +1,4 @@
-import apiConfig from "../../config/apiConfig";
-import { authorizedFetch } from "../apiClient";
+import quizzesMock from "../../serverDataSimulation/quizzes.json";
 import StorageService from "../storage";
 
 /**
@@ -8,19 +7,8 @@ import StorageService from "../storage";
  */
 export const fetchQuizzes = async (ecoId, { skipAuth = false } = {}) => {
   try {
-    const path = apiConfig.endpoints.quiz || "/quiz";
-    console.log("[fetchQuizzes] URL:", `${apiConfig.baseURL}${path}`);
-
-    const response = await authorizedFetch(
-      path,
-      undefined,
-      { ecoId, skipAuth }
-    );
-    if (!response.ok) throw new Error("Failed to fetch quizzes");
-
-    const result = await response.json();
-
-    return result;
+    // For demo: return local mock quizzes and skip network entirely.
+    return quizzesMock;
 
     // return (result.data || []).map((topic) => ({
     //   name: topic.topic_name,

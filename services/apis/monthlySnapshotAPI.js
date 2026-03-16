@@ -1,6 +1,5 @@
-import apiConfig from "../../config/apiConfig";
-import { authorizedFetch } from "../apiClient";
 import StorageService from "../storage";
+import mockMonthlySnapshot from "../../serverDataSimulation/monthlySnapshot.json";
 
 /**
  * Fetch monthly snapshot for a user by eco_id.
@@ -11,20 +10,9 @@ import StorageService from "../storage";
  */
 export const fetchMonthlySnapshot = async (ecoId) => {
   try {
-    const path = `/user/${ecoId}/monthlysnapshot`;
-    const response = await authorizedFetch(path, undefined, { ecoId });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch monthly snapshot");
-    }
-
-    const result = await response.json();
-    const data = result?.data || {};
-
-    // Persist in AsyncStorage
-    await StorageService.setMonthlySnapshot(data);
-
-    return data;
+    // For demo: use local mock snapshot instead of network.
+    await StorageService.setMonthlySnapshot(mockMonthlySnapshot);
+    return mockMonthlySnapshot;
   } catch (err) {
     console.error("[monthlySnapshotAPI] fetchMonthlySnapshot error:", err);
     throw err;

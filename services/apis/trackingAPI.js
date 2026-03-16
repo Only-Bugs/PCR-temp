@@ -1,3 +1,5 @@
+// Demo-mode tracking API: return local mock data instead of hitting the network.
+
 import apiConfig from "../../config/apiConfig";
 import { authorizedFetch } from "../apiClient";
 
@@ -10,19 +12,13 @@ import { authorizedFetch } from "../apiClient";
  */
 export const fetchTrackingCategories = async (ecoId) => {
   try {
-    const path = `/user/${ecoId}/tracking`;
-    console.log("[fetchTrackingCategories] URL:", `${apiConfig.baseURL}${path}`);
-
-    const response = await authorizedFetch(path, undefined, { ecoId });
-    if (!response.ok) throw new Error("Failed to fetch tracking categories");
-
-    const result = await response.json();
-    console.log(
-      "[fetchTrackingCategories] Response:",
-      JSON.stringify(result, null, 2)
-    );
-
-    return result.data || [];
+    // For the demo we don't need real category metadata; return a simple static structure.
+    return [
+      { activity_name: "transport", items: { "Diesel car": 20, Bus: 40 } },
+      { activity_name: "diet", items: { Flexitarian: 14 } },
+      { activity_name: "shopping", items: { "Clothing & Footwear": "$151–300" } },
+      { activity_name: "energy", items: { "Electricity Bill": 120 } },
+    ];
   } catch (error) {
     console.error("[trackingAPI] fetchTrackingCategories error:", error);
     throw error;
@@ -46,36 +42,9 @@ export const fetchTrackingCategories = async (ecoId) => {
  */
 export const submitTrackingActivity = async (ecoId, payload) => {
   try {
-    const path = `/user/${ecoId}/tracking`;
-
-    console.log("[submitTrackingActivity] URL:", `${apiConfig.baseURL}${path}`);
-    console.log(
-      "[submitTrackingActivity] Payload:",
-      JSON.stringify(payload, null, 2)
-    );
-
-    const response = await authorizedFetch(
-      path,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      },
-      { ecoId }
-    );
-
-    const text = await response.text();
-    console.log("[submitTrackingActivity] Raw response text:", text);
-
-    if (!response.ok) throw new Error("Failed to submit tracking activity");
-
-    const result = text ? JSON.parse(text) : { success: true };
-    console.log(
-      "[submitTrackingActivity] Parsed response:",
-      JSON.stringify(result, null, 2)
-    );
-
-    return result;
+    // No-op success in demo mode so UI flows continue without a backend.
+    console.log("[submitTrackingActivity] Demo mode payload:", payload);
+    return { success: true };
   } catch (error) {
     console.error("[trackingAPI] submitTrackingActivity error:", error);
     throw error;
@@ -90,27 +59,9 @@ export const submitTrackingActivity = async (ecoId, payload) => {
  */
 export const fetchWeeklySnapshot = async (ecoId) => {
   try {
-    const path = `/user/${ecoId}/weeklysnapshot`;
-    console.log("[fetchWeeklySnapshot] URL:", `${apiConfig.baseURL}${path}`);
-
-    const response = await authorizedFetch(path, undefined, { ecoId });
-    if (!response.ok) throw new Error("Failed to fetch weekly snapshot");
-
-    const result = await response.json();
-    console.log(
-      "[fetchWeeklySnapshot] Response:",
-      JSON.stringify(result, null, 2)
-    );
-
-    if (!Array.isArray(result?.data)) {
-      console.warn("[fetchWeeklySnapshot] Unexpected response shape:", result);
-      return [];
-    }
-
-    return result.data.map((value) => {
-      const parsed = Number(value);
-      return Number.isNaN(parsed) ? 0 : parsed;
-    });
+    // Return a static weekly snapshot that matches the nice chart in trackingData.
+    // Ordered oldest -> newest; values are in kg CO₂.
+    return [1.8, 2.4, 1.2, 2.9, 3.1, 2.2, 1.6];
   } catch (error) {
     console.error("[trackingAPI] fetchWeeklySnapshot error:", error);
     throw error;
@@ -125,32 +76,16 @@ export const fetchWeeklySnapshot = async (ecoId) => {
  */
 export const fetchDailySnapshot = async (ecoId) => {
   try {
-    const path = `/user/${ecoId}/dailysnapshot`;
-    console.log("[fetchDailySnapshot] URL:", `${apiConfig.baseURL}${path}`);
-
-    const response = await authorizedFetch(path, undefined, { ecoId });
-    if (!response.ok) throw new Error("Failed to fetch daily snapshot");
-
-    const result = await response.json();
-    console.log(
-      "[fetchDailySnapshot] Response:",
-      JSON.stringify(result, null, 2)
-    );
-
-    if (!result?.data || typeof result.data !== "object") {
-      console.warn("[fetchDailySnapshot] Unexpected response shape:", result);
-      return { date: null, totals_kg: {} };
-    }
-
-    const { date = null, totals_kg: totals = {} } = result.data;
-    const normalizedTotals = Object.fromEntries(
-      Object.entries(totals).map(([key, value]) => {
-        const parsed = Number(value);
-        return [key, Number.isNaN(parsed) ? 0 : parsed];
-      })
-    );
-
-    return { date, totals_kg: normalizedTotals };
+    // Static daily snapshot for a nice "today" view on the tracking cards.
+    return {
+      date: new Date().toISOString().slice(0, 10),
+      totals_kg: {
+        transport: 2.3,
+        meals: 1.1,
+        shopping: 0.8,
+        energy: 3.4,
+      },
+    };
   } catch (error) {
     console.error("[trackingAPI] fetchDailySnapshot error:", error);
     throw error;
@@ -165,24 +100,11 @@ export const fetchDailySnapshot = async (ecoId) => {
  */
 export const fetchUserBaseline = async (ecoId) => {
   try {
-    const path = `/user/${ecoId}`;
-    console.log("[fetchUserBaseline] URL:", `${apiConfig.baseURL}${path}`);
-
-    const response = await authorizedFetch(path, undefined, { ecoId });
-    if (!response.ok) throw new Error("Failed to fetch user baseline");
-
-    const result = await response.json();
-    console.log(
-      "[fetchUserBaseline] Response:",
-      JSON.stringify(result, null, 2)
-    );
-
-    if (!result?.data || typeof result.data !== "object") {
-      console.warn("[fetchUserBaseline] Unexpected response shape:", result);
-      return {};
-    }
-
-    return result.data;
+    // Simple baseline matching the weeklyImpact.baseline in trackingData.
+    return {
+      user_baseline_weekly: 18,
+      user_baseline_daily: 18 / 7,
+    };
   } catch (error) {
     console.error("[trackingAPI] fetchUserBaseline error:", error);
     throw error;

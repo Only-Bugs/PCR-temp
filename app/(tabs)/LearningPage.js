@@ -22,7 +22,6 @@ import colors from "../../theme/colors";
 import layout from "../../theme/layout";
 import { logAnalyticsEvent } from "../../utils/analytics";
 import { useUser } from "../../context/UserContext";
-import { authorizedFetch } from "../../services/apiClient";
 
 const FEATURED_LIMIT = 3;
 const SKELETON_COUNT = 3;
@@ -258,42 +257,7 @@ const LearningPage = () => {
     setErrorArticles(false);
 
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-      const response = await authorizedFetch(
-        ARTICLE_ENDPOINT,
-        { signal: controller.signal },
-        {
-          ecoId: user?.eco_id,
-          skipAuth: !user?.eco_id,
-        }
-      );
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`Request failed: ${response.status}`);
-      }
-
-      const payload = await response.json();
-      const list = Array.isArray(payload?.data)
-        ? payload.data
-        : Array.isArray(payload)
-        ? payload
-        : [];
-
-      if (!list.length) {
-        setArticles(mockArticles);
-      } else {
-        setArticles(list);
-      }
-    } catch (error) {
-      if (__DEV__) {
-        console.warn(
-          "[LearningPage] Failed to load articles, using fallback data.",
-          error?.message || error
-        );
-      }
-      setErrorArticles(true);
+      // For demo: bypass network and always use local mock articles.
       setArticles(mockArticles);
     } finally {
       setLoadingArticles(false);

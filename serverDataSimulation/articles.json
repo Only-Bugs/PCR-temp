@@ -1,0 +1,52 @@
+[
+  {
+    "article_id": "art-101",
+    "title": "Your First Steps to a Greener Lifestyle",
+    "summary": "Three simple habits you can start this week to lower your footprint.",
+    "reading_time_minutes": 5,
+    "published_date": "2024-02-01",
+    "author": "Verde Team",
+    "source_url": "https://example.com/verde-first-steps",
+    "is_featured": true
+  },
+  {
+    "article_id": "art-102",
+    "title": "How Your Commute Impacts the Planet",
+    "summary": "Compare emissions from car, public transport, and active travel.",
+    "reading_time_minutes": 6,
+    "published_date": "2024-01-19",
+    "author": "Verde Mobility Lab",
+    "source_url": "https://example.com/verde-commute",
+    "is_featured": false
+  },
+  {
+    "article_id": "art-103",
+    "title": "Energy-Smart Homes on a Student Budget",
+    "summary": "Low-cost changes that make a real difference to your energy use.",
+    "reading_time_minutes": 7,
+    "published_date": "2023-12-10",
+    "author": "Energy Insights",
+    "source_url": "https://example.com/verde-energy-smart",
+    "is_featured": true
+  },
+  {
+    "article_id": "art-104",
+    "title": "Greener Study Sessions",
+    "summary": "Cut energy use while you cram: devices, lighting, and snacks.",
+    "reading_time_minutes": 4,
+    "published_date": "2023-11-05",
+    "author": "Campus Climate Club",
+    "source_url": "https://example.com/verde-study",
+    "is_featured": false
+  },
+  {
+    "article_id": "art-105",
+    "title": "Shared Houses, Shared Footprints",
+    "summary": "Easy agreements with housemates to reduce power and waste.",
+    "reading_time_minutes": 6,
+    "published_date": "2023-10-21",
+    "author": "Verde Community",
+    "source_url": "https://example.com/verde-sharehouse",
+    "is_featured": true
+  }
+]

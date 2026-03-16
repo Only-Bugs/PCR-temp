@@ -29,7 +29,8 @@ const WelcomePage = () => {
 
       <CTAButton
         label="Sign In"
-        onPress={() => router.push("/SignInPage")}
+        // Temporarily bypass auth flow and go straight to profile
+        onPress={() => router.replace("/ProfilePage")}
         variant="outline"
       />
 

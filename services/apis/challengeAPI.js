@@ -1,5 +1,4 @@
-import apiConfig from "../../config/apiConfig";
-import { authorizedFetch } from "../apiClient";
+import mockChallenges from "../../serverDataSimulation/challenges.json";
 
 /**
  * Fetches challenges for a specific user.
@@ -8,31 +7,8 @@ import { authorizedFetch } from "../apiClient";
  */
 export const fetchUserChallenges = async (ecoId) => {
   try {
-    const path = `/user/${ecoId}/challenge`;
-    console.log("[fetchUserChallenges] URL:", `${apiConfig.baseURL}${path}`);
-
-    const response = await authorizedFetch(path, undefined, { ecoId });
-    if (!response.ok) throw new Error("Failed to fetch challenges");
-
-    const result = await response.json();
-    // console.log(
-    //   "[fetchUserChallenges] Response:",
-    //   JSON.stringify(result, null, 2)
-    // );
-
-    return result.data.map((challenge) => ({
-      id: challenge.id,
-      title: challenge.title,
-      description: challenge.description,
-      progress: challenge.progress,
-      rewards: {
-        points: challenge.rewards?.points || 0,
-        badge: challenge.rewards?.badge || null,
-      },
-      status: challenge.status,
-      isActive: challenge.isActive,
-      icon: challenge.icon || "eco",
-    }));
+    // For demo: use local mock challenges so UI renders reliably.
+    return mockChallenges;
   } catch (error) {
     console.error("[challengeAPI] fetchUserChallenges error:", error);
     throw error;

@@ -1,0 +1,66 @@
+[
+  {
+    "id": "CH14",
+    "title": "Car-Free Commute Week",
+    "description": "Avoid driving to work or uni for 5 days.",
+    "progress": {
+      "current": 2,
+      "target": 5
+    },
+    "rewards": {
+      "points": 50,
+      "badge": "Commuter Hero"
+    },
+    "status": 0,
+    "isActive": true,
+    "icon": "directions-walk"
+  },
+  {
+    "id": "CH15",
+    "title": "Plant-Based Dinners",
+    "description": "Cook three plant-based dinners this week.",
+    "progress": {
+      "current": 1,
+      "target": 3
+    },
+    "rewards": {
+      "points": 40,
+      "badge": "Plant Power"
+    },
+    "status": 0,
+    "isActive": false,
+    "icon": "restaurant"
+  },
+  {
+    "id": "CH16",
+    "title": "Switch Off Standby",
+    "description": "Unplug devices or use power boards to cut standby power.",
+    "progress": {
+      "current": 0,
+      "target": 4
+    },
+    "rewards": {
+      "points": 30,
+      "badge": null
+    },
+    "status": 0,
+    "isActive": false,
+    "icon": "power-settings-new"
+  },
+  {
+    "id": "CH17",
+    "title": "Reusable Cup Routine",
+    "description": "Bring a reusable cup for 5 hot drinks this month.",
+    "progress": {
+      "current": 3,
+      "target": 5
+    },
+    "rewards": {
+      "points": 25,
+      "badge": "Reuse Champion"
+    },
+    "status": 0,
+    "isActive": true,
+    "icon": "local-cafe"
+  }
+]

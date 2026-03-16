@@ -21,7 +21,6 @@ import CTAButton from "../../components/CTAButton";
 import { AuthCard } from "../../components/forms/auth";
 import { useUser } from "../../context/UserContext";
 import { setSeenIntro } from "../../lib/storage/firstRun";
-import { getUser } from "../../services/apis/userAPI";
 import StorageService from "../../services/storage";
 import styles from "./styles";
 
@@ -33,15 +32,20 @@ const SignInPage = () => {
   const router = useRouter();
 
   const handleSignIn = async () => {
-    if (!ecoId.trim()) {
-      setError("Please enter a valid Eco ID");
-      return;
-    }
     try {
       setLoading(true);
       setError(null);
       Keyboard.dismiss();
-      const user = await getUser(ecoId.trim());
+      // Bypass server lookup and create a minimal local user.
+      // If no Eco ID is entered, fall back to a dev placeholder.
+      const safeEcoId = ecoId.trim() || "dev-eco-id";
+      const user = {
+        eco_id: safeEcoId,
+        carbonPoints: 120,
+        daily: 12.3,
+        monthly: 370.0,
+        yearly: 4440.0,
+      };
       await updateUser(user);
       await StorageService.setEcoId(user.eco_id);
       await StorageService.setUser(user);

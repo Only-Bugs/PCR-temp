@@ -1,0 +1,118 @@
+{
+  "data": [
+    {
+      "topic_name": "Everyday Sustainability",
+      "topic_description": "Quick wins to reduce your footprint at home.",
+      "questions": [
+        {
+          "quiz_ques_id": 1,
+          "quiz_ques_text": "Which action saves the most electricity?",
+          "options": [
+            {
+              "quiz_option_id": 11,
+              "quiz_option_text": "Turning off unused lights",
+              "quiz_option_is_correct": 0,
+              "quiz_option_explanation": "Helpful, but not as impactful as major appliances."
+            },
+            {
+              "quiz_option_id": 12,
+              "quiz_option_text": "Switching to LED bulbs",
+              "quiz_option_is_correct": 1,
+              "quiz_option_explanation": "LEDs use far less energy and last longer."
+            }
+          ]
+        },
+        {
+          "quiz_ques_id": 2,
+          "quiz_ques_text": "What is a simple way to cut food waste?",
+          "options": [
+            {
+              "quiz_option_id": 21,
+              "quiz_option_text": "Plan meals before shopping",
+              "quiz_option_is_correct": 1,
+              "quiz_option_explanation": "Planning helps you only buy what you’ll use."
+            },
+            {
+              "quiz_option_id": 22,
+              "quiz_option_text": "Always buy in bulk",
+              "quiz_option_is_correct": 0,
+              "quiz_option_explanation": "Bulk can help, but only if you actually use it all."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic_name": "Low-Carbon Transport",
+      "topic_description": "Explore cleaner ways to get from A to B.",
+      "questions": [
+        {
+          "quiz_ques_id": 3,
+          "quiz_ques_text": "Which option has the lowest emissions per kilometre?",
+          "options": [
+            {
+              "quiz_option_id": 31,
+              "quiz_option_text": "Driving alone in a petrol car",
+              "quiz_option_is_correct": 0,
+              "quiz_option_explanation": "Cars are convenient but not the lowest emission choice."
+            },
+            {
+              "quiz_option_id": 32,
+              "quiz_option_text": "Catching a local bus",
+              "quiz_option_is_correct": 1,
+              "quiz_option_explanation": "Public transport spreads emissions across many passengers."
+            },
+            {
+              "quiz_option_id": 33,
+              "quiz_option_text": "Short-haul flight",
+              "quiz_option_is_correct": 0,
+              "quiz_option_explanation": "Flights have a high climate impact per kilometre."
+            }
+          ]
+        },
+        {
+          "quiz_ques_id": 4,
+          "quiz_ques_text": "What’s a realistic first step towards cleaner commuting?",
+          "options": [
+            {
+              "quiz_option_id": 41,
+              "quiz_option_text": "Walk or cycle one day per week",
+              "quiz_option_is_correct": 1,
+              "quiz_option_explanation": "Starting small makes the habit more sustainable."
+            },
+            {
+              "quiz_option_id": 42,
+              "quiz_option_text": "Sell your car tomorrow",
+              "quiz_option_is_correct": 0,
+              "quiz_option_explanation": "Great if it works for you, but not realistic for most people overnight."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic_name": "Climate-Friendly Food",
+      "topic_description": "Learn how everyday food choices add up.",
+      "questions": [
+        {
+          "quiz_ques_id": 5,
+          "quiz_ques_text": "Which weekly change has the biggest impact?",
+          "options": [
+            {
+              "quiz_option_id": 51,
+              "quiz_option_text": "Swapping one beef meal for a plant-based option",
+              "quiz_option_is_correct": 1,
+              "quiz_option_explanation": "Beef has a high footprint; even one swap a week helps."
+            },
+            {
+              "quiz_option_id": 52,
+              "quiz_option_text": "Buying pre-cut vegetables in plastic",
+              "quiz_option_is_correct": 0,
+              "quiz_option_explanation": "Convenient, but packaging adds waste and cost."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
